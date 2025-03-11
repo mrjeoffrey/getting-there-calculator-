@@ -1,6 +1,5 @@
-
-import React, { useEffect, useState } from 'react';
-import {  TileLayer, useMap } from 'react-leaflet';
+import React, { useEffect, useState, useRef } from 'react';
+import { TileLayer, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
 import 'leaflet-defaulticon-compatibility';
@@ -9,8 +8,11 @@ import AirportMarker from './AirportMarker';
 import FlightPath from './FlightPath';
 import L from 'leaflet';
 import "leaflet/dist/leaflet.css"; 
-import { MapContainer, MapContainerProps } from 'react-leaflet';
-import { Map as LeafletMap } from 'leaflet';
+import { MapContainer } from 'react-leaflet';
+import { Sun, Moon, Globe } from 'lucide-react';
+
+// New imports for enhanced features
+import { Toggle } from '@/components/ui/toggle';
 
 interface FlightMapProps {
   directFlights: Flight[];
@@ -26,6 +28,10 @@ const FlightMap: React.FC<FlightMapProps> = ({
   loading = false
 }) => {
   const [allAirports, setAllAirports] = useState<Airport[]>([]);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isGlobeView, setIsGlobeView] = useState(false);
+  const [mapRef, setMapRef] = useState<L.Map | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   
   // Collect all unique airports from flights
   useEffect(() => {
@@ -63,16 +69,85 @@ const FlightMap: React.FC<FlightMapProps> = ({
   
   const selectedFlight = getSelectedFlight();
   
+  // Handle 3D globe effect for the container
+  useEffect(() => {
+    if (!containerRef.current) return;
+    
+    const container = containerRef.current;
+    
+    // Apply or remove 3D effect based on globe view setting
+    if (isGlobeView) {
+      container.classList.add('globe-container');
+      
+      // Add mouse movement effect for 3D rotation
+      const handleMouseMove = (e: MouseEvent) => {
+        if (!container) return;
+        
+        const rect = container.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        
+        // Calculate distance from center (normalized from -1 to 1)
+        const rotateX = ((e.clientY - centerY) / (rect.height / 2)) * 15;
+        const rotateY = ((e.clientX - centerX) / (rect.width / 2)) * 15;
+        
+        container.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+      };
+      
+      document.addEventListener('mousemove', handleMouseMove);
+      
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+      };
+    } else {
+      container.classList.remove('globe-container');
+      container.style.transform = '';
+    }
+  }, [isGlobeView]);
+  
+  // Map Control Component
+  const MapControls = () => {
+    const map = useMap();
+    
+    useEffect(() => {
+      setMapRef(map);
+      
+      // Apply globe view if enabled
+      if (isGlobeView) {
+        // Center the map for globe view
+        map.setView([0, 0], 1.5);
+        
+        // Add class to container for globe styling
+        const container = map.getContainer();
+        container.classList.add('globe-view');
+      } else {
+        // Remove globe class if it exists
+        const container = map.getContainer();
+        container.classList.remove('globe-view');
+      }
+      
+      // Apply dark mode if enabled
+      const container = map.getContainer();
+      if (isDarkMode) {
+        container.classList.add('dark-mode');
+      } else {
+        container.classList.remove('dark-mode');
+      }
+    }, [map, isGlobeView, isDarkMode]);
+    
+    return null;
+  };
+  
   // Fit map bounds to visible airports
   const FitBounds = () => {
     const map = useMap();
     
     useEffect(() => {
-      if (allAirports.length === 0) return;
+      if (allAirports.length === 0 || isGlobeView) return;
       
       const bounds = L.latLngBounds(allAirports.map(airport => [airport.lat, airport.lng]));
       map.fitBounds(bounds, { padding: [50, 50] });
-    }, [allAirports, map]);
+    }, [allAirports, map, isGlobeView]);
     
     return null;
   };
@@ -104,6 +179,24 @@ const FlightMap: React.FC<FlightMapProps> = ({
     return 'origin';
   };
   
+  // Handle view mode changes
+  const toggleDarkMode = () => {
+    setIsDarkMode(!isDarkMode);
+  };
+  
+  const toggleGlobeView = () => {
+    setIsGlobeView(!isGlobeView);
+    
+    // When switching to globe view, center the map
+    if (!isGlobeView && mapRef) {
+      mapRef.setView([0, 0], 1.5);
+    } else if (mapRef && allAirports.length > 0) {
+      // When switching back to flat view, fit bounds
+      const bounds = L.latLngBounds(allAirports.map(airport => [airport.lat, airport.lng]));
+      mapRef.fitBounds(bounds, { padding: [50, 50] });
+    }
+  };
+  
   // Loading component or fallback
   if (loading) {
     return (
@@ -116,80 +209,271 @@ const FlightMap: React.FC<FlightMapProps> = ({
   // Define center coordinates as a tuple to satisfy TypeScript
   const defaultCenter: [number, number] = [20, 0];
   
+  // Select the appropriate tile layer based on mode
+  // Using a more labeled/high-contrast map provider for improved country names visibility
+  const tileLayer = isDarkMode
+    ? "https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_nolabels/{z}/{x}/{y}.png"
+    : "https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png";
+  
+  // Add a labels layer for better visibility of country names
+  const labelsLayer = isDarkMode
+    ? "https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_only_labels/{z}/{x}/{y}.png"
+    : "https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png";
+
   return (
-    <div className="map-container">
-       <MapContainer
-      style={{ height: '100%', width: '100%', borderRadius: '1rem' }}
-        center={defaultCenter}
-        zoom={2}
-        zoomControl={false}
-    >
-     
-        <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-           />
+    <div className="flight-map-wrapper relative">
+      {/* Fixed position controls outside the map container */}
+      <div className="absolute top-4 right-4 z-50 flex gap-2 p-2 bg-white/30 dark:bg-black/40 backdrop-blur-sm rounded-lg shadow-lg">
+        <Toggle 
+          aria-label="Toggle dark mode" 
+          pressed={isDarkMode} 
+          onPressedChange={toggleDarkMode}
+          className={`${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'} hover:bg-opacity-90`}
+        >
+          {isDarkMode ? <Moon size={18} /> : <Sun size={18} />}
+        </Toggle>
         
-        {/* Render flight paths */}
-        {selectedFlight ? (
-          // Render selected flight path
-          selectedFlight.type === 'direct' ? (
-            // Direct flight
-            <FlightPath
-              departure={(selectedFlight.flight as Flight).departureAirport}
-              arrival={(selectedFlight.flight as Flight).arrivalAirport}
-              type="direct"
-              isActive={true}
-            />
-          ) : (
-            // Connecting flight
-            (selectedFlight.flight as ConnectionFlight).flights.map((flight, index) => (
+        <Toggle 
+          aria-label="Toggle globe view" 
+          pressed={isGlobeView} 
+          onPressedChange={toggleGlobeView}
+          className={`${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'} hover:bg-opacity-90`}
+        >
+          <Globe size={18} />
+        </Toggle>
+      </div>
+      
+      {/* Map container with 3D globe effect */}
+      <div 
+        ref={containerRef} 
+        className={`map-container relative ${isDarkMode ? 'dark' : ''} ${isGlobeView ? 'perspective-container' : ''}`}
+      >
+        <MapContainer
+          className={`${isDarkMode ? 'dark-map' : ''}`}
+          style={{ height: '100%', width: '100%', borderRadius: isGlobeView ? '50%' : '1rem' }}
+          center={defaultCenter}
+          zoom={isGlobeView ? 1.5 : 2}
+          zoomControl={false}
+          scrollWheelZoom={true}
+          worldCopyJump={!isGlobeView}
+          minZoom={isGlobeView ? 1 : 2}
+        >
+          {/* Base map layer without labels */}
+          <TileLayer
+            url={tileLayer}
+          />
+          
+          {/* Render flight paths */}
+          {selectedFlight ? (
+            // Render selected flight path
+            selectedFlight.type === 'direct' ? (
+              // Direct flight
               <FlightPath
-                key={flight.id}
-                departure={flight.departureAirport}
-                arrival={flight.arrivalAirport}
-                type="connecting"
-                isActive={true}
-              />
-            ))
-          )
-        ) : (
-          // Render all flight paths when no flight is selected
-          <>
-            {directFlights.map(flight => (
-              <FlightPath
-                key={flight.id}
-                departure={flight.departureAirport}
-                arrival={flight.arrivalAirport}
+                departure={(selectedFlight.flight as Flight).departureAirport}
+                arrival={(selectedFlight.flight as Flight).arrivalAirport}
                 type="direct"
-                isActive={false}
+                isActive={true}
+                isDarkMode={isDarkMode}
               />
-            ))}
-            {connectingFlights.map(connection => 
-              connection.flights.map(flight => (
+            ) : (
+              // Connecting flight
+              (selectedFlight.flight as ConnectionFlight).flights.map((flight, index) => (
                 <FlightPath
                   key={flight.id}
                   departure={flight.departureAirport}
                   arrival={flight.arrivalAirport}
                   type="connecting"
-                  isActive={false}
+                  isActive={true}
+                  isDarkMode={isDarkMode}
                 />
               ))
-            )}
-          </>
-        )}
-        
-        {/* Render airport markers */}
-        {allAirports.map(airport => (
-          <AirportMarker
-            key={airport.code}
-            airport={airport}
-            type={getAirportType(airport)}
+            )
+          ) : (
+            // Render all flight paths when no flight is selected
+            <>
+              {directFlights.map(flight => (
+                <FlightPath
+                  key={flight.id}
+                  departure={flight.departureAirport}
+                  arrival={flight.arrivalAirport}
+                  type="direct"
+                  isActive={false}
+                  isDarkMode={isDarkMode}
+                />
+              ))}
+              {connectingFlights.map(connection => 
+                connection.flights.map(flight => (
+                  <FlightPath
+                    key={flight.id}
+                    departure={flight.departureAirport}
+                    arrival={flight.arrivalAirport}
+                    type="connecting"
+                    isActive={false}
+                    isDarkMode={isDarkMode}
+                  />
+                ))
+              )}
+            </>
+          )}
+          
+          {/* Labels layer on top with enhanced contrast */}
+          <TileLayer
+            url={labelsLayer}
+            zIndex={10}
+            opacity={isDarkMode ? 1.2 : 1}
           />
-        ))}
+          
+          {/* Render airport markers */}
+          {allAirports.map(airport => (
+            <AirportMarker
+              key={airport.code}
+              airport={airport}
+              type={getAirportType(airport)}
+              isDarkMode={isDarkMode}
+            />
+          ))}
+          
+          {/* Control components */}
+          <FitBounds />
+          <MapControls />
+        </MapContainer>
+      </div>
+      
+      {/* Add CSS for enhanced 3D globe effect and lighting */}
+      <style>{`
+        /* Setup perspective for 3D effects */
+        .perspective-container {
+          perspective: 1200px;
+          transition: transform 0.5s ease-out;
+          transform-style: preserve-3d;
+        }
         
-        {/* Fit map to bounds */}
-        <FitBounds />
-      </MapContainer>
+        /* Globe container styles */
+        .globe-container {
+          border-radius: 50% !important;
+          overflow: hidden;
+          box-shadow: 
+            0 0 30px rgba(0, 0, 0, 0.3),
+            inset 0 0 80px rgba(0, 0, 0, 0.6);
+          transform-style: preserve-3d;
+          transform: rotateX(0deg) rotateY(0deg);
+          transition: transform 0.2s ease-out;
+          
+          /* Add light reflection */
+          position: relative;
+        }
+        
+        /* Create light reflection effect on globe */
+        .globe-container::before {
+          content: '';
+          position: absolute;
+          top: -10%;
+          left: -10%;
+          width: 120%;
+          height: 120%;
+          background: radial-gradient(
+            circle at 30% 30%,
+            rgba(255, 255, 255, 0.3) 0%,
+            rgba(255, 255, 255, 0) 60%
+          );
+          z-index: 100;
+          pointer-events: none;
+          border-radius: 50%;
+        }
+        
+        /* Dark mode globe has blue glow */
+        .dark .globe-container {
+          box-shadow: 
+            0 0 40px rgba(0, 120, 255, 0.4),
+            inset 0 0 80px rgba(0, 0, 30, 0.8);
+        }
+        
+        .dark .globe-container::before {
+          background: radial-gradient(
+            circle at 30% 30%,
+            rgba(120, 180, 255, 0.2) 0%,
+            rgba(0, 30, 60, 0) 60%
+          );
+        }
+        
+        /* Map styles */
+        .dark-map {
+          filter: brightness(0.9);
+        }
+        
+        /* Enhance label visibility in dark mode */
+        .dark-mode .leaflet-tile-loaded {
+          font-weight: 500 !important;
+        }
+        
+        /* Improved styling for map text in dark mode */
+        .dark-mode .leaflet-control,
+        .dark-mode .leaflet-control a,
+        .dark-mode .leaflet-container {
+          color: white !important;
+          text-shadow: 0 0 3px rgba(0, 0, 0, 1), 0 0 5px rgba(0, 0, 0, 0.8);
+          font-weight: 500;
+        }
+        
+        /* Make country labels more visible with a text glow */
+        .dark-mode .leaflet-tile-pane {
+          filter: contrast(1.1) brightness(1.1);
+        }
+        
+        /* Brighten text labels specifically */
+        .dark-mode .leaflet-overlay-pane text,
+        .dark-mode .leaflet-marker-pane text {
+          fill: white !important;
+          stroke: rgba(0, 0, 0, 0.5);
+          stroke-width: 0.5px;
+          paint-order: stroke;
+          text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
+        }
+        
+        .dark-mode .leaflet-control-attribution {
+          background-color: rgba(0, 0, 0, 0.6) !important;
+          color: white !important;
+          font-weight: 500;
+          padding: 3px 6px;
+          border-radius: 4px 0 0 0;
+        }
+        
+        .dark-mode .leaflet-control-attribution a {
+          color: #90caf9 !important;
+          font-weight: 500;
+        }
+        
+        .dark .leaflet-tile {
+          filter: brightness(0.8) contrast(1.2);
+        }
+        
+        /* Add global style for the wrapper to control dimensions */
+        .flight-map-wrapper {
+          width: 100%;
+          height: 100%;
+          min-height: 400px;
+        }
+        
+        .map-container {
+          width: 100%;
+          height: 100%;
+          min-height: 400px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+        
+        /* Ensure map container is fully rounded in globe mode */
+        .globe-view {
+          border-radius: 50% !important;
+        }
+        
+        @media (max-width: 768px) {
+          .globe-container {
+            transform: scale(0.8) rotateX(0deg) rotateY(0deg) !important;
+          }
+        }
+      `}</style>
     </div>
   );
 };

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -13,6 +12,7 @@ interface FlightPathProps {
   animated?: boolean;
   type?: 'direct' | 'connecting';
   isActive?: boolean;
+  isDarkMode?: boolean;
 }
 
 const FlightPath: React.FC<FlightPathProps> = ({ 
@@ -20,7 +20,8 @@ const FlightPath: React.FC<FlightPathProps> = ({
   arrival, 
   animated = true,
   type = 'direct',
-  isActive = false
+  isActive = false,
+  isDarkMode = false
 }) => {
   const [arcPoints, setArcPoints] = useState<[number, number][]>([]);
   const [planePosition, setPlanePosition] = useState<[number, number] | null>(null);
@@ -29,12 +30,15 @@ const FlightPath: React.FC<FlightPathProps> = ({
   
   // Calculate arc points for the flight path
   useEffect(() => {
+    // Increase arc height for better visualization in globe view
+    const arcHeight = type === 'direct' ? 0.35 : 0.25;
+    
     const points = calculateArcPoints(
       departure.lat, 
       departure.lng, 
       arrival.lat, 
       arrival.lng,
-      type === 'direct' ? 0.3 : 0.2
+      arcHeight
     );
     setArcPoints(points);
     
@@ -48,12 +52,15 @@ const FlightPath: React.FC<FlightPathProps> = ({
       
       // Animate plane along path
       let step = 0;
+      const totalSteps = points.length - 1;
+      const speed = Math.max(30, Math.min(100, 200 / totalSteps)); // Adaptive speed
+      
       const animationInterval = setInterval(() => {
-        if (step < points.length - 1) {
+        if (step < totalSteps) {
           setPlanePosition(points[step]);
           
           // Calculate bearing between current and next point for rotation
-          if (step < points.length - 2) {
+          if (step < totalSteps - 1) {
             const currPoint = points[step];
             const nextPoint = points[step + 1];
             const bearing = getBearing(currPoint[0], currPoint[1], nextPoint[0], nextPoint[1]);
@@ -63,9 +70,18 @@ const FlightPath: React.FC<FlightPathProps> = ({
           step++;
         } else {
           clearInterval(animationInterval);
-          setPlanePosition(null); // Hide plane at end
+          
+          // Reset animation after a pause
+          setTimeout(() => {
+            if (isActive) {
+              setPlanePosition([departure.lat, departure.lng]);
+              step = 0;
+            } else {
+              setPlanePosition(null); // Hide plane
+            }
+          }, 2000);
         }
-      }, 100);
+      }, speed);
       
       return () => clearInterval(animationInterval);
     }
@@ -77,8 +93,21 @@ const FlightPath: React.FC<FlightPathProps> = ({
     
     // Create a custom plane marker using Lucide-React icon
     const planeIconHtml = document.createElement('div');
-    const colorClass = type === 'direct' ? '0000ff' : 'text-yellow-500';
     planeIconHtml.className = 'plane-marker';
+    
+    // Use different color class based on flight type and dark mode
+    let colorClass = 'text-primary';
+    
+    if (type === 'connecting') {
+      colorClass = 'text-yellow-500';
+    } else if (isDarkMode) {
+      colorClass = 'text-blue-300';
+    }
+    
+    // Add trail effect
+    const trailStyle = isDarkMode ? 
+      'box-shadow: 0 0 8px rgba(255, 255, 255, 0.7), 0 0 16px rgba(0, 150, 255, 0.5);' : 
+      'box-shadow: 0 0 8px rgba(0, 100, 255, 0.5);';
     
     const iconHtml = ReactDOMServer.renderToString(
       <div 
@@ -90,13 +119,16 @@ const FlightPath: React.FC<FlightPathProps> = ({
           justifyContent: 'center',
         }}
       >
-       
-
-       <Plane size={24} color={colorClass} fill={colorClass} strokeWidth={0} />
+        <Plane 
+          size={24} 
+          className={colorClass} 
+          style={{ filter: isDarkMode ? 'drop-shadow(0 0 6px rgba(255, 255, 255, 0.7))' : '' }}
+        />
       </div>
     );
     
     planeIconHtml.innerHTML = iconHtml;
+    planeIconHtml.style.cssText = trailStyle;
     
     const planeIcon = L.divIcon({
       html: planeIconHtml,
@@ -110,19 +142,46 @@ const FlightPath: React.FC<FlightPathProps> = ({
     );
   };
   
+  // Determine path colors based on mode and type
+  const getPathOptions = () => {
+    let color;
+    let dashArray;
+    
+    if (type === 'direct') {
+      color = isDarkMode ? 'rgba(100, 180, 255, 0.8)' : 'hsl(var(--primary))';
+      dashArray = undefined;
+    } else {
+      color = isDarkMode ? 'rgba(255, 210, 0, 0.8)' : 'hsl(var(--accent))';
+      dashArray = '5, 5';
+    }
+    
+    return {
+      color,
+      opacity: isActive ? 0.8 : 0.4,
+      weight: isActive ? 3 : 2,
+      dashArray,
+      // Add glow effect in dark mode
+      className: isDarkMode ? 'flight-path-glow' : '',
+    };
+  };
+  
   return (
     <>
       <Polyline 
         positions={arcPoints}
-        pathOptions={{ 
-          color: type === 'direct' ? 'hsl(var(--primary))' : 'hsl(var(--accent))',
-          opacity: isActive ? 0.8 : 0.4,
-          weight: isActive ? 3 : 2,
-          dashArray: type === 'direct' ? undefined : '5, 5',
-        }}
+        pathOptions={getPathOptions()}
       />
       {planePosition && isActive && (
         <PlaneMarker />
+      )}
+      
+      {/* Add CSS for glow effect */}
+      {isDarkMode && (
+        <style>{`
+          .flight-path-glow {
+            filter: drop-shadow(0 0 4px rgba(100, 180, 255, 0.7));
+          }
+        `}</style>
       )}
     </>
   );

@@ -8,12 +8,13 @@ interface AirportMarkerProps {
   airport: Airport;
   isPulsing?: boolean;
   type?: 'origin' | 'destination' | 'connection';
+  isDarkMode: boolean;
 }
 
 const AirportMarker: React.FC<AirportMarkerProps> = ({ 
   airport, 
   isPulsing = false,
-  type = 'origin'
+  type = 'origin',
 }) => {
   // Create custom markers for different types of airports
   const createCustomIcon = (type: string) => {
