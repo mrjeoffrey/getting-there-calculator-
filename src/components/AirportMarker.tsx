@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Marker, Popup, MarkerProps } from 'react-leaflet';
+import { Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import { Airport } from '../types/flightTypes';
 
@@ -43,13 +43,10 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
     return customIcon;
   };
 
-  // Use the icon as a prop properly typed for Leaflet
-  const markerIcon = createCustomIcon(type);
-
   return (
     <Marker 
       position={[airport.lat, airport.lng]} 
-      icon={markerIcon}
+      icon={createCustomIcon(type)}
     >
       <Popup>
         <div className="p-2">

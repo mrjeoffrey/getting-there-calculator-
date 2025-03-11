@@ -64,8 +64,8 @@ const AirportSelector: React.FC<AirportSelectorProps> = ({
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="p-0 w-full min-w-[300px]">
-        <Command className="w-full">
+      <PopoverContent className="p-0 w-full min-w-[300px]" align="start" side="bottom">
+        <Command>
           <CommandInput placeholder="Search airport..." />
           <CommandEmpty>No airport found.</CommandEmpty>
           <CommandGroup className="max-h-64 overflow-y-auto">

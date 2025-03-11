@@ -109,13 +109,15 @@ const FlightMap: React.FC<FlightMapProps> = ({
       </div>
     );
   }
+
+  // Define center coordinates as a tuple to satisfy TypeScript
+  const defaultCenter: [number, number] = [20, 0];
   
-  // Fix MapContainer props by providing required props with correct names
   return (
     <div className="map-container">
       <MapContainer
         style={{ height: '100%', width: '100%', borderRadius: '1rem' }}
-        center={[20, 0] as [number, number]}
+        center={defaultCenter}
         zoom={2}
         zoomControl={false}
       >
