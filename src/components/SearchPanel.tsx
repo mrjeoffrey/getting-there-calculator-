@@ -20,7 +20,7 @@ interface SearchPanelProps {
 
 const SearchPanel: React.FC<SearchPanelProps> = ({ onSearch, loading }) => {
   const [from, setFrom] = useState('');
-  const [to, setTo] = useState('');
+  const [to, setTo] = useState('GND'); // Default to Grenada
   const [date, setDate] = useState<Date>(new Date());
   const [calendarOpen, setCalendarOpen] = useState(false);
 
@@ -51,12 +51,14 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ onSearch, loading }) => {
         
         <div>
           <label className="text-sm font-medium text-muted-foreground mb-1 block">Flying To</label>
-          <AirportSelector 
-            value={to} 
-            onChange={setTo} 
-            placeholder="Select destination airport"
-            exclude={from ? [from] : []}
-          />
+          <div className="flex h-14 px-4 py-3 bg-white/50 hover:bg-white/60 border border-white/20 rounded-md items-center justify-between">
+            <div className="flex items-center">
+              <span className="text-sm font-medium">Maurice Bishop International Airport (GND)</span>
+            </div>
+            <div className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">
+              Grenada
+            </div>
+          </div>
         </div>
         
         <div>
@@ -91,7 +93,7 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ onSearch, loading }) => {
         <Button 
           className="w-full h-14 bg-primary hover:bg-primary/90 text-primary-foreground"
           onClick={handleSearch}
-          disabled={!from || !to || !date || loading}
+          disabled={!from || !date || loading}
         >
           {loading ? (
             <div className="flex items-center">

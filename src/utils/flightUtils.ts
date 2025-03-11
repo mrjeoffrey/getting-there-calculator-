@@ -1,4 +1,3 @@
-
 import { Airport, Flight, ConnectionFlight } from '../types/flightTypes';
 
 // Sample airport data
@@ -150,20 +149,23 @@ export const generateConnectionFlight = (fromCode: string, toCode: string, date:
   };
 };
 
-// Search for flights
+// Update the search function to always include Grenada
 export const searchFlights = async (fromCode: string, toCode: string, date: string): Promise<{
   directFlights: Flight[];
   connectingFlights: ConnectionFlight[];
 }> => {
+  // If toCode is not GND, force it to be GND (Grenada)
+  const destinationCode = 'GND';
+  
   // Simulate API call delay
   await new Promise(resolve => setTimeout(resolve, 1500));
   
-  // Generate 0-2 direct flights
+  // Generate 1-2 direct flights
   const directFlights: Flight[] = [];
-  const directFlightCount = Math.floor(Math.random() * 3);
+  const directFlightCount = Math.floor(Math.random() * 2) + 1;
   
   for (let i = 0; i < directFlightCount; i++) {
-    const flight = generateDirectFlight(fromCode, toCode, date);
+    const flight = generateDirectFlight(fromCode, destinationCode, date);
     if (flight) directFlights.push(flight);
   }
   
@@ -172,7 +174,7 @@ export const searchFlights = async (fromCode: string, toCode: string, date: stri
   const connectingFlightCount = Math.floor(Math.random() * 3) + 1;
   
   for (let i = 0; i < connectingFlightCount; i++) {
-    const flight = generateConnectionFlight(fromCode, toCode, date);
+    const flight = generateConnectionFlight(fromCode, destinationCode, date);
     if (flight) connectingFlights.push(flight);
   }
   

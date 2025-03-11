@@ -111,7 +111,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
   return (
     <>
       <Polyline 
-        positions={arcPoints} 
+        positions={arcPoints}
         pathOptions={{ 
           color: type === 'direct' ? 'hsl(var(--primary))' : 'hsl(var(--accent))',
           opacity: isActive ? 0.8 : 0.4,

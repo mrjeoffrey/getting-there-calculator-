@@ -110,11 +110,12 @@ const FlightMap: React.FC<FlightMapProps> = ({
     );
   }
   
+  // Fix MapContainer props by providing required props with correct names
   return (
     <div className="map-container">
       <MapContainer
         style={{ height: '100%', width: '100%', borderRadius: '1rem' }}
-        center={[20, 0]}
+        center={[20, 0] as [number, number]}
         zoom={2}
         zoomControl={false}
       >
