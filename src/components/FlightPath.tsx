@@ -5,6 +5,7 @@ import L from 'leaflet';
 import { Airport } from '../types/flightTypes';
 import { calculateArcPoints, getBearing } from '../utils/flightUtils';
 import { Plane } from 'lucide-react';
+import ReactDOMServer from 'react-dom/server';
 
 interface FlightPathProps {
   departure: Airport;
@@ -78,8 +79,6 @@ const FlightPath: React.FC<FlightPathProps> = ({
     const planeIconHtml = document.createElement('div');
     planeIconHtml.className = 'plane-marker';
     
-    // Convert icon to HTML string
-    const ReactDOMServer = require('react-dom/server');
     const iconHtml = ReactDOMServer.renderToString(
       <div 
         className="plane-icon" 
