@@ -8,6 +8,7 @@ import { Flight, ConnectionFlight, Airport } from '../types/flightTypes';
 import AirportMarker from './AirportMarker';
 import FlightPath from './FlightPath';
 import L from 'leaflet';
+import "leaflet/dist/leaflet.css"; 
 
 interface FlightMapProps {
   directFlights: Flight[];
@@ -15,6 +16,17 @@ interface FlightMapProps {
   selectedFlightId: string | null;
   loading?: boolean;
 }
+
+// const defaultCenter = [51.505, -0.09]; 
+
+// function MapView({ center }: { center: [number, number] }) {
+//   const map = useMap();
+//   useEffect(() => {
+//     map.setView(center, map.getZoom());
+//   }, [center, map]);
+//   return null;
+// }
+
 
 const FlightMap: React.FC<FlightMapProps> = ({
   directFlights,
@@ -115,16 +127,16 @@ const FlightMap: React.FC<FlightMapProps> = ({
   
   return (
     <div className="map-container">
-      <MapContainer
-        style={{ height: '100%', width: '100%', borderRadius: '1rem' }}
+       <MapContainer
+      style={{ height: '100%', width: '100%', borderRadius: '1rem' }}
         center={defaultCenter}
         zoom={2}
         zoomControl={false}
-      >
+    >
+     
         <TileLayer
           url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        />
+           />
         
         {/* Render flight paths */}
         {selectedFlight ? (
