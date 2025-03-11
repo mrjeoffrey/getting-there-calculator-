@@ -114,14 +114,13 @@ const FlightMap: React.FC<FlightMapProps> = ({
     <div className="map-container">
       <MapContainer
         style={{ height: '100%', width: '100%', borderRadius: '1rem' }}
-        scrollWheelZoom={true}
+        center={[20, 0]}
+        zoom={2}
         zoomControl={false}
-        defaultCenter={[20, 0]}
-        defaultZoom={2}
       >
         <TileLayer
           url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
         
         {/* Render flight paths */}

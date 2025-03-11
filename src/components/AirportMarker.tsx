@@ -46,7 +46,7 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
   return (
     <Marker 
       position={[airport.lat, airport.lng]} 
-      icon={createCustomIcon(type)}
+      icon={createCustomIcon(type) as L.Icon}
     >
       <Popup>
         <div className="p-2">
