@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, useMap } from 'react-leaflet';
+import {  TileLayer, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
 import 'leaflet-defaulticon-compatibility';
@@ -9,6 +9,8 @@ import AirportMarker from './AirportMarker';
 import FlightPath from './FlightPath';
 import L from 'leaflet';
 import "leaflet/dist/leaflet.css"; 
+import { MapContainer, MapContainerProps } from 'react-leaflet';
+import { Map as LeafletMap } from 'leaflet';
 
 interface FlightMapProps {
   directFlights: Flight[];
@@ -16,17 +18,6 @@ interface FlightMapProps {
   selectedFlightId: string | null;
   loading?: boolean;
 }
-
-// const defaultCenter = [51.505, -0.09]; 
-
-// function MapView({ center }: { center: [number, number] }) {
-//   const map = useMap();
-//   useEffect(() => {
-//     map.setView(center, map.getZoom());
-//   }, [center, map]);
-//   return null;
-// }
-
 
 const FlightMap: React.FC<FlightMapProps> = ({
   directFlights,

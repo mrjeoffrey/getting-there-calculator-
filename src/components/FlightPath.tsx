@@ -77,7 +77,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
     
     // Create a custom plane marker using Lucide-React icon
     const planeIconHtml = document.createElement('div');
-    const colorClass = type === 'direct' ? 'text-primary' : 'text-yellow-500';
+    const colorClass = type === 'direct' ? '0000ff' : 'text-yellow-500';
     planeIconHtml.className = 'plane-marker';
     
     const iconHtml = ReactDOMServer.renderToString(
@@ -92,7 +92,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
       >
        
 
-        <Plane size={24} className={colorClass} />
+       <Plane size={24} color={colorClass} fill={colorClass} strokeWidth={0} />
       </div>
     );
     
