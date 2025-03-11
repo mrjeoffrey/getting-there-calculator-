@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
@@ -7,13 +7,7 @@ import 'leaflet-defaulticon-compatibility';
 import { Flight, ConnectionFlight, Airport } from '../types/flightTypes';
 import AirportMarker from './AirportMarker';
 import FlightPath from './FlightPath';
-
-// Initialize Leaflet's default icon paths
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-});
+import L from 'leaflet';
 
 interface FlightMapProps {
   directFlights: Flight[];
@@ -21,10 +15,6 @@ interface FlightMapProps {
   selectedFlightId: string | null;
   loading?: boolean;
 }
-
-// Define L at file scope for TypeScript
-// This is needed for server-side rendering compatibility
-declare var L: any;
 
 const FlightMap: React.FC<FlightMapProps> = ({
   directFlights,
@@ -123,15 +113,15 @@ const FlightMap: React.FC<FlightMapProps> = ({
   return (
     <div className="map-container">
       <MapContainer
-        center={[20, 0]}
-        zoom={2}
         style={{ height: '100%', width: '100%', borderRadius: '1rem' }}
         scrollWheelZoom={true}
         zoomControl={false}
+        defaultCenter={[20, 0]}
+        defaultZoom={2}
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         />
         
         {/* Render flight paths */}

@@ -48,7 +48,7 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
       position={[airport.lat, airport.lng]} 
       icon={createCustomIcon(type)}
     >
-      <Popup className="glass-panel">
+      <Popup>
         <div className="p-2">
           <h3 className="font-semibold text-primary">{airport.name} ({airport.code})</h3>
           <p className="text-sm text-muted-foreground">{airport.city}, {airport.country}</p>

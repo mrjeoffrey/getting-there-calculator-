@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { GlobeAmericas } from 'lucide-react';
+import { Globe } from 'lucide-react';
 
 const Header = () => {
   return (
@@ -8,7 +8,7 @@ const Header = () => {
       <div className="flex items-center justify-between">
         <div className="flex items-center">
           <div className="p-2 bg-primary/10 rounded-full mr-3">
-            <GlobeAmericas className="h-6 w-6 text-primary" />
+            <Globe className="h-6 w-6 text-primary" />
           </div>
           <div>
             <h1 className="text-2xl font-bold text-foreground">Getting There Calculator</h1>

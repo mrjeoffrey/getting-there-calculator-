@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
-import { Airport, Flight } from '../types/flightTypes';
+import { Airport } from '../types/flightTypes';
 import { calculateArcPoints, getBearing } from '../utils/flightUtils';
 import { Plane } from 'lucide-react';
 
@@ -117,8 +117,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
           opacity: isActive ? 0.8 : 0.4,
           weight: isActive ? 3 : 2,
           dashArray: type === 'direct' ? undefined : '5, 5',
-        }} 
-        className={animated && isActive ? 'animate-flight-dot' : ''}
+        }}
       />
       {planePosition && isActive && (
         <PlaneMarker />
