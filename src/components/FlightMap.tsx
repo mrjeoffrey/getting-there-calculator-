@@ -9,7 +9,7 @@ import FlightPath from './FlightPath';
 import L from 'leaflet';
 import "leaflet/dist/leaflet.css"; 
 import { MapContainer } from 'react-leaflet';
-import { Sun, Moon, Globe } from 'lucide-react';
+import { Sun, Moon, Globe, MapPin } from 'lucide-react';
 
 // New imports for enhanced features
 import { Toggle } from '@/components/ui/toggle';
@@ -30,6 +30,7 @@ const FlightMap: React.FC<FlightMapProps> = ({
   const [allAirports, setAllAirports] = useState<Airport[]>([]);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isGlobeView, setIsGlobeView] = useState(false);
+  const [mapStyle, setMapStyle] = useState<'colorful' | 'satellite' | 'standard'>('colorful');
   const [mapRef, setMapRef] = useState<L.Map | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   
@@ -197,6 +198,13 @@ const FlightMap: React.FC<FlightMapProps> = ({
     }
   };
   
+  // Cycle through map styles
+  const cycleMapStyle = () => {
+    if (mapStyle === 'colorful') setMapStyle('satellite');
+    // else if (mapStyle === 'satellite') setMapStyle('standard');
+    else setMapStyle('colorful');
+  };
+  
   // Loading component or fallback
   if (loading) {
     return (
@@ -209,21 +217,45 @@ const FlightMap: React.FC<FlightMapProps> = ({
   // Define center coordinates as a tuple to satisfy TypeScript
   const defaultCenter: [number, number] = [20, 0];
   
-  // Select the appropriate tile layer based on mode
-  // Using a more labeled/high-contrast map provider for improved country names visibility
-  const tileLayer = isDarkMode
-    ? "https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_nolabels/{z}/{x}/{y}.png"
-    : "https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png";
+  // Select the appropriate tile layer based on mode and style
+  let tileLayer, labelsLayer;
   
-  // Add a labels layer for better visibility of country names
-  const labelsLayer = isDarkMode
-    ? "https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_only_labels/{z}/{x}/{y}.png"
-    : "https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png";
+  if (mapStyle === 'colorful') {
+    // Colorful map style - more vibrant like Google Maps
+    tileLayer = isDarkMode 
+      ? "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png"
+      : "https://tile.openstreetmap.org/{z}/{x}/{y}.png"; // More colorful standard map
+    
+    labelsLayer = isDarkMode
+      ? "https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_only_labels/{z}/{x}/{y}.png"
+      : null; // OSM already has labels
+  } else if (mapStyle === 'satellite') {
+    // Satellite imagery
+    tileLayer = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
+    labelsLayer = "https://stamen-tiles-{s}.a.ssl.fastly.net/toner-labels/{z}/{x}/{y}{r}.png";
+  } else {
+    // Standard/clean map style
+    tileLayer = isDarkMode
+      ? "https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_nolabels/{z}/{x}/{y}.png"
+      : "https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png";
+    
+    labelsLayer = isDarkMode
+      ? "https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_only_labels/{z}/{x}/{y}.png"
+      : "https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png";
+  }
 
   return (
     <div className="flight-map-wrapper relative">
       {/* Fixed position controls outside the map container */}
       <div className="absolute top-4 right-4 z-50 flex gap-2 p-2 bg-white/30 dark:bg-black/40 backdrop-blur-sm rounded-lg shadow-lg">
+        <Toggle 
+          aria-label="Toggle map style" 
+          onPressedChange={cycleMapStyle}
+          className={`bg-white text-gray-800 dark:bg-gray-800 dark:text-white hover:bg-opacity-90`}
+        >
+          <MapPin size={18} />
+        </Toggle>
+        
         <Toggle 
           aria-label="Toggle dark mode" 
           pressed={isDarkMode} 
@@ -249,7 +281,7 @@ const FlightMap: React.FC<FlightMapProps> = ({
         className={`map-container relative ${isDarkMode ? 'dark' : ''} ${isGlobeView ? 'perspective-container' : ''}`}
       >
         <MapContainer
-          className={`${isDarkMode ? 'dark-map' : ''}`}
+          className={`${isDarkMode ? 'dark-map' : ''} ${mapStyle}-map`}
           style={{ height: '100%', width: '100%', borderRadius: isGlobeView ? '50%' : '1rem' }}
           center={defaultCenter}
           zoom={isGlobeView ? 1.5 : 2}
@@ -261,6 +293,13 @@ const FlightMap: React.FC<FlightMapProps> = ({
           {/* Base map layer without labels */}
           <TileLayer
             url={tileLayer}
+            attribution={
+              mapStyle === 'satellite' 
+                ? '&copy; <a href="https://www.arcgis.com/">ArcGIS</a>' 
+                : mapStyle === 'colorful' && !isDarkMode 
+                  ? '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  : '&copy; <a href="https://carto.com/">CARTO</a>'
+            }
           />
           
           {/* Render flight paths */}
@@ -316,12 +355,14 @@ const FlightMap: React.FC<FlightMapProps> = ({
             </>
           )}
           
-          {/* Labels layer on top with enhanced contrast */}
-          <TileLayer
-            url={labelsLayer}
-            zIndex={10}
-            opacity={isDarkMode ? 1.2 : 1}
-          />
+          {/* Labels layer on top with enhanced contrast - only if we have a separate labels layer */}
+          {labelsLayer && (
+            <TileLayer
+              url={labelsLayer}
+              zIndex={10}
+              opacity={isDarkMode ? 1.2 : 1}
+            />
+          )}
           
           {/* Render airport markers */}
           {allAirports.map(airport => (
@@ -339,7 +380,7 @@ const FlightMap: React.FC<FlightMapProps> = ({
         </MapContainer>
       </div>
       
-      {/* Add CSS for enhanced 3D globe effect and lighting */}
+      {/* Add CSS for enhanced 3D globe effect and map styles */}
       <style>{`
         /* Setup perspective for 3D effects */
         .perspective-container {
@@ -358,8 +399,6 @@ const FlightMap: React.FC<FlightMapProps> = ({
           transform-style: preserve-3d;
           transform: rotateX(0deg) rotateY(0deg);
           transition: transform 0.2s ease-out;
-          
-          /* Add light reflection */
           position: relative;
         }
         
@@ -401,9 +440,28 @@ const FlightMap: React.FC<FlightMapProps> = ({
           filter: brightness(0.9);
         }
         
+        /* Enhanced colorful map styles */
+        .colorful-map:not(.dark-map) {
+          filter: saturate(1.2) brightness(1.05);
+        }
+        
+        /* Satellite map adjustments */
+        .satellite-map {
+          filter: contrast(1.1) brightness(1.05);
+        }
+        
+        .dark-mode .satellite-map {
+          filter: contrast(1.2) brightness(0.9);
+        }
+        
         /* Enhance label visibility in dark mode */
         .dark-mode .leaflet-tile-loaded {
           font-weight: 500 !important;
+        }
+        
+        /* Water and land enhancer for colorful maps */
+        .colorful-map .leaflet-tile-pane {
+          filter: saturate(1.3);
         }
         
         /* Improved styling for map text in dark mode */
