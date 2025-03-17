@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useRef } from 'react';
 import { TileLayer, useMap, MapContainer as LeafletMapContainer } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -152,20 +153,22 @@ const FlightMap: React.FC<FlightMapProps> = ({
       // When a flight is selected, focus on that flight
       if (selectedFlight) {
         const flight = selectedFlight.flight;
-        let bounds;
+        let bounds: L.LatLngBounds;
         
         if (selectedFlight.type === 'direct') {
           const directFlight = flight as Flight;
-          bounds = L.latLngBounds([
-            [directFlight.departureAirport.lat, directFlight.departureAirport.lng],
-            [directFlight.arrivalAirport.lat, directFlight.arrivalAirport.lng]
-          ]);
+          const departure: [number, number] = [directFlight.departureAirport.lat, directFlight.departureAirport.lng];
+          const arrival: [number, number] = [directFlight.arrivalAirport.lat, directFlight.arrivalAirport.lng];
+          
+          bounds = L.latLngBounds([departure, arrival]);
         } else {
           const connections = flight as ConnectionFlight;
-          const latLngs = connections.flights.flatMap(f => [
+          const latLngs: [number, number][] = connections.flights.flatMap(f => [
             [f.departureAirport.lat, f.departureAirport.lng],
             [f.arrivalAirport.lat, f.arrivalAirport.lng]
           ]);
+          
+          // Create bounds from array of properly typed coordinates
           bounds = L.latLngBounds(latLngs);
         }
         
@@ -173,7 +176,8 @@ const FlightMap: React.FC<FlightMapProps> = ({
         map.fitBounds(bounds, { padding: [100, 100] });
       } else {
         // When no flight is selected, show all airports
-        const bounds = L.latLngBounds(allAirports.map(airport => [airport.lat, airport.lng]));
+        const coordinates: [number, number][] = allAirports.map(airport => [airport.lat, airport.lng]);
+        const bounds = L.latLngBounds(coordinates);
         map.fitBounds(bounds, { padding: [50, 50] });
       }
     }, [allAirports, map, selectedFlight, isGlobeView]);
@@ -221,7 +225,8 @@ const FlightMap: React.FC<FlightMapProps> = ({
       mapRef.setView([0, 0], 1.5);
     } else if (mapRef && allAirports.length > 0) {
       // When switching back to flat view, fit bounds
-      const bounds = L.latLngBounds(allAirports.map(airport => [airport.lat, airport.lng]));
+      const coordinates: [number, number][] = allAirports.map(airport => [airport.lat, airport.lng]);
+      const bounds = L.latLngBounds(coordinates);
       mapRef.fitBounds(bounds, { padding: [50, 50] });
     }
   };
