@@ -198,7 +198,7 @@ const Index = () => {
             )}
           </div>
           
-          <div className="h-[500px] lg:h-auto lg:col-span-2">
+          <div className="h-[500px] lg:h-[calc(100vh-200px)] lg:col-span-2 border border-muted rounded-2xl overflow-hidden shadow-lg">
             <FlightMap
               directFlights={searchResults.directFlights}
               connectingFlights={searchResults.connectingFlights}

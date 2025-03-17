@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import { TileLayer, useMap, MapContainer as LeafletMapContainer } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -240,7 +239,7 @@ const FlightMap: React.FC<FlightMapProps> = ({
   // Loading component or fallback
   if (loading) {
     return (
-      <div className="map-container flex items-center justify-center bg-muted/20">
+      <div className="map-container flex items-center justify-center bg-muted/20 h-full w-full">
         <div className="loader"></div>
       </div>
     );
@@ -268,7 +267,7 @@ const FlightMap: React.FC<FlightMapProps> = ({
   }
 
   return (
-    <div className="flight-map-wrapper relative">
+    <div className="flight-map-wrapper relative h-full w-full min-h-[500px] lg:min-h-[600px]">
       {/* Fixed position controls outside the map container */}
       <div className="absolute top-4 right-4 z-50 flex gap-2 p-2 bg-white/30 dark:bg-black/40 backdrop-blur-sm rounded-lg shadow-lg">
         <Toggle 
@@ -301,10 +300,11 @@ const FlightMap: React.FC<FlightMapProps> = ({
       {/* Map container with 3D globe effect */}
       <div 
         ref={containerRef} 
-        className={`map-container relative ${isDarkMode ? 'dark' : ''} ${isGlobeView ? 'perspective-container' : ''}`}
+        className={`map-container relative ${isDarkMode ? 'dark' : ''} ${isGlobeView ? 'perspective-container' : ''} h-full w-full`}
+        style={{ height: '100%', width: '100%' }}
       >
         <MapContainer
-          className={`${isDarkMode ? 'dark-map' : ''} ${mapStyle}-map`}
+          className={`${isDarkMode ? 'dark-map' : ''} ${mapStyle}-map h-full w-full`}
           style={{ height: '100%', width: '100%', borderRadius: isGlobeView ? '50%' : '1rem' }}
           center={defaultCenter}
           zoom={isGlobeView ? 1.5 : 2}
