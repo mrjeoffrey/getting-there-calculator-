@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -42,8 +43,21 @@ const FlightPath: React.FC<FlightPathProps> = ({
     );
     setArcPoints(points);
     
-    // Initially set plane at departure
-    if (animated && isActive) {
+    // Auto-zoom to selected flight
+    if (isActive) {
+      const bounds = L.latLngBounds([
+        [departure.lat, departure.lng],
+        [arrival.lat, arrival.lng]
+      ]);
+      
+      // Use a slight padding for better view
+      map.fitBounds(bounds, { 
+        padding: [50, 50],
+        animate: true,
+        duration: 1.5 
+      });
+      
+      // Initially set plane at departure
       setPlanePosition([departure.lat, departure.lng]);
       
       // Calculate initial bearing
@@ -85,7 +99,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
       
       return () => clearInterval(animationInterval);
     }
-  }, [departure, arrival, animated, isActive, type]);
+  }, [departure, arrival, animated, isActive, type, map]);
   
   // Create a plane icon component that will be animated along the path
   const PlaneMarker = () => {
@@ -96,22 +110,21 @@ const FlightPath: React.FC<FlightPathProps> = ({
     planeIconHtml.className = 'plane-marker';
     
     // Use different color class based on flight type and dark mode
-    let colorClass = 'text-primary';
+    let colorClass = 'text-white';
+    let bgColorClass = type === 'connecting' ? 'bg-yellow-500' : 'bg-primary';
     
-    if (type === 'connecting') {
-      colorClass = 'text-yellow-500';
-    } else if (isDarkMode) {
-      colorClass = 'text-blue-300';
+    if (isDarkMode) {
+      bgColorClass = type === 'connecting' ? 'bg-yellow-400' : 'bg-blue-400';
     }
     
     // Add trail effect
     const trailStyle = isDarkMode ? 
-      'box-shadow: 0 0 8px rgba(255, 255, 255, 0.7), 0 0 16px rgba(0, 150, 255, 0.5);' : 
-      'box-shadow: 0 0 8px rgba(0, 100, 255, 0.5);';
+      'box-shadow: 0 0 12px rgba(255, 255, 255, 0.8), 0 0 20px rgba(0, 150, 255, 0.7);' : 
+      'box-shadow: 0 0 12px rgba(0, 100, 255, 0.7);';
     
     const iconHtml = ReactDOMServer.renderToString(
       <div 
-        className="plane-icon" 
+        className={`plane-icon ${bgColorClass} rounded-full p-1`}
         style={{ 
           transform: `rotate(${planeRotation}deg)`,
           display: 'flex',
@@ -120,7 +133,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
         }}
       >
         <Plane 
-          size={24} 
+          size={18} 
           className={colorClass} 
           style={{ filter: isDarkMode ? 'drop-shadow(0 0 6px rgba(255, 255, 255, 0.7))' : '' }}
         />
@@ -137,30 +150,36 @@ const FlightPath: React.FC<FlightPathProps> = ({
       iconAnchor: [15, 15]
     });
     
-    return (
-      <Marker position={planePosition} icon={planeIcon} />
-    );
+    // Custom marker with the plane icon
+    const marker = L.marker(planePosition, { icon: planeIcon });
+    
+    // Use effect to add/remove marker from map
+    useEffect(() => {
+      marker.addTo(map);
+      
+      return () => {
+        marker.remove();
+      };
+    }, [planePosition, planeRotation]);
+    
+    return null;
   };
   
   // Determine path colors based on mode and type
   const getPathOptions = () => {
     let color;
-    let dashArray;
     
     if (type === 'direct') {
-      color = isDarkMode ? 'rgba(100, 180, 255, 0.8)' : 'hsl(var(--primary))';
-      dashArray = undefined;
+      color = isDarkMode ? '#4dabff' : '#0284c7'; // Solid blue color
     } else {
-      color = isDarkMode ? 'rgba(255, 210, 0, 0.8)' : 'hsl(var(--accent))';
-      dashArray = '5, 5';
+      color = isDarkMode ? '#ffc53d' : '#f59e0b'; // Solid yellow/orange color
     }
     
     return {
       color,
-      opacity: isActive ? 0.8 : 0.4,
-      weight: isActive ? 3 : 2,
-      dashArray,
-      // Add glow effect in dark mode
+      opacity: isActive ? 1 : 0.4,
+      weight: isActive ? 4 : 2,
+      // Remove dashArray for solid lines
       className: isDarkMode ? 'flight-path-glow' : '',
     };
   };
@@ -171,7 +190,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
         positions={arcPoints}
         pathOptions={getPathOptions()}
       />
-      {planePosition && isActive && (
+      {isActive && (
         <PlaneMarker />
       )}
       
@@ -179,30 +198,12 @@ const FlightPath: React.FC<FlightPathProps> = ({
       {isDarkMode && (
         <style>{`
           .flight-path-glow {
-            filter: drop-shadow(0 0 4px rgba(100, 180, 255, 0.7));
+            filter: drop-shadow(0 0 6px rgba(100, 180, 255, 0.8));
           }
         `}</style>
       )}
     </>
   );
-};
-
-// This component is needed because we're using the server-side rendering function
-// But Leaflet's Marker isn't available on the server
-const Marker = ({ position, icon }: any) => {
-  const map = useMap();
-  
-  useEffect(() => {
-    if (!position) return;
-    
-    const marker = L.marker(position, { icon }).addTo(map);
-    
-    return () => {
-      map.removeLayer(marker);
-    };
-  }, [map, position, icon]);
-  
-  return null;
 };
 
 export default FlightPath;

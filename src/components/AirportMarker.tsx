@@ -8,13 +8,14 @@ interface AirportMarkerProps {
   airport: Airport;
   isPulsing?: boolean;
   type?: 'origin' | 'destination' | 'connection';
-  isDarkMode: boolean;
+  isDarkMode?: boolean;
 }
 
 const AirportMarker: React.FC<AirportMarkerProps> = ({ 
   airport, 
   isPulsing = false,
   type = 'origin',
+  isDarkMode = false
 }) => {
   // Create custom markers for different types of airports
   const createCustomIcon = (type: string) => {
@@ -25,10 +26,10 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
         className += 'bg-primary animate-pulse';
         break;
       case 'destination':
-        className += 'bg-primary';
+        className += 'bg-accent';
         break;
       case 'connection':
-        className += 'bg-accent';
+        className += 'bg-yellow-500';
         break;
       default:
         className += 'bg-primary';
@@ -47,7 +48,7 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
   return (
     <Marker 
       position={[airport.lat, airport.lng]} 
-      icon={createCustomIcon(type)}
+      icon={createCustomIcon(type) as L.DivIcon}
     >
       <Popup>
         <div className="p-2">
