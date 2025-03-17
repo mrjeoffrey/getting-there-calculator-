@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import { TileLayer, useMap, MapContainer as LeafletMapContainer } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -34,7 +33,7 @@ const FlightMap: React.FC<FlightMapProps> = ({
   const [allAirports, setAllAirports] = useState<Airport[]>([]);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isGlobeView, setIsGlobeView] = useState(false);
-  const [mapStyle, setMapStyle] = useState<'colorful' | 'satellite' | 'standard'>('colorful');
+  const [mapStyle, setMapStyle] = useState<'google-like' | 'satellite' | 'standard'>('google-like');
   const [mapRef, setMapRef] = useState<L.Map | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   
@@ -143,16 +142,41 @@ const FlightMap: React.FC<FlightMapProps> = ({
     return null;
   };
   
-  // Fit map bounds to visible airports
+  // Fit map bounds to visible airports with extra padding
   const FitBounds = () => {
     const map = useMap();
     
     useEffect(() => {
       if (allAirports.length === 0 || isGlobeView) return;
       
-      const bounds = L.latLngBounds(allAirports.map(airport => [airport.lat, airport.lng]));
-      map.fitBounds(bounds, { padding: [50, 50] });
-    }, [allAirports, map, isGlobeView]);
+      // When a flight is selected, focus on that flight
+      if (selectedFlight) {
+        const flight = selectedFlight.flight;
+        let bounds;
+        
+        if (selectedFlight.type === 'direct') {
+          const directFlight = flight as Flight;
+          bounds = L.latLngBounds([
+            [directFlight.departureAirport.lat, directFlight.departureAirport.lng],
+            [directFlight.arrivalAirport.lat, directFlight.arrivalAirport.lng]
+          ]);
+        } else {
+          const connections = flight as ConnectionFlight;
+          const latLngs = connections.flights.flatMap(f => [
+            [f.departureAirport.lat, f.departureAirport.lng],
+            [f.arrivalAirport.lat, f.arrivalAirport.lng]
+          ]);
+          bounds = L.latLngBounds(latLngs);
+        }
+        
+        // Add extra padding for better view of selected flight
+        map.fitBounds(bounds, { padding: [100, 100] });
+      } else {
+        // When no flight is selected, show all airports
+        const bounds = L.latLngBounds(allAirports.map(airport => [airport.lat, airport.lng]));
+        map.fitBounds(bounds, { padding: [50, 50] });
+      }
+    }, [allAirports, map, selectedFlight, isGlobeView]);
     
     return null;
   };
@@ -204,8 +228,8 @@ const FlightMap: React.FC<FlightMapProps> = ({
   
   // Cycle through map styles
   const cycleMapStyle = () => {
-    if (mapStyle === 'colorful') setMapStyle('satellite');
-    else setMapStyle('colorful');
+    if (mapStyle === 'google-like') setMapStyle('satellite');
+    else setMapStyle('google-like');
   };
   
   // Loading component or fallback
@@ -223,13 +247,15 @@ const FlightMap: React.FC<FlightMapProps> = ({
   // Select the appropriate tile layer based on mode and style
   let tileUrl, attribution;
   
-  if (mapStyle === 'colorful') {
-    // More colorful map style - like the reference image
+  if (mapStyle === 'google-like') {
+    // Google Maps-like style with clear country borders like in the reference image
     tileUrl = isDarkMode 
-      ? "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}"
-      : "https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}";
+      ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+      : "https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"; // Google Maps style with clear country borders
     
-    attribution = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> | <a href="https://www.arcgis.com/">ArcGIS</a>';
+    attribution = isDarkMode 
+      ? '&copy; <a href="https://carto.com/">CARTO</a> | <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      : '&copy; Google Maps';
   } else {
     // Satellite imagery
     tileUrl = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
@@ -359,134 +385,62 @@ const FlightMap: React.FC<FlightMapProps> = ({
       
       {/* Add CSS for enhanced map styles */}
       <style>{`
-        /* Setup perspective for 3D effects */
-        .perspective-container {
-          perspective: 1200px;
-          transition: transform 0.5s ease-out;
-          transform-style: preserve-3d;
+        /* Make flight paths and markers more visible */
+        .flight-path-solid {
+          stroke-linecap: round;
+          filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.8));
         }
         
-        /* Globe container styles */
-        .globe-container {
-          border-radius: 50% !important;
-          overflow: hidden;
-          box-shadow: 
-            0 0 30px rgba(0, 0, 0, 0.3),
-            inset 0 0 80px rgba(0, 0, 0, 0.6);
-          transform-style: preserve-3d;
-          transform: rotateX(0deg) rotateY(0deg);
-          transition: transform 0.2s ease-out;
-          position: relative;
+        .google-like-map .leaflet-tile-pane {
+          filter: saturate(1.1) contrast(1.1);
         }
         
-        /* Create light reflection effect on globe */
-        .globe-container::before {
-          content: '';
-          position: absolute;
-          top: -10%;
-          left: -10%;
-          width: 120%;
-          height: 120%;
-          background: radial-gradient(
-            circle at 30% 30%,
-            rgba(255, 255, 255, 0.3) 0%,
-            rgba(255, 255, 255, 0) 60%
-          );
-          z-index: 100;
-          pointer-events: none;
-          border-radius: 50%;
+        /* Make country borders more visible */
+        .google-like-map:not(.dark-map) .leaflet-tile-pane {
+          filter: saturate(1.1) contrast(1.1) brightness(1.05);
         }
         
-        /* Dark mode globe has blue glow */
-        .dark .globe-container {
-          box-shadow: 
-            0 0 40px rgba(0, 120, 255, 0.4),
-            inset 0 0 80px rgba(0, 0, 30, 0.8);
+        /* Origin and destination markers */
+        .origin-marker .marker-inner {
+          background-color: #E91E63;
         }
         
-        .dark .globe-container::before {
-          background: radial-gradient(
-            circle at 30% 30%,
-            rgba(120, 180, 255, 0.2) 0%,
-            rgba(0, 30, 60, 0) 60%
-          );
+        .destination-marker .marker-inner {
+          background-color: #4CAF50;
         }
         
-        /* Map styles */
-        .dark-map {
-          filter: brightness(0.9);
+        .connection-marker .marker-inner {
+          background-color: #FFC107;
         }
         
-        /* Enhanced colorful map styles */
-        .colorful-map:not(.dark-map) {
-          filter: saturate(1.5) brightness(1.05);
+        /* Custom styling for leaflet controls */
+        .leaflet-control-zoom {
+          border: none !important;
+          background: rgba(255, 255, 255, 0.8) !important;
+          backdrop-filter: blur(4px);
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2) !important;
         }
         
-        /* Satellite map adjustments */
-        .satellite-map {
-          filter: contrast(1.1) brightness(1.05);
-        }
-        
-        .dark-mode .satellite-map {
-          filter: contrast(1.2) brightness(0.9);
-        }
-        
-        /* Enhance label visibility in dark mode */
-        .dark-mode .leaflet-tile-loaded {
-          font-weight: 500 !important;
-        }
-        
-        /* Water and land enhancer for colorful maps */
-        .colorful-map .leaflet-tile-pane {
-          filter: saturate(1.5);
-        }
-        
-        /* Improved styling for map text in dark mode */
-        .dark-mode .leaflet-control,
-        .dark-mode .leaflet-control a,
-        .dark-mode .leaflet-container {
-          color: white !important;
-          text-shadow: 0 0 3px rgba(0, 0, 0, 1), 0 0 5px rgba(0, 0, 0, 0.8);
-          font-weight: 500;
-        }
-        
-        /* Custom plane style */
-        .custom-plane-icon {
+        .leaflet-control-zoom a {
+          color: #333 !important;
           background: transparent !important;
         }
         
-        .plane-icon {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          transition: transform 0.2s ease-out;
+        .dark .leaflet-control-zoom {
+          background: rgba(30, 30, 30, 0.8) !important;
         }
         
-        /* Add global style for the wrapper to control dimensions */
-        .flight-map-wrapper {
-          width: 100%;
-          height: 100%;
-          min-height: 400px;
+        .dark .leaflet-control-zoom a {
+          color: #fff !important;
+        }
+                
+        /* Make sure ocean doesn't overshadow flight paths */
+        .flight-path-solid {
+          z-index: 450 !important;
         }
         
-        .map-container {
-          width: 100%;
-          height: 100%;
-          min-height: 400px;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-        
-        /* Ensure map container is fully rounded in globe mode */
-        .globe-view {
-          border-radius: 50% !important;
-        }
-        
-        @media (max-width: 768px) {
-          .globe-container {
-            transform: scale(0.8) rotateX(0deg) rotateY(0deg) !important;
-          }
+        .leaflet-overlay-pane {
+          z-index: 450 !important;
         }
       `}</style>
     </div>

@@ -128,11 +128,13 @@
   }
   
   .direct-line {
-    @apply stroke-primary stroke-[3px];
+    @apply stroke-[#4CAF50] stroke-[3px];
+    stroke-linecap: round;
   }
   
   .connecting-line {
-    @apply stroke-accent stroke-[3px];
+    @apply stroke-[#FFC107] stroke-[3px];
+    stroke-linecap: round;
   }
   
   .subtle-shadow {
@@ -228,4 +230,63 @@
     transform: scale(1);
     opacity: 0;
   }
+}
+
+/* Google Maps style enhancements */
+.google-like-map .leaflet-tile-loaded {
+  filter: contrast(1.05) saturate(1.1);
+}
+
+/* Marker animation */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Make sure the country borders are visible */
+.google-like-map .leaflet-tile-pane {
+  filter: contrast(1.05) saturate(1.1);
+}
+
+/* Make sure ocean doesn't overshadow flight paths */
+.leaflet-overlay-pane {
+  z-index: 450 !important;
+}
+
+/* Origin marker (pink) */
+.origin-marker .marker-inner {
+  animation: pulse 2s infinite;
+  background-color: #E91E63 !important;
+}
+
+/* Destination marker (green) */
+.destination-marker .marker-inner {
+  background-color: #4CAF50 !important;
+}
+
+/* Connection marker (amber) */
+.connection-marker .marker-inner {
+  background-color: #FFC107 !important;
+}
+
+/* Ensure flight paths and planes are visible */
+.flight-path-solid {
+  stroke-linecap: round;
+  z-index: 450 !important;
+  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.8));
+}
+
+/* Custom plane marker */
+.custom-plane-icon {
+  z-index: 500 !important;
 }

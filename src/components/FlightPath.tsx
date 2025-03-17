@@ -31,8 +31,8 @@ const FlightPath: React.FC<FlightPathProps> = ({
   
   // Calculate arc points for the flight path
   useEffect(() => {
-    // Increase arc height for better visualization in globe view
-    const arcHeight = type === 'direct' ? 0.35 : 0.25;
+    // Use less arc height to match reference image flat arc
+    const arcHeight = type === 'direct' ? 0.2 : 0.15;
     
     const points = calculateArcPoints(
       departure.lat, 
@@ -50,11 +50,11 @@ const FlightPath: React.FC<FlightPathProps> = ({
         [arrival.lat, arrival.lng]
       ]);
       
-      // Use a slight padding for better view
+      // Add some padding for better view
       map.fitBounds(bounds, { 
         padding: [50, 50],
         animate: true,
-        duration: 1.5 
+        duration: 1 
       });
       
       // Initially set plane at departure
@@ -67,7 +67,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
       // Animate plane along path
       let step = 0;
       const totalSteps = points.length - 1;
-      const speed = Math.max(30, Math.min(100, 200 / totalSteps)); // Adaptive speed
+      const speed = Math.max(30, Math.min(80, 150 / totalSteps)); // Adaptive speed
       
       const animationInterval = setInterval(() => {
         if (step < totalSteps) {
@@ -105,49 +105,43 @@ const FlightPath: React.FC<FlightPathProps> = ({
   const PlaneMarker = () => {
     if (!planePosition || !isActive) return null;
     
-    // Create a custom plane marker using Lucide-React icon
+    // Create a custom plane marker with tilt effect
     const planeIconHtml = document.createElement('div');
     planeIconHtml.className = 'plane-marker';
     
-    // Use different color class based on flight type and dark mode
-    let colorClass = 'text-white';
-    let bgColorClass = type === 'connecting' ? 'bg-yellow-500' : 'bg-primary';
+    // Determine color based on flight type (matching the lines)
+    const color = type === 'direct' ? '#4CAF50' : '#FFC107';
     
-    if (isDarkMode) {
-      bgColorClass = type === 'connecting' ? 'bg-yellow-400' : 'bg-blue-400';
-    }
-    
-    // Add trail effect
-    const trailStyle = isDarkMode ? 
-      'box-shadow: 0 0 12px rgba(255, 255, 255, 0.8), 0 0 20px rgba(0, 150, 255, 0.7);' : 
-      'box-shadow: 0 0 12px rgba(0, 100, 255, 0.7);';
-    
+    // Create a plane SVG with proper rotation and tilt
     const iconHtml = ReactDOMServer.renderToString(
       <div 
-        className={`plane-icon ${bgColorClass} rounded-full p-1`}
+        className="plane-icon"
         style={{ 
           transform: `rotate(${planeRotation}deg)`,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
+          background: 'white',
+          borderRadius: '50%',
+          padding: '4px',
+          boxShadow: '0 0 10px rgba(0,0,0,0.3)',
         }}
       >
         <Plane 
-          size={18} 
-          className={colorClass} 
-          style={{ filter: isDarkMode ? 'drop-shadow(0 0 6px rgba(255, 255, 255, 0.7))' : '' }}
+          size={20} 
+          fill={color}
+          color={color}
+          style={{ 
+            filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.3))'
+          }}
         />
       </div>
     );
     
     planeIconHtml.innerHTML = iconHtml;
-    planeIconHtml.style.cssText = trailStyle;
     
     const planeIcon = L.divIcon({
       html: planeIconHtml,
       className: 'custom-plane-icon',
-      iconSize: [30, 30],
-      iconAnchor: [15, 15]
+      iconSize: [32, 32],
+      iconAnchor: [16, 16]
     });
     
     // Custom marker with the plane icon
@@ -167,20 +161,23 @@ const FlightPath: React.FC<FlightPathProps> = ({
   
   // Determine path colors based on mode and type
   const getPathOptions = () => {
+    // Use more visibility for the flight paths
     let color;
     
     if (type === 'direct') {
-      color = isDarkMode ? '#4dabff' : '#0284c7'; // Solid blue color
+      // Bright green like in the reference image
+      color = '#4CAF50';
     } else {
-      color = isDarkMode ? '#ffc53d' : '#f59e0b'; // Solid yellow/orange color
+      // Amber color for connecting flights
+      color = '#FFC107';
     }
     
     return {
       color,
-      opacity: isActive ? 1 : 0.4,
-      weight: isActive ? 4 : 2,
-      // Remove dashArray for solid lines
-      className: isDarkMode ? 'flight-path-glow' : '',
+      opacity: isActive ? 1 : 0.75,
+      weight: isActive ? 4 : 3,
+      // No dashArray for solid lines as requested
+      className: 'flight-path-solid'
     };
   };
   
@@ -194,14 +191,22 @@ const FlightPath: React.FC<FlightPathProps> = ({
         <PlaneMarker />
       )}
       
-      {/* Add CSS for glow effect */}
-      {isDarkMode && (
-        <style>{`
-          .flight-path-glow {
-            filter: drop-shadow(0 0 6px rgba(100, 180, 255, 0.8));
-          }
-        `}</style>
-      )}
+      {/* Add CSS for better visibility on top of map */}
+      <style>{`
+        .flight-path-solid {
+          filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.7));
+        }
+        
+        .custom-plane-icon {
+          z-index: 1000;
+        }
+        
+        @keyframes pulse {
+          0% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.2); opacity: 0.8; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+      `}</style>
     </>
   );
 };
