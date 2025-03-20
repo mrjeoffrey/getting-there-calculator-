@@ -4,7 +4,7 @@ import { Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { Airport } from '../types/flightTypes';
 import { calculateArcPoints, getBearing } from '../utils/flightUtils';
-import { Plane, ChevronDown, Info } from 'lucide-react';
+import { Plane } from 'lucide-react';
 import ReactDOMServer from 'react-dom/server';
 
 interface FlightPathProps {
@@ -50,7 +50,6 @@ const FlightPath: React.FC<FlightPathProps> = ({
   const drawingRef = useRef<number | null>(null);
   const planeMarkerRef = useRef<L.Marker | null>(null);
   const popupRef = useRef<L.Popup | null>(null);
-  const drawingMarkerRef = useRef<L.Marker | null>(null);
   const map = useMap();
   
   const getFlightMinutes = () => {
@@ -128,10 +127,6 @@ const FlightPath: React.FC<FlightPathProps> = ({
       map.closePopup(popupRef.current);
       popupRef.current = null;
     }
-    if (drawingMarkerRef.current) {
-      drawingMarkerRef.current.remove();
-      drawingMarkerRef.current = null;
-    }
   };
   
   const startZoomingPhase = () => {
@@ -183,17 +178,25 @@ const FlightPath: React.FC<FlightPathProps> = ({
     
     let currentPointIndex = 1;
     
+    // Smooth panning during drawing phase to reduce glitches
+    // Focus on the first quarter of the path during drawing
+    const quarterPoint = Math.floor(totalPoints * 0.25);
+    if (quarterPoint > 0 && quarterPoint < arcPointsRef.current.length) {
+      map.panTo(arcPointsRef.current[quarterPoint], { duration: 1.5, easeLinearity: 0.5 });
+    }
+    
     const drawNextSegment = () => {
       if (currentPointIndex >= totalPoints) {
         console.log(`Drawing complete for ${departure.code} to ${arrival.code}`);
         
-        // After drawing, pan to follow the whole path
+        // After drawing, pan to follow the whole path with smoother animation
         map.fitBounds(L.latLngBounds([
           [departure.lat, departure.lng],
           [arrival.lat, arrival.lng]
         ]), {
-          padding: [50, 50],
-          duration: 1.5
+          padding: [100, 100],
+          duration: 1.5,
+          easeLinearity: 0.5
         });
         
         setTimeout(() => {
@@ -208,24 +211,23 @@ const FlightPath: React.FC<FlightPathProps> = ({
       const newPoints = arcPointsRef.current.slice(0, newIndex);
       setDisplayedPoints(newPoints);
       
-      // Move map to follow the drawing path
-      if (newIndex > 0 && newPoints[newIndex - 1]) {
-        const midPoint = Math.floor(newIndex / 2);
-        if (midPoint > 0 && midPoint < newPoints.length) {
-          map.panTo(newPoints[midPoint], { duration: 0.5, easeLinearity: 0.5 });
-        }
+      // Only pan smoothly to follow the drawing path at key points
+      // instead of every frame to prevent glitching
+      if (newIndex % 15 === 0 && newIndex > 0 && newPoints[newIndex - 1]) {
+        const targetPoint = newPoints[newIndex - 1];
+        // Use gentle panning with easing
+        map.panTo(targetPoint, { duration: 0.8, easeLinearity: 0.3 });
       }
       
       currentPointIndex = newIndex;
       
-      drawingRef.current = requestAnimationFrame(() => {
-        setTimeout(drawNextSegment, 16);
-      });
+      // Use setTimeout instead of requestAnimationFrame for more controlled timing
+      setTimeout(() => drawNextSegment(), 30);
     };
     
     setTimeout(() => {
       console.log(`Starting to draw path segments for ${departure.code} to ${arrival.code}`);
-      drawingRef.current = requestAnimationFrame(drawNextSegment);
+      drawNextSegment();
     }, 300);
   };
   
@@ -241,24 +243,22 @@ const FlightPath: React.FC<FlightPathProps> = ({
       planeMarkerRef.current = null;
     }
     
-    // Create a better plane icon with color and fill
+    // Create colored plane icon with fill and proper rotation
+    const planeColor = type === 'direct' ? '#4CAF50' : '#FFC107';
     const planeIconHtml = ReactDOMServer.renderToString(
       <div className="plane-icon" style={{ transform: `rotate(${planeRotation}deg)` }}>
         <svg 
           xmlns="http://www.w3.org/2000/svg" 
-          width="18" 
-          height="18" 
+          width="24" 
+          height="24" 
           viewBox="0 0 24 24" 
-          fill={type === 'direct' ? '#4CAF50' : '#FFC107'}
+          fill={planeColor}
           stroke={isDarkMode ? 'white' : 'black'} 
-          strokeWidth="1" 
+          strokeWidth="1.5" 
           strokeLinecap="round" 
           strokeLinejoin="round"
         >
           <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-          <path d="M16.95 17.95l-4.24-4.24a1 1 0 0 0-1.42 0l-2.12 2.12a1 1 0 0 0 0 1.42l4.24 4.24a1 1 0 0 0 1.42 0l2.12-2.12a1 1 0 0 0 0-1.42z"></path>
-          <path d="M14.83 14.83l-1.41-1.41a1 1 0 0 0-1.42 0l-2.12 2.12a1 1 0 0 0 0 1.42l1.41 1.41a1 1 0 0 0 1.42 0l2.12-2.12a1 1 0 0 0 0-1.42z"></path>
-          <path d="M21.18 8.04l-5.3-5.3a1 1 0 0 0-1.42 0l-2.12 2.12a1 1 0 0 0 0 1.42l5.3 5.3a1 1 0 0 0 1.42 0l2.12-2.12a1 1 0 0 0 0-1.42z"></path>
         </svg>
       </div>
     );
@@ -266,8 +266,8 @@ const FlightPath: React.FC<FlightPathProps> = ({
     const planeIcon = L.divIcon({
       html: planeIconHtml,
       className: 'plane-marker',
-      iconSize: [18, 18],
-      iconAnchor: [9, 9]
+      iconSize: [24, 24],
+      iconAnchor: [12, 12]
     });
     
     const planeMarker = L.marker([departure.lat, departure.lng], {
@@ -293,31 +293,30 @@ const FlightPath: React.FC<FlightPathProps> = ({
             planeMarkerRef.current.setLatLng(point);
           }
           
+          // Update plane rotation to follow the curve
           if (step < totalSteps - 1) {
             const currPoint = arcPointsRef.current[step];
             const nextPoint = arcPointsRef.current[step + 1];
             if (currPoint && nextPoint) {
               const newBearing = getBearing(currPoint[0], currPoint[1], nextPoint[0], nextPoint[1]);
 
+              // Only update rotation if it changes significantly
               if (Math.abs(newBearing - planeRotation) > 3) {
                 setPlaneRotation(newBearing);
                 const newPlaneIconHtml = ReactDOMServer.renderToString(
                   <div className="plane-icon" style={{ transform: `rotate(${newBearing}deg)` }}>
                     <svg 
                       xmlns="http://www.w3.org/2000/svg" 
-                      width="18" 
-                      height="18" 
+                      width="24" 
+                      height="24" 
                       viewBox="0 0 24 24" 
                       fill={type === 'direct' ? '#4CAF50' : '#FFC107'}
                       stroke={isDarkMode ? 'white' : 'black'} 
-                      strokeWidth="1" 
+                      strokeWidth="1.5" 
                       strokeLinecap="round" 
                       strokeLinejoin="round"
                     >
-                      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-                      <path d="M16.95 17.95l-4.24-4.24a1 1 0 0 0-1.42 0l-2.12 2.12a1 1 0 0 0 0 1.42l4.24 4.24a1 1 0 0 0 1.42 0l2.12-2.12a1 1 0 0 0 0-1.42z"></path>
-                      <path d="M14.83 14.83l-1.41-1.41a1 1 0 0 0-1.42 0l-2.12 2.12a1 1 0 0 0 0 1.42l1.41 1.41a1 1 0 0 0 1.42 0l2.12-2.12a1 1 0 0 0 0-1.42z"></path>
-                      <path d="M21.18 8.04l-5.3-5.3a1 1 0 0 0-1.42 0l-2.12 2.12a1 1 0 0 0 0 1.42l5.3 5.3a1 1 0 0 0 1.42 0l2.12-2.12a1 1 0 0 0 0-1.42z"></path>
+                      <path d="M2 15s3.5-2 7-2 9 2.5 13 2.5V17s-2.5 1-9.5 1-10.5-1-10.5-1v-2z"/><path d="M9 10h.01M15 10h.01M9 15h.01M15 15h.01M9 20h.01M15 20h.01M4 3h16v19H4z"/>
                     </svg>
                   </div>
                 );
@@ -325,8 +324,8 @@ const FlightPath: React.FC<FlightPathProps> = ({
                 const newPlaneIcon = L.divIcon({
                   html: newPlaneIconHtml,
                   className: 'plane-marker',
-                  iconSize: [18, 18],
-                  iconAnchor: [9, 9]
+                  iconSize: [24, 24],
+                  iconAnchor: [12, 12]
                 });
                 
                 planeMarkerRef.current.setIcon(newPlaneIcon);
@@ -336,9 +335,9 @@ const FlightPath: React.FC<FlightPathProps> = ({
         }
         
         step++;
-        animationRef.current = requestAnimationFrame(() => {
-          setTimeout(animate, speed);
-        });
+        
+        // Use setTimeout for more controlled timing
+        setTimeout(animate, speed);
       } else {
         console.log(`Flight animation complete for ${departure.code} to ${arrival.code}`);
         setAnimationComplete(true);
@@ -353,7 +352,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
     
     setTimeout(() => {
       console.log(`Starting plane animation for ${departure.code} to ${arrival.code}`);
-      animationRef.current = requestAnimationFrame(animate);
+      animate();
     }, 100);
   };
   
@@ -440,6 +439,15 @@ const FlightPath: React.FC<FlightPathProps> = ({
           }}
         />
       )}
+      <style jsx>{`
+        .plane-marker {
+          filter: drop-shadow(0px 1px 3px rgba(0,0,0,0.3));
+          transition: transform 0.2s ease-out;
+        }
+        .plane-icon {
+          transition: transform 0.3s ease-out;
+        }
+      `}</style>
     </>
   );
 };
