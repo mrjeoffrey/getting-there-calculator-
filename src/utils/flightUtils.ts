@@ -211,31 +211,47 @@ export const calculateArcPoints = (
   endLng: number, 
   bend: number = 0.2
 ): [number, number][] => {
-  // Safety check for valid coordinates
+  // Validate inputs
   if (isNaN(startLat) || isNaN(startLng) || isNaN(endLat) || isNaN(endLng)) {
     console.error("Invalid coordinates provided to calculateArcPoints:", { startLat, startLng, endLat, endLng });
-    // Return a fallback straight line with at least two points
-    return [[startLat || 0, startLng || 0], [endLat || 0, endLng || 0]];
+    // Return a straight line between valid coordinates or fallbacks
+    const validStartLat = isNaN(startLat) ? 0 : startLat;
+    const validStartLng = isNaN(startLng) ? 0 : startLng;
+    const validEndLat = isNaN(endLat) ? 0 : endLat;
+    const validEndLng = isNaN(endLng) ? 0 : endLng;
+    return [[validStartLat, validStartLng], [validEndLat, validEndLng]];
   }
   
   const points: [number, number][] = [];
-  const segments = 100;
+  const segments = 100; // Keep high number of segments for smooth curve
   
   try {
     // Always add the starting point first
     points.push([startLat, startLng]);
     
+    // Use linear interpolation with altitude adjustment for intermediate points
     for (let i = 1; i < segments; i++) {
       const t = i / segments;
       const lat = startLat * (1 - t) + endLat * t;
       const lng = startLng * (1 - t) + endLng * t;
       
-      // Add curvature
+      // Add curvature based on sine function (maximum at t=0.5)
       const altitude = Math.sin(Math.PI * t) * bend * calculateDistance(startLat, startLng, endLat, endLng) / 111; // 111 km per degree
-      const curvedLat = lat + altitude * (endLng - startLng) / Math.sqrt(Math.pow(endLng - startLng, 2) + Math.pow(endLat - startLat, 2));
-      const curvedLng = lng - altitude * (endLat - startLat) / Math.sqrt(Math.pow(endLng - startLng, 2) + Math.pow(endLat - startLat, 2));
       
-      points.push([curvedLat, curvedLng]);
+      // Calculate perpendicular offset
+      const dx = endLng - startLng;
+      const dy = endLat - startLat;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      
+      // Avoid division by zero
+      if (dist > 0.000001) {
+        const curvedLat = lat + altitude * dx / dist;
+        const curvedLng = lng - altitude * dy / dist;
+        points.push([curvedLat, curvedLng]);
+      } else {
+        // If points are extremely close, just use linear interpolation
+        points.push([lat, lng]);
+      }
     }
     
     // Always add the ending point last
@@ -244,7 +260,7 @@ export const calculateArcPoints = (
     // Verify we have at least 2 points
     if (points.length < 2) {
       console.warn("Generated less than 2 points, adding fallback points");
-      points.push([startLat, startLng], [endLat, endLng]);
+      return [[startLat, startLng], [endLat, endLng]];
     }
   } catch (error) {
     console.error("Error in calculateArcPoints:", error);
@@ -257,15 +273,26 @@ export const calculateArcPoints = (
 
 // Get bearing between two points
 export const getBearing = (startLat: number, startLng: number, endLat: number, endLng: number): number => {
-  const startLatRad = startLat * Math.PI / 180;
-  const startLngRad = startLng * Math.PI / 180;
-  const endLatRad = endLat * Math.PI / 180;
-  const endLngRad = endLng * Math.PI / 180;
+  // Validate inputs
+  if (isNaN(startLat) || isNaN(startLng) || isNaN(endLat) || isNaN(endLng)) {
+    console.error("Invalid coordinates provided to getBearing:", { startLat, startLng, endLat, endLng });
+    return 0; // Default bearing
+  }
   
-  const y = Math.sin(endLngRad - startLngRad) * Math.cos(endLatRad);
-  const x = Math.cos(startLatRad) * Math.sin(endLatRad) -
-            Math.sin(startLatRad) * Math.cos(endLatRad) * Math.cos(endLngRad - startLngRad);
-  const bearingRad = Math.atan2(y, x);
-  
-  return (bearingRad * 180 / Math.PI + 360) % 360;
+  try {
+    const startLatRad = startLat * Math.PI / 180;
+    const startLngRad = startLng * Math.PI / 180;
+    const endLatRad = endLat * Math.PI / 180;
+    const endLngRad = endLng * Math.PI / 180;
+    
+    const y = Math.sin(endLngRad - startLngRad) * Math.cos(endLatRad);
+    const x = Math.cos(startLatRad) * Math.sin(endLatRad) -
+              Math.sin(startLatRad) * Math.cos(endLatRad) * Math.cos(endLngRad - startLngRad);
+    const bearingRad = Math.atan2(y, x);
+    
+    return (bearingRad * 180 / Math.PI + 360) % 360;
+  } catch (error) {
+    console.error("Error calculating bearing:", error);
+    return 0; // Default bearing
+  }
 };
