@@ -51,14 +51,14 @@ const Index = () => {
       if (totalFlights > 0) {
         toast({
           title: `Found ${totalFlights} flights`,
-          description: `Watch as we animate the flight paths. Hover over routes for details.`,
-          duration: 4000,
+          description: `The animation will now show the flight routes: zoom to origin, draw path, then planes take off.`,
+          duration: 6000,
         });
         
-        // Reset animation flag after a while
+        // Reset animation flag after a longer while to ensure all animations complete
         setTimeout(() => {
           setAnimationInProgress(false);
-        }, 8000);
+        }, 12000);
       } else {
         toast({
           title: "No flights found",
@@ -144,7 +144,14 @@ const Index = () => {
                       <span className="w-2 h-2 rounded-full bg-accent mr-2 animate-pulse"></span>
                       Animation in Progress
                     </h4>
-                    <p>Watch as flights take off after paths are drawn</p>
+                    <p>Animation Steps:</p>
+                    <ol className="list-decimal list-inside space-y-1 mt-1">
+                      <li>Zoom to origin airport</li>
+                      <li>Draw flight path lines</li>
+                      <li>Show takeoff effect</li>
+                      <li>Planes fly along routes</li>
+                      <li>Landing effect at destination</li>
+                    </ol>
                   </div>
                 )}
                 

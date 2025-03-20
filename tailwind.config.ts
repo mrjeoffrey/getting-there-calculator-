@@ -160,6 +160,39 @@ export default {
 					'0%': { transform: 'translateY(0) scale(0.9)', opacity: '0.5' },
 					'30%': { transform: 'translateY(-10px) scale(1.1)', opacity: '1' },
 					'100%': { transform: 'translateY(-5px) scale(1)', opacity: '1' }
+				},
+				// Enhanced animation keyframes
+				'map-zoom': {
+					'0%': { transform: 'scale(1)', opacity: '1' },
+					'50%': { transform: 'scale(1.5)', opacity: '0.7' },
+					'100%': { transform: 'scale(1)', opacity: '1' }
+				},
+				'path-draw': {
+					'0%': { strokeDashoffset: '1000', opacity: '0.3' },
+					'100%': { strokeDashoffset: '0', opacity: '1' }
+				},
+				'marker-pulse': {
+					'0%': { transform: 'scale(1)', opacity: '1', boxShadow: '0 0 0 0 rgba(255,255,255,0.4)' },
+					'70%': { transform: 'scale(1.5)', opacity: '0.5', boxShadow: '0 0 0 10px rgba(255,255,255,0)' },
+					'100%': { transform: 'scale(1)', opacity: '1', boxShadow: '0 0 0 0 rgba(255,255,255,0)' }
+				},
+				'tracking-dot': {
+					'0%': { transform: 'translateX(0)', opacity: '1' },
+					'100%': { transform: 'translateX(100px)', opacity: '0' }
+				},
+				'completion-check': {
+					'0%': { transform: 'scale(0)', opacity: '0' },
+					'60%': { transform: 'scale(1.2)', opacity: '1' },
+					'100%': { transform: 'scale(1)', opacity: '1' }
+				},
+				'takeoff-effect': {
+					'0%': { transform: 'scale(1)', opacity: '0.8' },
+					'50%': { transform: 'scale(1.5)', opacity: '0.4' },
+					'100%': { transform: 'scale(1)', opacity: '0.8' }
+				},
+				'landing-effect': {
+					'0%': { transform: 'scale(1.5)', opacity: '0.3' },
+					'100%': { transform: 'scale(0.8)', opacity: '0.7' }
 				}
 			},
 			animation: {
@@ -178,7 +211,15 @@ export default {
 				'zoom-to-point': 'zoom-to-point 1.5s ease-out',
 				'fly-along-path': 'fly-along-path 5s linear forwards',
 				'pulse-plane': 'pulse-plane 2s infinite',
-				'takeoff': 'takeoff 1s ease-out forwards'
+				'takeoff': 'takeoff 1s ease-out forwards',
+				// Enhanced animations
+				'map-zoom': 'map-zoom 2s ease-in-out',
+				'path-draw': 'path-draw 3s linear forwards',
+				'marker-pulse': 'marker-pulse 1.5s infinite',
+				'tracking-dot': 'tracking-dot 1s linear infinite',
+				'completion-check': 'completion-check 0.5s ease-out',
+				'takeoff-effect': 'takeoff-effect 1s infinite',
+				'landing-effect': 'landing-effect 1s ease-out'
 			},
 			backgroundImage: {
 				'gradient-glass': 'linear-gradient(135deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.1))',

@@ -44,6 +44,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
   const [popupExpanded, setPopupExpanded] = useState(false);
   const [animationPhase, setAnimationPhase] = useState<'idle' | 'zooming' | 'drawing' | 'flying'>('idle');
   const [displayedPoints, setDisplayedPoints] = useState<[number, number][]>([]);
+  const [animationComplete, setAnimationComplete] = useState(false);
   const animationRef = useRef<number | null>(null);
   const drawingRef = useRef<number | null>(null);
   const planeMarkerRef = useRef<L.Marker | null>(null);
@@ -85,9 +86,12 @@ const FlightPath: React.FC<FlightPathProps> = ({
       const bearing = getBearing(departure.lat, departure.lng, arrival.lat, arrival.lng);
       setPlaneRotation(bearing);
     }
+
+    console.log(`Starting animation for flight from ${departure.code} to ${arrival.code}`);
     
     // Start animation sequence with zooming to origin
     setTimeout(() => {
+      console.log(`Starting zoom phase for ${departure.code} to ${arrival.code}`);
       startZoomingPhase();
     }, 500 + Math.random() * 1000); // Staggered start
     
@@ -108,39 +112,79 @@ const FlightPath: React.FC<FlightPathProps> = ({
     };
   }, [departure, arrival, type]);
   
-  // Start by zooming into the origin airport
+  // Start by zooming into the origin airport with a more noticeable animation
   const startZoomingPhase = () => {
     setAnimationPhase('zooming');
+    console.log(`Zoom phase active: Flying to ${departure.code}`);
     
-    if (departure) {
-      // Zoom in to departure airport with animation
-      map.flyTo([departure.lat, departure.lng], 6, {
-        duration: 1.5,
-        easeLinearity: 0.5
-      });
-      
-      // After zoom completes, start drawing the path
-      setTimeout(() => {
-        startDrawingPhase();
-      }, 1500);
-    } else {
-      // If no departure (shouldn't happen), skip to drawing
+    // Create a zoom animation marker
+    const zoomMarkerHtml = ReactDOMServer.renderToString(
+      <div className="zoom-animation-marker">
+        <div className="zoom-circle"></div>
+      </div>
+    );
+    
+    const zoomMarkerIcon = L.divIcon({
+      html: zoomMarkerHtml,
+      className: 'zoom-marker-icon',
+      iconSize: [40, 40],
+      iconAnchor: [20, 20]
+    });
+    
+    // Add a temporary marker to highlight the zoom location
+    const zoomMarker = L.marker([departure.lat, departure.lng], { 
+      icon: zoomMarkerIcon,
+      zIndexOffset: 1000
+    }).addTo(map);
+    
+    // Zoom in with a more dramatic effect
+    map.flyTo([departure.lat, departure.lng], 6, {
+      duration: 2.0,
+      easeLinearity: 0.5
+    });
+    
+    console.log(`Zooming to ${departure.code} at [${departure.lat}, ${departure.lng}]`);
+    
+    // After zoom completes, start drawing the path
+    setTimeout(() => {
+      zoomMarker.remove();
+      console.log(`Zoom complete, starting drawing phase for ${departure.code} to ${arrival.code}`);
       startDrawingPhase();
-    }
+    }, 2000);
   };
   
-  // Start the line drawing animation
+  // Enhanced line drawing animation with more visual feedback
   const startDrawingPhase = () => {
     if (!arcPoints.length) return;
     
     setAnimationPhase('drawing');
+    console.log(`Drawing phase active: Creating path from ${departure.code} to ${arrival.code}`);
     
     // Initialize with just the starting point
     setDisplayedPoints([arcPoints[0]]);
     
-    // Determine drawing speed based on path length
-    const flightMinutes = getFlightMinutes();
-    const drawingDuration = Math.min(2000, Math.max(1000, flightMinutes * 5)); // Between 1-2 seconds
+    // Add a pulsing dot effect at the starting point
+    const pulseMarkerHtml = ReactDOMServer.renderToString(
+      <div className="drawing-animation-marker">
+        <div className="pulse-circle"></div>
+      </div>
+    );
+    
+    const pulseMarkerIcon = L.divIcon({
+      html: pulseMarkerHtml,
+      className: 'drawing-marker-icon',
+      iconSize: [16, 16],
+      iconAnchor: [8, 8]
+    });
+    
+    // Create a moving marker that follows the drawing
+    let drawingMarker = L.marker(arcPoints[0], { 
+      icon: pulseMarkerIcon,
+      zIndexOffset: 1000
+    }).addTo(map);
+    
+    // Make drawing slower and more visible
+    const drawingDuration = 3000; // 3 seconds
     const totalPoints = arcPoints.length;
     const pointsPerFrame = Math.max(1, Math.ceil(totalPoints / (drawingDuration / 16))); // 16ms per frame approx
     
@@ -148,64 +192,110 @@ const FlightPath: React.FC<FlightPathProps> = ({
     
     const drawNextSegment = () => {
       if (currentPointIndex >= totalPoints) {
-        // Drawing complete, start flying
+        console.log(`Drawing complete for ${departure.code} to ${arrival.code}`);
+        drawingMarker.remove();
+        
+        // Drawing complete, show confirmation and start flying
+        const completionMarkerHtml = ReactDOMServer.renderToString(
+          <div className="completion-marker">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </div>
+        );
+        
+        const completionIcon = L.divIcon({
+          html: completionMarkerHtml,
+          className: 'completion-icon',
+          iconSize: [32, 32],
+          iconAnchor: [16, 16]
+        });
+        
+        // Show checkmark at destination
+        const completionMarker = L.marker(arcPoints[arcPoints.length - 1], { 
+          icon: completionIcon,
+          zIndexOffset: 1000
+        }).addTo(map);
+        
+        // Fit view to see the entire flight path before plane starts
+        if (departure && arrival) {
+          map.fitBounds(L.latLngBounds([
+            [departure.lat, departure.lng],
+            [arrival.lat, arrival.lng]
+          ]), { 
+            padding: [50, 50],
+            duration: 1
+          });
+        }
+        
+        // Remove the completion marker after a short delay
         setTimeout(() => {
-          // Fit view to see the entire flight path before plane starts
-          if (departure && arrival) {
-            map.fitBounds(L.latLngBounds([
-              [departure.lat, departure.lng],
-              [arrival.lat, arrival.lng]
-            ]), { 
-              padding: [50, 50],
-              duration: 1
-            });
-          }
-          
-          setTimeout(() => {
-            startFlyingPhase();
-          }, 800); // Short delay before plane starts moving
-        }, 500);
+          completionMarker.remove();
+          console.log(`Starting flying phase for ${departure.code} to ${arrival.code}`);
+          startFlyingPhase();
+        }, 1000);
+        
         return;
       }
       
       // Add next batch of points
       const newIndex = Math.min(totalPoints, currentPointIndex + pointsPerFrame);
-      setDisplayedPoints(arcPoints.slice(0, newIndex));
+      const newPoints = arcPoints.slice(0, newIndex);
+      setDisplayedPoints(newPoints);
+      
+      // Move the drawing marker to the latest point
+      if (drawingMarker && newIndex > 0 && newPoints[newIndex - 1]) {
+        drawingMarker.setLatLng(newPoints[newIndex - 1]);
+      }
+      
       currentPointIndex = newIndex;
       
       // Continue drawing with visible animation
-      drawingRef.current = requestAnimationFrame(drawNextSegment);
+      drawingRef.current = requestAnimationFrame(() => {
+        setTimeout(drawNextSegment, 16); // Slightly delay for more visible animation
+      });
     };
     
-    // Start drawing animation
-    drawingRef.current = requestAnimationFrame(drawNextSegment);
+    // Start drawing animation with a slight delay
+    setTimeout(() => {
+      console.log(`Starting to draw path segments for ${departure.code} to ${arrival.code}`);
+      drawingRef.current = requestAnimationFrame(drawNextSegment);
+    }, 500);
   };
   
-  // Start the plane flying animation after line is drawn
+  // Start the plane flying animation after line is drawn with more visual feedback
   const startFlyingPhase = () => {
     setAnimationPhase('flying');
+    console.log(`Flying phase active: Plane taking off from ${departure.code} to ${arrival.code}`);
+    
+    // Create a takeoff effect at the departure airport
+    const takeoffMarkerHtml = ReactDOMServer.renderToString(
+      <div className="takeoff-animation">
+        <div className="takeoff-rays"></div>
+      </div>
+    );
+    
+    const takeoffMarkerIcon = L.divIcon({
+      html: takeoffMarkerHtml,
+      className: 'takeoff-marker-icon',
+      iconSize: [40, 40],
+      iconAnchor: [20, 20]
+    });
+    
+    // Add a temporary marker for takeoff effect
+    const takeoffMarker = L.marker([departure.lat, departure.lng], { 
+      icon: takeoffMarkerIcon,
+      zIndexOffset: 999
+    }).addTo(map);
     
     // Initialize with plane at departure
     if (departure) {
       setPlanePosition([departure.lat, departure.lng]);
     }
     
-    // Calculate adaptive speed based on flight duration
-    const flightMinutes = getFlightMinutes();
-    const baseSpeed = 20; // milliseconds - faster to make animation more visible
-    const maxDuration = 600; // 10 hours as max duration
-    const minDuration = 60; // 1 hour as min duration
-    const durationFactor = (flightMinutes - minDuration) / (maxDuration - minDuration);
-    const speedFactor = Math.max(0.5, Math.min(2, 1 + durationFactor));
-    const speed = Math.max(10, Math.min(40, baseSpeed * speedFactor)); // Faster animation
-    
-    // Use a hash of flightNumber or fallback to random
-    let hashValue = 0;
-    if (flightNumber) {
-      hashValue = Math.abs(hashCode(flightNumber));
-    } else {
-      hashValue = Math.floor(Math.random() * 100000);
-    }
+    // Use a shorter/faster animation for better visibility
+    // Most flights are only a few seconds now, so users can see them move
+    const speed = 40; // milliseconds - faster to make animation more visible
     
     let step = 0; // Start from beginning
     const totalSteps = arcPoints.length - 1;
@@ -229,29 +319,61 @@ const FlightPath: React.FC<FlightPathProps> = ({
         
         step++;
         animationRef.current = requestAnimationFrame(() => {
-          setTimeout(animate, speed); // Use adaptive speed based on flight duration
+          setTimeout(animate, speed);
         });
       } else {
+        // Show arrival animation
+        if (arrival) {
+          const arrivalMarkerHtml = ReactDOMServer.renderToString(
+            <div className="arrival-animation">
+              <div className="arrival-pulse"></div>
+            </div>
+          );
+          
+          const arrivalMarkerIcon = L.divIcon({
+            html: arrivalMarkerHtml,
+            className: 'arrival-marker-icon',
+            iconSize: [40, 40],
+            iconAnchor: [20, 20]
+          });
+          
+          // Add a temporary marker for arrival effect
+          const arrivalMarker = L.marker([arrival.lat, arrival.lng], { 
+            icon: arrivalMarkerIcon,
+            zIndexOffset: 999
+          }).addTo(map);
+          
+          // Remove after animation completes
+          setTimeout(() => {
+            arrivalMarker.remove();
+            setAnimationComplete(true);
+          }, 2000);
+        }
+        
+        // Remove takeoff marker
+        takeoffMarker.remove();
+        
+        // Mark animation as complete
+        console.log(`Flight animation complete for ${departure.code} to ${arrival.code}`);
+        setAnimationComplete(true);
+        
         // Loop animation with pause at destination
         setTimeout(() => {
-          step = 0;
-          animationRef.current = requestAnimationFrame(() => {
-            animate(); // Restart animation
-          });
-        }, 2000); // Longer pause before restart
+          if (Math.random() > 0.5) { // Only restart some flights to avoid too much movement
+            step = 0;
+            animationRef.current = requestAnimationFrame(() => {
+              animate(); // Restart animation
+            });
+          }
+        }, 8000); // Longer pause before restart
       }
     };
     
-    // Start animation
-    animate();
-  };
-  
-  // Helper function to hash string for consistent randomness
-  const hashCode = (s: string) => {
-    return s.split('').reduce((a, b) => {
-      a = ((a << 5) - a) + b.charCodeAt(0);
-      return a & a;
-    }, 0);
+    // Start animation after a short delay
+    setTimeout(() => {
+      console.log(`Plane taking off from ${departure.code}`);
+      animate();
+    }, 500);
   };
   
   // Create a plane icon component that will be animated along the path
@@ -581,6 +703,86 @@ const FlightPath: React.FC<FlightPathProps> = ({
           transition: transform 0.3s ease;
         }
         
+        /* Enhanced animation markers */
+        .zoom-animation-marker {
+          position: relative;
+        }
+        
+        .zoom-circle {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 40px;
+          height: 40px;
+          background: rgba(0, 120, 255, 0.2);
+          border: 2px solid rgba(0, 120, 255, 0.8);
+          border-radius: 50%;
+          animation: zoom-pulse 1.5s infinite;
+        }
+        
+        .drawing-animation-marker {
+          position: relative;
+        }
+        
+        .pulse-circle {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 12px;
+          height: 12px;
+          background: white;
+          border-radius: 50%;
+          animation: pulse-fast 0.8s infinite;
+        }
+        
+        .completion-marker {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 32px;
+          height: 32px;
+          background: #4CAF50;
+          border-radius: 50%;
+          color: white;
+          animation: scale-pop 0.5s ease-out;
+        }
+        
+        .takeoff-animation {
+          position: relative;
+        }
+        
+        .takeoff-rays {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 30px;
+          height: 30px;
+          background: rgba(255, 255, 255, 0.2);
+          border-radius: 50%;
+          box-shadow: 0 0 0 10px rgba(255, 255, 255, 0.1);
+          animation: takeoff-pulse 1s infinite;
+        }
+        
+        .arrival-animation {
+          position: relative;
+        }
+        
+        .arrival-pulse {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 30px;
+          height: 30px;
+          background: rgba(76, 175, 80, 0.3);
+          border: 2px solid rgba(76, 175, 80, 0.8);
+          border-radius: 50%;
+          animation: arrival-pulse 1s infinite;
+        }
+        
         /* Animation phase indicators */
         .zoom-indicator {
           position: absolute;
@@ -613,9 +815,31 @@ const FlightPath: React.FC<FlightPathProps> = ({
           pointer-events: none;
         }
         
+        /* Enhanced keyframe animations */
         @keyframes zoom-pulse {
           0%, 100% { transform: scale(0.8); opacity: 0.5; }
           50% { transform: scale(1.2); opacity: 0.8; }
+        }
+        
+        @keyframes pulse-fast {
+          0%, 100% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.5); opacity: 0.5; }
+        }
+        
+        @keyframes scale-pop {
+          0% { transform: scale(0); opacity: 0; }
+          60% { transform: scale(1.2); opacity: 1; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        
+        @keyframes takeoff-pulse {
+          0%, 100% { transform: scale(1); opacity: 0.8; }
+          50% { transform: scale(1.5); opacity: 0.4; }
+        }
+        
+        @keyframes arrival-pulse {
+          0%, 100% { transform: scale(1); opacity: 0.8; }
+          50% { transform: scale(1.3); opacity: 0.4; }
         }
         
         @keyframes draw-move {

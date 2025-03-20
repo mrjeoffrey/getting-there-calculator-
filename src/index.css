@@ -329,7 +329,7 @@
   z-index: 300 !important;
 }
 
-/* New animation styles */
+/* Enhanced animation styles */
 .flight-path-draw {
   stroke-dasharray: 10;
   stroke-dashoffset: 1000;
@@ -392,4 +392,77 @@
 /* Prevent popups from closing on click */
 .leaflet-popup-close-button {
   z-index: 650 !important;
+}
+
+/* New animation markers */
+.zoom-marker-icon, .drawing-marker-icon, .completion-icon, .takeoff-marker-icon, .arrival-marker-icon {
+  background: transparent !important;
+  border: none !important;
+}
+
+.zoom-circle {
+  border: 2px solid rgba(0, 120, 255, 0.8);
+  background: rgba(0, 120, 255, 0.2);
+  border-radius: 50%;
+  box-shadow: 0 0 0 4px rgba(0, 120, 255, 0.1);
+  animation: zoom-pulse 1.5s infinite;
+}
+
+.pulse-circle {
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+  animation: pulse-fast 0.8s infinite;
+}
+
+.completion-marker {
+  background: #4CAF50;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.2);
+  animation: scale-pop 0.5s ease-out;
+}
+
+.takeoff-rays {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  box-shadow: 0 0 0 10px rgba(255, 255, 255, 0.1);
+  animation: takeoff-pulse 1s infinite;
+}
+
+.arrival-pulse {
+  background: rgba(76, 175, 80, 0.3);
+  border: 2px solid rgba(76, 175, 80, 0.8);
+  border-radius: 50%;
+  box-shadow: 0 0 0 8px rgba(76, 175, 80, 0.1);
+  animation: arrival-pulse 1s infinite;
+}
+
+@keyframes zoom-pulse {
+  0%, 100% { transform: scale(0.8); opacity: 0.5; }
+  50% { transform: scale(1.2); opacity: 0.8; }
+}
+
+@keyframes pulse-fast {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.5); opacity: 0.5; }
+}
+
+@keyframes scale-pop {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes takeoff-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.5); opacity: 0.4; }
+}
+
+@keyframes arrival-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.3); opacity: 0.4; }
 }
