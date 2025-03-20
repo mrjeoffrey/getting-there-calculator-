@@ -134,14 +134,17 @@ const FlightPath: React.FC<FlightPathProps> = ({
     
     // Create a larger, more visible zoom animation marker
     const zoomMarkerHtml = ReactDOMServer.renderToString(
-      <div className="zoom-animation-marker">
+      <div className="zoom-animation-marker" style={{ visibility: 'visible', opacity: 1 }}>
         <div className="zoom-circle" style={{
-          width: '60px',
-          height: '60px',
-          background: 'rgba(0, 120, 255, 0.3)',
-          border: '3px solid rgba(0, 120, 255, 0.8)',
+          width: '80px',
+          height: '80px',
+          background: 'rgba(0, 120, 255, 0.5)',
+          border: '4px solid rgba(0, 120, 255, 0.9)',
           borderRadius: '50%',
-          animation: 'zoom-pulse 1.5s infinite'
+          boxShadow: '0 0 30px 10px rgba(0, 120, 255, 0.3)',
+          animation: 'zoom-pulse 1.5s infinite',
+          visibility: 'visible',
+          opacity: 1
         }}></div>
       </div>
     );
@@ -149,8 +152,8 @@ const FlightPath: React.FC<FlightPathProps> = ({
     const zoomMarkerIcon = L.divIcon({
       html: zoomMarkerHtml,
       className: 'zoom-marker-icon',
-      iconSize: [60, 60],
-      iconAnchor: [30, 30]
+      iconSize: [80, 80],
+      iconAnchor: [40, 40]
     });
     
     // Add a more visible temporary marker to highlight the zoom location
@@ -187,14 +190,20 @@ const FlightPath: React.FC<FlightPathProps> = ({
     
     // Add a larger, more visible pulsing dot effect at the starting point
     const pulseMarkerHtml = ReactDOMServer.renderToString(
-      <div className="drawing-animation-marker">
+      <div className="drawing-animation-marker" style={{ 
+        visibility: 'visible', 
+        opacity: 1, 
+        zIndex: 5000 
+      }}>
         <div className="pulse-circle" style={{
-          width: '20px',
-          height: '20px',
-          background: 'white',
+          width: '30px',
+          height: '30px',
+          background: type === 'direct' ? '#4CAF50' : '#FFC107',
           borderRadius: '50%',
-          boxShadow: '0 0 15px 5px rgba(255, 255, 255, 0.8)',
-          animation: 'pulse-fast 0.8s infinite'
+          boxShadow: '0 0 30px 10px rgba(255, 255, 255, 0.9)',
+          animation: 'pulse-fast 0.8s infinite',
+          visibility: 'visible',
+          opacity: 1
         }}></div>
       </div>
     );
@@ -202,19 +211,19 @@ const FlightPath: React.FC<FlightPathProps> = ({
     const pulseMarkerIcon = L.divIcon({
       html: pulseMarkerHtml,
       className: 'drawing-marker-icon',
-      iconSize: [24, 24],
-      iconAnchor: [12, 12]
+      iconSize: [30, 30],
+      iconAnchor: [15, 15]
     });
     
     // Create a moving marker that follows the drawing
     let drawingMarker = L.marker(arcPoints[0], { 
       icon: pulseMarkerIcon,
-      zIndexOffset: 1000
+      zIndexOffset: 5000
     }).addTo(map);
     drawingMarkerRef.current = drawingMarker;
     
     // Make drawing MUCH slower and more visible
-    const drawingDuration = 5000; // 5 seconds for more visibility
+    const drawingDuration = 4000; // 4 seconds for drawing
     const totalPoints = arcPoints.length;
     const pointsPerFrame = Math.max(1, Math.ceil(totalPoints / (drawingDuration / 16))); // 16ms per frame approx
     
@@ -234,15 +243,18 @@ const FlightPath: React.FC<FlightPathProps> = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            width: '40px',
-            height: '40px',
-            background: '#4CAF50',
+            width: '60px',
+            height: '60px',
+            background: type === 'direct' ? '#4CAF50' : '#FFC107',
             borderRadius: '50%',
             color: 'white',
-            boxShadow: '0 0 0 8px rgba(76, 175, 80, 0.3), 0 0 20px rgba(0, 0, 0, 0.4)',
-            animation: 'scale-pop 0.5s ease-out'
+            boxShadow: '0 0 0 15px rgba(76, 175, 80, 0.4), 0 0 30px rgba(0, 0, 0, 0.5)',
+            animation: 'scale-pop 0.5s ease-out',
+            visibility: 'visible',
+            opacity: 1,
+            zIndex: 5000
           }}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="20 6 9 17 4 12"></polyline>
             </svg>
           </div>
@@ -251,14 +263,14 @@ const FlightPath: React.FC<FlightPathProps> = ({
         const completionIcon = L.divIcon({
           html: completionMarkerHtml,
           className: 'completion-icon',
-          iconSize: [40, 40],
-          iconAnchor: [20, 20]
+          iconSize: [60, 60],
+          iconAnchor: [30, 30]
         });
         
         // Show checkmark at destination
         const completionMarker = L.marker(arcPoints[arcPoints.length - 1], { 
           icon: completionIcon,
-          zIndexOffset: 1000
+          zIndexOffset: 5000
         }).addTo(map);
         
         // Fit view to see the entire flight path before plane starts
@@ -314,14 +326,16 @@ const FlightPath: React.FC<FlightPathProps> = ({
     
     // Create a larger, more visible takeoff effect at the departure airport
     const takeoffMarkerHtml = ReactDOMServer.renderToString(
-      <div className="takeoff-animation">
+      <div className="takeoff-animation" style={{ visibility: 'visible', opacity: 1, zIndex: 5000 }}>
         <div className="takeoff-rays" style={{
-          width: '60px',
-          height: '60px',
-          background: 'rgba(255, 255, 255, 0.3)',
+          width: '80px',
+          height: '80px',
+          background: 'rgba(255, 255, 255, 0.5)',
           borderRadius: '50%',
-          boxShadow: '0 0 0 20px rgba(255, 255, 255, 0.1), 0 0 30px rgba(255, 255, 255, 0.5)',
-          animation: 'takeoff-pulse 1s infinite'
+          boxShadow: '0 0 0 30px rgba(255, 255, 255, 0.2), 0 0 50px rgba(255, 255, 255, 0.7)',
+          animation: 'takeoff-pulse 1s infinite',
+          visibility: 'visible',
+          opacity: 1
         }}></div>
       </div>
     );
@@ -329,14 +343,14 @@ const FlightPath: React.FC<FlightPathProps> = ({
     const takeoffMarkerIcon = L.divIcon({
       html: takeoffMarkerHtml,
       className: 'takeoff-marker-icon',
-      iconSize: [60, 60],
-      iconAnchor: [30, 30]
+      iconSize: [80, 80],
+      iconAnchor: [40, 40]
     });
     
     // Add a temporary marker for takeoff effect
     const takeoffMarker = L.marker([departure.lat, departure.lng], { 
       icon: takeoffMarkerIcon,
-      zIndexOffset: 999
+      zIndexOffset: 5000
     }).addTo(map);
     
     // Initialize with plane at departure
@@ -346,7 +360,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
     
     // Make the animation much slower for better visibility
     // Use a slower speed so users can clearly see the plane moving
-    const speed = 100; // milliseconds - slower to make animation more visible
+    const speed = 80; // milliseconds - slower to make animation more visible
     
     let step = 0; // Start from beginning
     const totalSteps = arcPoints.length - 1;
@@ -376,15 +390,17 @@ const FlightPath: React.FC<FlightPathProps> = ({
         // Show arrival animation
         if (arrival) {
           const arrivalMarkerHtml = ReactDOMServer.renderToString(
-            <div className="arrival-animation">
+            <div className="arrival-animation" style={{ visibility: 'visible', opacity: 1, zIndex: 5000 }}>
               <div className="arrival-pulse" style={{
-                width: '60px',
-                height: '60px',
-                background: 'rgba(76, 175, 80, 0.4)',
-                border: '3px solid rgba(76, 175, 80, 0.9)',
+                width: '80px',
+                height: '80px',
+                background: 'rgba(76, 175, 80, 0.5)',
+                border: '5px solid rgba(76, 175, 80, 0.9)',
                 borderRadius: '50%',
-                boxShadow: '0 0 0 15px rgba(76, 175, 80, 0.2), 0 0 30px rgba(76, 175, 80, 0.6)',
-                animation: 'arrival-pulse 1s infinite'
+                boxShadow: '0 0 0 20px rgba(76, 175, 80, 0.3), 0 0 50px rgba(76, 175, 80, 0.8)',
+                animation: 'arrival-pulse 1s infinite',
+                visibility: 'visible',
+                opacity: 1
               }}></div>
             </div>
           );
@@ -392,14 +408,14 @@ const FlightPath: React.FC<FlightPathProps> = ({
           const arrivalMarkerIcon = L.divIcon({
             html: arrivalMarkerHtml,
             className: 'arrival-marker-icon',
-            iconSize: [60, 60],
-            iconAnchor: [30, 30]
+            iconSize: [80, 80],
+            iconAnchor: [40, 40]
           });
           
           // Add a temporary marker for arrival effect
           const arrivalMarker = L.marker([arrival.lat, arrival.lng], { 
             icon: arrivalMarkerIcon,
-            zIndexOffset: 999
+            zIndexOffset: 5000
           }).addTo(map);
           
           // Remove after animation completes
@@ -455,16 +471,21 @@ const FlightPath: React.FC<FlightPathProps> = ({
           transform: `rotate(${planeRotation}deg)`,
           background: 'white',
           borderRadius: '50%',
-          padding: '8px',
-          boxShadow: '0 2px 15px rgba(0,0,0,0.6)',
+          padding: '10px',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.8)',
+          visibility: 'visible',
+          opacity: 1,
+          zIndex: 5000
         }}
       >
         <Plane 
-          size={40} // Much larger plane
+          size={60} // Much larger plane
           fill={color}
           color={color}
           style={{ 
-            filter: 'drop-shadow(0 3px 5px rgba(0,0,0,0.4))'
+            filter: 'drop-shadow(0 5px 10px rgba(0,0,0,0.6))',
+            visibility: 'visible',
+            opacity: 1
           }}
         />
       </div>
@@ -473,12 +494,15 @@ const FlightPath: React.FC<FlightPathProps> = ({
     const planeIcon = L.divIcon({
       html: iconHtml,
       className: 'custom-plane-icon',
-      iconSize: [56, 56], // Larger size for better visibility
-      iconAnchor: [28, 28]
+      iconSize: [80, 80], // Larger size for better visibility
+      iconAnchor: [40, 40]
     });
     
     // Custom marker with the plane icon
-    const marker = L.marker(planePosition, { icon: planeIcon });
+    const marker = L.marker(planePosition, { 
+      icon: planeIcon,
+      zIndexOffset: 5000 // Ensure it's above everything
+    });
     
     // Add click handler to show details
     marker.on('click', (e) => {
@@ -653,8 +677,8 @@ const FlightPath: React.FC<FlightPathProps> = ({
     
     return {
       color,
-      opacity: 0.85,
-      weight: 3,
+      opacity: 0.9,
+      weight: 4,
       className: 'flight-path-solid',
       // Enable interactions
       interactive: true,
@@ -670,14 +694,14 @@ const FlightPath: React.FC<FlightPathProps> = ({
           ...getPathOptions(),
           dashArray: animationPhase === 'drawing' ? '5, 10' : null, // Dashed line during drawing
           dashOffset: animationPhase === 'drawing' ? '10' : null,
-          weight: animationPhase === 'drawing' ? 5 : 3, // Thicker line during drawing
+          weight: animationPhase === 'drawing' ? 6 : 4, // Thicker line during drawing
         }}
         eventHandlers={{
           click: handlePathClick,
           mouseover: (e) => {
             if (e && e.target) {
               const path = e.target;
-              path.setStyle({ weight: 5, opacity: 1 });
+              path.setStyle({ weight: 6, opacity: 1 });
               if (e.originalEvent) {
                 handlePathHover(e.originalEvent as unknown as L.LeafletMouseEvent);
               }
@@ -687,8 +711,8 @@ const FlightPath: React.FC<FlightPathProps> = ({
             if (e && e.target) {
               const path = e.target;
               path.setStyle({ 
-                weight: animationPhase === 'drawing' ? 5 : 3, 
-                opacity: 0.85 
+                weight: animationPhase === 'drawing' ? 6 : 4, 
+                opacity: 0.9 
               });
               // Don't hide popup on mouseout, let it stay until closed
             }
@@ -701,17 +725,22 @@ const FlightPath: React.FC<FlightPathProps> = ({
       {/* Add CSS for better visibility on top of map */}
       <style>{`
         .flight-path-solid {
-          filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.9));
+          filter: drop-shadow(0 0 10px rgba(255, 255, 255, 1));
           cursor: pointer;
           transition: all 0.3s ease;
+          z-index: 450 !important;
+          opacity: 1 !important;
+          visibility: visible !important;
         }
         
         .custom-plane-icon {
-          z-index: 1000 !important;
+          z-index: 5000 !important;
           cursor: pointer;
           transition: transform 0.3s ease;
           transform-origin: center center;
           animation: pulse-plane 2s infinite;
+          visibility: visible !important;
+          opacity: 1 !important;
         }
         
         @keyframes pulse-plane {
@@ -755,6 +784,9 @@ const FlightPath: React.FC<FlightPathProps> = ({
         /* Enhanced animation markers */
         .zoom-animation-marker {
           position: relative;
+          visibility: visible !important;
+          opacity: 1 !important;
+          z-index: 5000 !important;
         }
         
         .zoom-circle {
@@ -762,16 +794,22 @@ const FlightPath: React.FC<FlightPathProps> = ({
           top: 50%;
           left: 50%;
           transform: translate(-50%, -50%);
-          width: 40px;
-          height: 40px;
-          background: rgba(0, 120, 255, 0.2);
-          border: 2px solid rgba(0, 120, 255, 0.8);
+          width: 80px;
+          height: 80px;
+          background: rgba(0, 120, 255, 0.4);
+          border: 4px solid rgba(0, 120, 255, 0.9);
           border-radius: 50%;
+          box-shadow: 0 0 30px 10px rgba(0, 120, 255, 0.3);
           animation: zoom-pulse 1.5s infinite;
+          visibility: visible !important;
+          opacity: 1 !important;
         }
         
         .drawing-animation-marker {
           position: relative;
+          visibility: visible !important;
+          opacity: 1 !important;
+          z-index: 5000 !important;
         }
         
         .pulse-circle {
@@ -779,27 +817,37 @@ const FlightPath: React.FC<FlightPathProps> = ({
           top: 50%;
           left: 50%;
           transform: translate(-50%, -50%);
-          width: 12px;
-          height: 12px;
+          width: 30px;
+          height: 30px;
           background: white;
           border-radius: 50%;
+          box-shadow: 0 0 30px 10px rgba(255, 255, 255, 0.9);
           animation: pulse-fast 0.8s infinite;
+          visibility: visible !important;
+          opacity: 1 !important;
         }
         
         .completion-marker {
           display: flex;
           align-items: center;
           justify-content: center;
-          width: 32px;
-          height: 32px;
+          width: 60px;
+          height: 60px;
           background: #4CAF50;
           border-radius: 50%;
           color: white;
+          box-shadow: 0 0 0 15px rgba(76, 175, 80, 0.4), 0 0 30px rgba(0, 0, 0, 0.5);
           animation: scale-pop 0.5s ease-out;
+          visibility: visible !important;
+          opacity: 1 !important;
+          z-index: 5000 !important;
         }
         
         .takeoff-animation {
           position: relative;
+          visibility: visible !important;
+          opacity: 1 !important;
+          z-index: 5000 !important;
         }
         
         .takeoff-rays {
@@ -807,16 +855,21 @@ const FlightPath: React.FC<FlightPathProps> = ({
           top: 50%;
           left: 50%;
           transform: translate(-50%, -50%);
-          width: 30px;
-          height: 30px;
-          background: rgba(255, 255, 255, 0.2);
+          width: 80px;
+          height: 80px;
+          background: rgba(255, 255, 255, 0.5);
           border-radius: 50%;
-          box-shadow: 0 0 0 10px rgba(255, 255, 255, 0.1);
+          box-shadow: 0 0 0 30px rgba(255, 255, 255, 0.2), 0 0 50px rgba(255, 255, 255, 0.7);
           animation: takeoff-pulse 1s infinite;
+          visibility: visible !important;
+          opacity: 1 !important;
         }
         
         .arrival-animation {
           position: relative;
+          visibility: visible !important;
+          opacity: 1 !important;
+          z-index: 5000 !important;
         }
         
         .arrival-pulse {
@@ -824,23 +877,26 @@ const FlightPath: React.FC<FlightPathProps> = ({
           top: 50%;
           left: 50%;
           transform: translate(-50%, -50%);
-          width: 30px;
-          height: 30px;
-          background: rgba(76, 175, 80, 0.3);
-          border: 2px solid rgba(76, 175, 80, 0.8);
+          width: 80px;
+          height: 80px;
+          background: rgba(76, 175, 80, 0.5);
+          border: 5px solid rgba(76, 175, 80, 0.9);
           border-radius: 50%;
+          box-shadow: 0 0 0 20px rgba(76, 175, 80, 0.3), 0 0 50px rgba(76, 175, 80, 0.8);
           animation: arrival-pulse 1s infinite;
+          visibility: visible !important;
+          opacity: 1 !important;
         }
         
         /* Enhanced keyframe animations */
         @keyframes zoom-pulse {
-          0%, 100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.5; }
-          50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.8; }
+          0%, 100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.7; }
+          50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
         }
         
         @keyframes pulse-fast {
           0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-          50% { transform: translate(-50%, -50%) scale(1.5); opacity: 0.5; }
+          50% { transform: translate(-50%, -50%) scale(1.5); opacity: 0.7; }
         }
         
         @keyframes scale-pop {
@@ -850,13 +906,13 @@ const FlightPath: React.FC<FlightPathProps> = ({
         }
         
         @keyframes takeoff-pulse {
-          0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
-          50% { transform: translate(-50%, -50%) scale(1.5); opacity: 0.4; }
+          0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+          50% { transform: translate(-50%, -50%) scale(1.5); opacity: 0.7; }
         }
         
         @keyframes arrival-pulse {
-          0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
-          50% { transform: translate(-50%, -50%) scale(1.3); opacity: 0.4; }
+          0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+          50% { transform: translate(-50%, -50%) scale(1.3); opacity: 0.7; }
         }
         
         @keyframes pulse {
@@ -868,6 +924,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
         /* Fix popup flickering */
         .leaflet-popup {
           pointer-events: auto !important;
+          z-index: 6000 !important;
         }
         
         .leaflet-popup-content-wrapper {
@@ -881,19 +938,52 @@ const FlightPath: React.FC<FlightPathProps> = ({
         /* Only close popup when close button is clicked */
         .leaflet-popup-close-button {
           display: block !important;
+          z-index: 6100 !important;
         }
         
         /* Ensure flight paths and planes have high z-index */
         .leaflet-pane {
           z-index: 400 !important;
+          visibility: visible !important;
         }
         
         .leaflet-overlay-pane {
           z-index: 450 !important;
+          visibility: visible !important;
+        }
+        
+        svg.leaflet-zoom-animated {
+          z-index: 450 !important;
+          visibility: visible !important;
         }
         
         .custom-plane-icon {
-          z-index: 1000 !important;
+          z-index: 5000 !important;
+          visibility: visible !important;
+        }
+        
+        /* Make sure all markers and animations are visible */
+        .zoom-marker-icon, .drawing-marker-icon, .completion-icon, .takeoff-marker-icon, .arrival-marker-icon {
+          z-index: 5000 !important;
+          visibility: visible !important;
+          opacity: 1 !important;
+        }
+        
+        /* Ensure map panes are in correct order */
+        .leaflet-map-pane {
+          z-index: 100 !important;
+        }
+        
+        .leaflet-tile-pane {
+          z-index: 200 !important;
+        }
+        
+        .leaflet-overlay-pane {
+          z-index: 400 !important;
+        }
+        
+        .leaflet-marker-pane {
+          z-index: 600 !important;
         }
       `}</style>
     </>

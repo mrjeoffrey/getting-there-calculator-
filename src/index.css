@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -275,11 +276,40 @@
   filter: contrast(1.05) saturate(1.1);
 }
 
-/* Make sure ocean doesn't overshadow flight paths */
+/* Set proper z-index hierarchy for Leaflet components */
+.leaflet-map-pane {
+  z-index: 100 !important;
+}
+
+.leaflet-tile-pane {
+  z-index: 200 !important;
+}
+
 .leaflet-overlay-pane {
   z-index: 450 !important;
   visibility: visible !important;
   pointer-events: auto !important;
+}
+
+svg.leaflet-zoom-animated {
+  z-index: 450 !important;
+  visibility: visible !important;
+}
+
+.leaflet-shadow-pane {
+  z-index: 550 !important;
+}
+
+.leaflet-marker-pane {
+  z-index: 600 !important;
+}
+
+.leaflet-tooltip-pane {
+  z-index: 650 !important;
+}
+
+.leaflet-popup-pane {
+  z-index: 700 !important;
 }
 
 /* Origin marker (pink) */
@@ -302,12 +332,14 @@
 .flight-path-solid {
   stroke-linecap: round;
   z-index: 450 !important;
-  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.8));
+  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 1));
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 /* Custom plane marker */
 .custom-plane-icon {
-  z-index: 500 !important;
+  z-index: 5000 !important;
   visibility: visible !important;
   pointer-events: auto !important;
 }
@@ -330,6 +362,7 @@
 .leaflet-map-pane svg,
 .leaflet-map-pane canvas {
   z-index: 300 !important;
+  visibility: visible !important;
 }
 
 /* Enhanced animation styles */
@@ -381,7 +414,7 @@
 
 /* Enhanced popup visibility */
 .leaflet-popup {
-  z-index: 600 !important;
+  z-index: 700 !important;
 }
 
 .leaflet-popup-content-wrapper {
@@ -394,28 +427,40 @@
 
 /* Prevent popups from closing on click */
 .leaflet-popup-close-button {
-  z-index: 650 !important;
+  z-index: 750 !important;
 }
 
-/* New animation markers */
-.zoom-marker-icon, .drawing-marker-icon, .completion-icon, .takeoff-marker-icon, .arrival-marker-icon {
+/* Animation markers enhanced z-index */
+.zoom-marker-icon, 
+.drawing-marker-icon, 
+.completion-icon, 
+.takeoff-marker-icon, 
+.arrival-marker-icon {
   background: transparent !important;
   border: none !important;
+  z-index: 5000 !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: none;
 }
 
 .zoom-circle {
-  border: 2px solid rgba(0, 120, 255, 0.8);
-  background: rgba(0, 120, 255, 0.2);
+  border: 4px solid rgba(0, 120, 255, 0.9);
+  background: rgba(0, 120, 255, 0.4);
   border-radius: 50%;
-  box-shadow: 0 0 0 4px rgba(0, 120, 255, 0.1);
+  box-shadow: 0 0 0 15px rgba(0, 120, 255, 0.2), 0 0 30px rgba(0, 120, 255, 0.5);
   animation: zoom-pulse 1.5s infinite;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 .pulse-circle {
   background: white;
   border-radius: 50%;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.9);
   animation: pulse-fast 0.8s infinite;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 .completion-marker {
@@ -425,33 +470,39 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.2);
+  box-shadow: 0 0 0 15px rgba(76, 175, 80, 0.3), 0 0 30px rgba(76, 175, 80, 0.6);
   animation: scale-pop 0.5s ease-out;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 .takeoff-rays {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.5);
   border-radius: 50%;
-  box-shadow: 0 0 0 10px rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 0 30px rgba(255, 255, 255, 0.2), 0 0 50px rgba(255, 255, 255, 0.7);
   animation: takeoff-pulse 1s infinite;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 .arrival-pulse {
-  background: rgba(76, 175, 80, 0.3);
-  border: 2px solid rgba(76, 175, 80, 0.8);
+  background: rgba(76, 175, 80, 0.5);
+  border: 4px solid rgba(76, 175, 80, 0.9);
   border-radius: 50%;
-  box-shadow: 0 0 0 8px rgba(76, 175, 80, 0.1);
+  box-shadow: 0 0 0 20px rgba(76, 175, 80, 0.2), 0 0 30px rgba(76, 175, 80, 0.6);
   animation: arrival-pulse 1s infinite;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 @keyframes zoom-pulse {
-  0%, 100% { transform: scale(0.8); opacity: 0.5; }
-  50% { transform: scale(1.2); opacity: 0.8; }
+  0%, 100% { transform: scale(0.8); opacity: 0.7; }
+  50% { transform: scale(1.2); opacity: 1; }
 }
 
 @keyframes pulse-fast {
   0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.5); opacity: 0.5; }
+  50% { transform: scale(1.5); opacity: 0.7; }
 }
 
 @keyframes scale-pop {
@@ -461,16 +512,37 @@
 }
 
 @keyframes takeoff-pulse {
-  0%, 100% { transform: scale(1); opacity: 0.8; }
-  50% { transform: scale(1.5); opacity: 0.4; }
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.5); opacity: 0.7; }
 }
 
 @keyframes arrival-pulse {
-  0%, 100% { transform: scale(1); opacity: 0.8; }
-  50% { transform: scale(1.3); opacity: 0.4; }
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.7; }
 }
 
-/* Force animation elements to have high z-index and proper visibility */
+/* Make sure all SVG elements in the leaflet overlay pane are visible */
+.leaflet-overlay-pane svg,
+.leaflet-overlay-pane g,
+.leaflet-overlay-pane path {
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Make sure polylines are visible */
+.leaflet-interactive {
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Animation debugging - highlight the path drawing */
+.flight-path-solid {
+  stroke-opacity: 1 !important;
+  visibility: visible !important;
+  stroke-width: 5px !important;
+}
+
+/* Ensure all animation elements have high z-index */
 .leaflet-pane {
   z-index: 400 !important;
   visibility: visible !important;
@@ -482,27 +554,29 @@
   pointer-events: auto !important;
 }
 
-.custom-plane-icon, 
+.leaflet-overlay-pane svg {
+  overflow: visible !important;
+}
+
+/* All animation markers need to be above other elements */
 .zoom-marker-icon, 
 .drawing-marker-icon, 
+.completion-icon, 
 .takeoff-marker-icon, 
 .arrival-marker-icon,
-.completion-icon {
-  z-index: 1000 !important;
+.custom-plane-icon {
+  z-index: 5000 !important;
   visibility: visible !important;
-  pointer-events: auto !important;
+  opacity: 1 !important;
 }
 
-.leaflet-popup-pane {
-  z-index: 1100 !important;
-  visibility: visible !important;
-  pointer-events: auto !important;
-}
-
+/* Animation elements must be visible and play */
 .zoom-circle,
 .pulse-circle,
 .takeoff-rays,
-.arrival-pulse {
+.arrival-pulse,
+.plane-icon,
+.completion-marker {
   visibility: visible !important;
   opacity: 1 !important;
   animation-play-state: running !important;

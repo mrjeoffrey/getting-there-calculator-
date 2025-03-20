@@ -51,15 +51,15 @@ const Index = () => {
       if (totalFlights > 0) {
         toast({
           title: `Found ${totalFlights} flights`,
-          description: `Animation sequence: 1) Zoom to origin, 2) Draw flight paths, 3) Planes take off and fly along routes`,
-          duration: 8000, // Longer duration to ensure users see it
+          description: `Animation sequence starting: 1) Zoom to origin, 2) Draw flight paths, 3) Planes take off and fly along routes`,
+          duration: 10000, // Longer duration to ensure users see it
         });
         
         // Reset animation flag after a longer while to ensure all animations complete
         // Increase this timeout to allow all animations to fully complete
         setTimeout(() => {
           setAnimationInProgress(false);
-        }, 20000); // Increased from 12000 to 20000 ms
+        }, 40000); // Significantly increased to allow full animation sequences to complete
       } else {
         toast({
           title: "No flights found",
@@ -140,19 +140,20 @@ const Index = () => {
                 
                 {/* Animation status indicator */}
                 {animationInProgress && (
-                  <div className="mt-4 p-3 bg-accent/20 rounded-lg text-xs">
+                  <div className="mt-4 p-3 bg-accent/30 rounded-lg text-xs">
                     <h4 className="text-sm font-medium mb-1 flex items-center">
-                      <span className="w-2 h-2 rounded-full bg-accent mr-2 animate-pulse"></span>
+                      <span className="w-3 h-3 rounded-full bg-accent mr-2 animate-pulse"></span>
                       Animation in Progress
                     </h4>
                     <p>Animation Steps:</p>
                     <ol className="list-decimal list-inside space-y-1 mt-1">
                       <li>Zoom to origin airport</li>
-                      <li>Draw flight path lines</li>
-                      <li>Show takeoff effect</li>
-                      <li>Planes fly along routes</li>
-                      <li>Landing effect at destination</li>
+                      <li className="border-l-2 border-[#4CAF50] pl-2 ml-2 py-1">Draw flight path lines</li>
+                      <li className="border-l-2 border-amber-500 pl-2 ml-2 py-1">Show takeoff effect</li>
+                      <li className="border-l-2 border-sky-500 pl-2 ml-2 py-1">Planes fly along routes</li>
+                      <li className="border-l-2 border-[#4CAF50] pl-2 ml-2 py-1">Landing effect at destination</li>
                     </ol>
+                    <p className="mt-2 text-xs text-muted-foreground italic">The complete animation sequence takes about 20-30 seconds per flight.</p>
                   </div>
                 )}
                 
