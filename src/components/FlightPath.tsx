@@ -439,7 +439,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
           }}
         />
       )}
-      <style jsx>{`
+      <style>{`
         .plane-marker {
           filter: drop-shadow(0px 1px 3px rgba(0,0,0,0.3));
           transition: transform 0.2s ease-out;
