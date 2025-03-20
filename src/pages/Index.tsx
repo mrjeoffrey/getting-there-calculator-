@@ -51,14 +51,15 @@ const Index = () => {
       if (totalFlights > 0) {
         toast({
           title: `Found ${totalFlights} flights`,
-          description: `The animation will now show the flight routes: zoom to origin, draw path, then planes take off.`,
-          duration: 6000,
+          description: `Animation sequence: 1) Zoom to origin, 2) Draw flight paths, 3) Planes take off and fly along routes`,
+          duration: 8000, // Longer duration to ensure users see it
         });
         
         // Reset animation flag after a longer while to ensure all animations complete
+        // Increase this timeout to allow all animations to fully complete
         setTimeout(() => {
           setAnimationInProgress(false);
-        }, 12000);
+        }, 20000); // Increased from 12000 to 20000 ms
       } else {
         toast({
           title: "No flights found",
