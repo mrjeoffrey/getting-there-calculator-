@@ -69,6 +69,9 @@ const FlightPath: React.FC<FlightPathProps> = ({
   useEffect(() => {
     // Use less arc height to match reference image flat arc
     const arcHeight = type === 'direct' ? 0.2 : 0.15;
+    console.log("Departure:", departure);
+console.log("Arrival:", arrival);
+
     
     const points = calculateArcPoints(
       departure.lat, 
@@ -78,6 +81,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
       arcHeight
     );
     setArcPoints(points);
+    console.log("Generated Arc Points:", points); // Debugging
     
     // Start with no visible points - we'll animate them in
     setDisplayedPoints([]);
@@ -173,6 +177,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
     // After zoom completes, start drawing the path
     setTimeout(() => {
       zoomMarker.remove();
+      console.log("arcPoints before drawing:", arcPoints);
       console.log(`Zoom complete, starting drawing phase for ${departure.code} to ${arrival.code}`);
       startDrawingPhase();
     }, 2500); // Match the duration of the flyTo
