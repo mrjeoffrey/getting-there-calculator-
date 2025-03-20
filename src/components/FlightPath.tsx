@@ -4,7 +4,7 @@ import { Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { Airport } from '../types/flightTypes';
 import { calculateArcPoints, getBearing } from '../utils/flightUtils';
-import { Plane } from 'lucide-react';
+import { Plane, ChevronDown, Info } from 'lucide-react';
 import ReactDOMServer from 'react-dom/server';
 
 interface FlightPathProps {
@@ -41,8 +41,10 @@ const FlightPath: React.FC<FlightPathProps> = ({
   const [planeRotation, setPlaneRotation] = useState(0);
   const [showDetails, setShowDetails] = useState(false);
   const [detailsPosition, setDetailsPosition] = useState<[number, number]>([0, 0]);
+  const [popupExpanded, setPopupExpanded] = useState(false);
   const animationRef = useRef<number | null>(null);
   const planeMarkerRef = useRef<L.Marker | null>(null);
+  const popupRef = useRef<L.Popup | null>(null);
   const map = useMap();
   
   // Parse duration to get flight minutes for speed calculation
@@ -88,9 +90,25 @@ const FlightPath: React.FC<FlightPathProps> = ({
     const speedFactor = Math.max(0.5, Math.min(2, 1 + durationFactor));
     const speed = Math.max(20, Math.min(80, baseSpeed * speedFactor));
     
-    // Set a unique starting point along the path based on the flight ID
-    // This creates staggered starts for each flight
-    let step = Math.floor(Math.random() * (points.length / 3)); // Random start within first third
+    // Set starting point for flight animation - staggered starts
+    // Use flight hash from flightNumber to create a more predictable but varied start time
+    const hashCode = (s: string) => {
+      return s.split('').reduce((a, b) => {
+        a = ((a << 5) - a) + b.charCodeAt(0);
+        return a & a;
+      }, 0);
+    };
+    
+    // Use a hash of flightNumber or fallback to random
+    let hashValue = 0;
+    if (flightNumber) {
+      hashValue = Math.abs(hashCode(flightNumber));
+    } else {
+      hashValue = Math.floor(Math.random() * 100000);
+    }
+    
+    const staggerOffset = hashValue % Math.floor(points.length / 3);
+    let step = staggerOffset; // Staggered start within first third based on hash
     const totalSteps = points.length - 1;
     
     const animate = () => {
@@ -110,16 +128,18 @@ const FlightPath: React.FC<FlightPathProps> = ({
           setTimeout(animate, speed); // Use adaptive speed based on flight duration
         });
       } else {
-        // Loop animation continuously
+        // Loop animation with pause at destination
         step = 0;
         animationRef.current = requestAnimationFrame(() => {
-          setTimeout(animate, 800); // Brief pause before restart
+          setTimeout(animate, 1000); // Longer pause before restart
         });
       }
     };
     
-    // Start animation
-    animate();
+    // Start animation after a small delay based on hash to create staggered takeoffs
+    setTimeout(() => {
+      animate();
+    }, (hashValue % 3000)); // Stagger up to 3 seconds for takeoff
     
     // Clean up on unmount
     return () => {
@@ -129,8 +149,11 @@ const FlightPath: React.FC<FlightPathProps> = ({
       if (planeMarkerRef.current) {
         planeMarkerRef.current.remove();
       }
+      if (popupRef.current) {
+        map.closePopup(popupRef.current);
+      }
     };
-  }, [departure, arrival, animated, type, duration]);
+  }, [departure, arrival, animated, type, duration, flightNumber, map]);
   
   // Create a plane icon component that will be animated along the path
   useEffect(() => {
@@ -181,6 +204,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
     marker.on('click', (e) => {
       setDetailsPosition([e.latlng.lat, e.latlng.lng]);
       setShowDetails(true);
+      setPopupExpanded(false); // Reset to collapsed state when opening new popup
     });
     
     marker.addTo(map);
@@ -194,49 +218,141 @@ const FlightPath: React.FC<FlightPathProps> = ({
   }, [planePosition, planeRotation, map, type]);
   
   // Add click handler to the path to show details
-  const handlePathClick = (e: L.LeafletMouseEvent) => {
+  const handlePathHover = (e: L.LeafletMouseEvent) => {
+    // Show minimal popup with airline info on hover
     setDetailsPosition([e.latlng.lat, e.latlng.lng]);
     setShowDetails(true);
+    setPopupExpanded(false); // Start in collapsed state on hover
+  };
+  
+  const handlePathClick = (e: L.LeafletMouseEvent) => {
+    // Toggle expanded details on click
+    setDetailsPosition([e.latlng.lat, e.latlng.lng]);
+    setShowDetails(true);
+    setPopupExpanded(true); // Expand to show all details on click
   };
   
   // Create a popup component for flight details
   const FlightDetailsPopup = () => {
     if (!showDetails || !detailsPosition) return null;
     
-    // Use Leaflet's popup
+    // Use Leaflet's popup with expandable content
     useEffect(() => {
+      // Close any existing popup
+      if (popupRef.current) {
+        map.closePopup(popupRef.current);
+      }
+      
+      // Create popup content based on expanded state
+      const basicContent = `
+        <div class="p-2 flight-popup">
+          <div class="flex items-center justify-between">
+            <h4 class="font-semibold text-primary">${airline || 'Airline'} ${flightNumber}</h4>
+            <div class="popup-expand-btn bg-primary/10 hover:bg-primary/20 rounded-full p-1 transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="chevron ${popupExpanded ? 'rotate-180' : ''}"><path d="m6 9 6 6 6-6"/></svg>
+            </div>
+          </div>
+          <div class="text-sm ${type === 'direct' ? 'text-[#4CAF50]' : 'text-[#FFC107]'} font-medium">
+            ${type === 'direct' ? 'Direct Flight' : 'Connecting Flight'}
+          </div>
+          <div class="flex justify-between items-center text-sm mt-1">
+            <div>${departure.code} → ${arrival.code}</div>
+            <div class="text-muted-foreground">${duration}</div>
+          </div>
+        </div>
+      `;
+      
+      const expandedContent = `
+        <div class="p-3 flight-popup">
+          <div class="flex items-center justify-between">
+            <h4 class="font-semibold text-primary">${airline || 'Airline'} ${flightNumber}</h4>
+            <div class="popup-expand-btn bg-primary/10 hover:bg-primary/20 rounded-full p-1 transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="chevron rotate-180"><path d="m6 9 6 6 6-6"/></svg>
+            </div>
+          </div>
+          <div class="text-sm ${type === 'direct' ? 'text-[#4CAF50]' : 'text-[#FFC107]'} font-medium">
+            ${type === 'direct' ? 'Direct Flight' : 'Connecting Flight'}
+          </div>
+          
+          <div class="grid grid-cols-2 gap-x-4 gap-y-2 mt-3">
+            <div class="col-span-2 flex justify-between items-center border-b pb-2 mb-1">
+              <div class="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                <span class="font-medium">Flight Info</span>
+              </div>
+              <div class="text-sm text-primary font-semibold">$${price}</div>
+            </div>
+            
+            <div>
+              <div class="text-xs text-muted-foreground">Departure</div>
+              <div class="font-medium">${departure.code}</div>
+              <div class="text-xs">${departure.city}</div>
+              <div class="text-xs">${departureTime ? departureTime.split('T')[1]?.substring(0, 5) || departureTime : '-'}</div>
+            </div>
+            
+            <div>
+              <div class="text-xs text-muted-foreground">Arrival</div>
+              <div class="font-medium">${arrival.code}</div>
+              <div class="text-xs">${arrival.city}</div>
+              <div class="text-xs">${arrivalTime ? arrivalTime.split('T')[1]?.substring(0, 5) || arrivalTime : '-'}</div>
+            </div>
+            
+            <div class="col-span-2 mt-2">
+              <div class="text-xs text-muted-foreground">Duration</div>
+              <div class="font-medium">${duration}</div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // Create popup with appropriate content
       const popup = L.popup({
         className: 'flight-details-popup',
         closeButton: true,
-        closeOnClick: true,
+        closeOnClick: false,
+        autoClose: false,
         autoPan: true,
+        offset: [0, -10]
       })
         .setLatLng(detailsPosition)
-        .setContent(`
-          <div class="p-3">
-            <h3 class="text-base font-semibold mb-2">${type === 'direct' ? 'Direct' : 'Connecting'} Flight</h3>
-            <div class="text-sm space-y-1">
-              ${flightNumber ? `<p><span class="font-medium">Flight:</span> ${flightNumber}</p>` : ''}
-              ${airline ? `<p><span class="font-medium">Airline:</span> ${airline}</p>` : ''}
-              <p><span class="font-medium">From:</span> ${departure.name} (${departure.code})</p>
-              <p><span class="font-medium">To:</span> ${arrival.name} (${arrival.code})</p>
-              ${departureTime ? `<p><span class="font-medium">Departure:</span> ${departureTime.split('T')[1]?.substring(0, 5) || departureTime}</p>` : ''}
-              ${arrivalTime ? `<p><span class="font-medium">Arrival:</span> ${arrivalTime.split('T')[1]?.substring(0, 5) || arrivalTime}</p>` : ''}
-              ${duration ? `<p><span class="font-medium">Duration:</span> ${duration}</p>` : ''}
-              ${price ? `<p class="font-semibold text-primary">Price: $${price}</p>` : ''}
-            </div>
-          </div>
-        `)
+        .setContent(popupExpanded ? expandedContent : basicContent)
         .openOn(map);
       
-      popup.on('close', () => {
+      popupRef.current = popup;
+      
+      // Add event listeners for expand/collapse button
+      const expandBtn = document.querySelector('.popup-expand-btn');
+      if (expandBtn) {
+        expandBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          setPopupExpanded(!popupExpanded);
+        });
+      }
+      
+      // Close popup when user clicks away
+      const handleMapClick = (e: L.LeafletMouseEvent) => {
+        // Check if click is outside the popup
+        const popupElement = document.querySelector('.flight-details-popup');
+        if (popupElement && !popupElement.contains(e.originalEvent.target as Node)) {
+          setShowDetails(false);
+          map.removeEventListener('click', handleMapClick);
+        }
+      };
+      
+      map.addEventListener('click', handleMapClick);
+      
+      popup.on('remove', () => {
         setShowDetails(false);
+        map.removeEventListener('click', handleMapClick);
       });
       
       return () => {
-        map.closePopup(popup);
+        if (popupRef.current) {
+          map.closePopup(popupRef.current);
+        }
+        map.removeEventListener('click', handleMapClick);
       };
-    }, [detailsPosition, showDetails]);
+    }, [detailsPosition, showDetails, popupExpanded]);
     
     return null;
   };
@@ -274,10 +390,12 @@ const FlightPath: React.FC<FlightPathProps> = ({
           mouseover: (e) => {
             const path = e.target;
             path.setStyle({ weight: 5, opacity: 1 });
+            handlePathHover(e.originalEvent as unknown as L.LeafletMouseEvent);
           },
           mouseout: (e) => {
             const path = e.target;
             path.setStyle({ weight: 3, opacity: 0.85 });
+            // Don't hide popup on mouseout, let it stay until clicked away
           }
         }}
       />
@@ -304,12 +422,29 @@ const FlightPath: React.FC<FlightPathProps> = ({
         }
         
         .flight-details-popup .leaflet-popup-content {
-          margin: 8px 10px;
-          min-width: 200px;
+          margin: 8px 0;
+          min-width: 220px;
         }
         
         .flight-details-popup .leaflet-popup-tip {
           background: rgba(255, 255, 255, 0.95);
+        }
+        
+        .flight-popup {
+          user-select: none;
+        }
+        
+        .popup-expand-btn {
+          cursor: pointer;
+          transition: transform 0.2s ease;
+        }
+        
+        .popup-expand-btn:hover {
+          transform: scale(1.1);
+        }
+        
+        .chevron {
+          transition: transform 0.3s ease;
         }
         
         @keyframes pulse {

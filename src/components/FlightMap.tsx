@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useRef } from 'react';
 import { TileLayer, useMap, MapContainer as LeafletMapContainer } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -434,6 +435,24 @@ const FlightMap: React.FC<FlightMapProps> = ({
         
         .leaflet-overlay-pane {
           z-index: 450 !important;
+        }
+        
+        /* Prevent flight paths from flickering */
+        .leaflet-interactive {
+          outline: none !important;
+        }
+        
+        /* Fix popup flickering */
+        .leaflet-popup {
+          pointer-events: auto !important;
+        }
+        
+        .leaflet-popup-content-wrapper {
+          pointer-events: auto !important;
+        }
+        
+        .leaflet-popup-content {
+          pointer-events: auto !important;
         }
       `}</style>
     </div>

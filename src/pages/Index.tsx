@@ -24,6 +24,13 @@ const Index = () => {
     setSelectedFlightId(null);
     
     try {
+      // Show searching toast
+      toast({
+        title: "Searching for flights",
+        description: `Finding routes from ${params.from} to ${params.to}`,
+        duration: 2000,
+      });
+      
       // Perform search
       const results = await searchFlights(params.from, params.to, params.date);
       
@@ -42,7 +49,7 @@ const Index = () => {
       if (totalFlights > 0) {
         toast({
           title: `Found ${totalFlights} flights`,
-          description: `Hover over or click flight paths to see details`,
+          description: `Hover over flight paths to see details. Click for more information.`,
           duration: 3000,
         });
       } else {
@@ -81,11 +88,11 @@ const Index = () => {
             
             {/* Flight information legend */}
             {hasSearched && !searchResults.loading && (
-              <div className="mt-6 glass-panel rounded-2xl p-6 animate-slide-up">
+              <div className="mt-6 glass-panel rounded-2xl p-6 animate-fade-in">
                 <h3 className="text-lg font-semibold mb-2">Flight Visualization</h3>
                 <p className="text-muted-foreground">
                   {searchResults.directFlights.length + searchResults.connectingFlights.length > 0 
-                    ? "Hover over or click on flight paths and planes to see details." 
+                    ? "Hover over flight paths for basic info. Click for more details." 
                     : "No flights found. Try different airports or dates."}
                 </p>
                 
@@ -107,6 +114,16 @@ const Index = () => {
                 <div className="mt-4 text-sm text-muted-foreground">
                   <div>Direct Flights: <span className="font-medium">{searchResults.directFlights.length}</span></div>
                   <div>Connecting Flights: <span className="font-medium">{searchResults.connectingFlights.length}</span></div>
+                </div>
+                
+                {/* Interaction tips */}
+                <div className="mt-4 p-3 bg-muted/50 rounded-lg text-xs">
+                  <h4 className="text-sm font-medium mb-1">Interaction Tips</h4>
+                  <ul className="space-y-1 list-disc list-inside">
+                    <li>Hover over flight paths to see basic info</li>
+                    <li>Click on flight paths or planes for detailed info</li>
+                    <li>Flights take off with varying speeds based on journey duration</li>
+                  </ul>
                 </div>
               </div>
             )}
