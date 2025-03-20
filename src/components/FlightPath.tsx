@@ -150,7 +150,6 @@ const FlightPath: React.FC<FlightPathProps> = ({
     
     const zoomMarkerHtml = ReactDOMServer.renderToString(
       <div className="zoom-animation-marker">
-        <div className="zoom-circle"></div>
       </div>
     );
     
@@ -207,9 +206,6 @@ const FlightPath: React.FC<FlightPathProps> = ({
     
     const pulseMarkerHtml = ReactDOMServer.renderToString(
       <div className="drawing-animation-marker">
-        <div className="pulse-circle" style={{
-          backgroundColor: type === 'direct' ? '#4CAF50' : '#FFC107'
-        }}></div>
       </div>
     );
     
@@ -325,8 +321,12 @@ const FlightPath: React.FC<FlightPathProps> = ({
     setPlanePosition([departure.lat, departure.lng]);
     
     // Create plane marker
+    // if (planeMarkerRef.current) {
+    //   planeMarkerRef.current.remove();
+    // }
     if (planeMarkerRef.current) {
       planeMarkerRef.current.remove();
+      planeMarkerRef.current = null; // ✅ Ensures no duplicate markers
     }
     
     const planeIconHtml = ReactDOMServer.renderToString(
@@ -366,15 +366,23 @@ const FlightPath: React.FC<FlightPathProps> = ({
             const currPoint = arcPointsRef.current[step];
             const nextPoint = arcPointsRef.current[step + 1];
             if (currPoint && nextPoint) {
-              const bearing = getBearing(currPoint[0], currPoint[1], nextPoint[0], nextPoint[1]);
-              
-              // Update plane rotation
-              if (planeMarkerRef.current) {
+              // const bearing = getBearing(currPoint[0], currPoint[1], nextPoint[0], nextPoint[1]);
+              const newBearing = getBearing(currPoint[0], currPoint[1], nextPoint[0], nextPoint[1]);
+
+              if (newBearing !== planeRotation) { // ✅ Only update when bearing changes
+                setPlaneRotation(newBearing);
                 const newPlaneIconHtml = ReactDOMServer.renderToString(
-                  <div className="plane-icon" style={{ transform: `rotate(${bearing}deg)` }}>
+                  <div className="plane-icon" style={{ transform: `rotate(${newBearing}deg)` }}>
                     <Plane size={20} className="text-primary-600" />
                   </div>
                 );
+
+              // if (planeMarkerRef.current) {
+              //   const newPlaneIconHtml = ReactDOMServer.renderToString(
+              //     <div className="plane-icon" style={{ transform: `rotate(${bearing}deg)` }}>
+              //       <Plane size={20} className="text-primary-600" />
+              //     </div>
+              //   );
                 
                 const newPlaneIcon = L.divIcon({
                   html: newPlaneIconHtml,
@@ -396,8 +404,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
       } else {
         if (arrival) {
           const arrivalMarkerHtml = ReactDOMServer.renderToString(
-            <div className="arrival-animation">
-              <div className="arrival-pulse"></div>
+            <div className="animation-circle" >
             </div>
           );
           
@@ -425,7 +432,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
         setAnimationComplete(true);
         
         setTimeout(() => {
-          if (Math.random() > 0.7) {
+          if (Math.random() > 0.99) {
             createInfoPopup();
           }
         }, 2000);
@@ -485,6 +492,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
   };
   
   const color = type === 'direct' ? '#4CAF50' : '#FFC107';
+
   const weight = isActive ? 5 : 3;
   const opacity = isActive ? 0.8 : 0.6;
   
