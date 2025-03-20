@@ -74,8 +74,6 @@ const FlightPath: React.FC<FlightPathProps> = ({
     }
     
     console.log(`Starting animation for flight from ${departure.code} to ${arrival.code}`);
-    console.log("Departure:", departure);
-    console.log("Arrival:", arrival);
     
     const arcHeight = type === 'direct' ? 0.2 : 0.15;
     
@@ -93,7 +91,6 @@ const FlightPath: React.FC<FlightPathProps> = ({
         return;
       }
       
-      console.log("Generated Arc Points:", points);
       setArcPoints(points);
       arcPointsRef.current = points; 
       
@@ -103,21 +100,14 @@ const FlightPath: React.FC<FlightPathProps> = ({
       setPlaneRotation(bearing);
       
       setTimeout(() => {
-        console.log(`Starting zoom phase for ${departure.code} to ${arrival.code}`);
         startZoomingPhase();
-      }, 500 + Math.random() * 1000);
+      }, 500 + Math.random() * 500);
     } catch (error) {
       console.error("Error initializing flight path:", error);
     }
     
     return cleanup;
   }, [departure, arrival]);
-  
-  useEffect(() => {
-    if (arcPoints.length > 0) {
-      console.log(`arcPoints updated: ${departure.code} to ${arrival.code}, length: ${arcPoints.length}`);
-    }
-  }, [arcPoints, departure, arrival]);
   
   const cleanup = () => {
     console.log("Running cleanup...");
@@ -148,35 +138,18 @@ const FlightPath: React.FC<FlightPathProps> = ({
     setAnimationPhase('zooming');
     console.log(`Zoom phase active: Flying to ${departure.code}`);
     
-    const zoomMarkerHtml = ReactDOMServer.renderToString(
-      <div className="zoom-animation-marker">
-      </div>
-    );
-    
-    const zoomMarkerIcon = L.divIcon({
-      html: zoomMarkerHtml,
-      className: 'zoom-marker-icon',
-      iconSize: [80, 80],
-      iconAnchor: [40, 40]
-    });
-    
-    const zoomMarker = L.marker([departure.lat, departure.lng], { 
-      icon: zoomMarkerIcon,
-      zIndexOffset: 1000
-    }).addTo(map);
-    
+    // Fly to departure airport with a slightly higher zoom level for better visibility
     map.flyTo([departure.lat, departure.lng], 5, {
-      duration: 2.5,
+      duration: 2,
       easeLinearity: 0.5
     });
     
     console.log(`Zooming to ${departure.code} at [${departure.lat}, ${departure.lng}]`);
     
     setTimeout(() => {
-      zoomMarker.remove();
       console.log(`Zoom complete, starting drawing phase for ${departure.code} to ${arrival.code}`);
       startDrawingPhase();
-    }, 2500);
+    }, 2000);
   };
   
   const startDrawingPhase = () => {
@@ -204,25 +177,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
     
     setDisplayedPoints([arcPointsRef.current[0]]);
     
-    const pulseMarkerHtml = ReactDOMServer.renderToString(
-      <div className="drawing-animation-marker">
-      </div>
-    );
-    
-    const pulseMarkerIcon = L.divIcon({
-      html: pulseMarkerHtml,
-      className: 'drawing-marker-icon',
-      iconSize: [30, 30],
-      iconAnchor: [15, 15]
-    });
-    
-    let drawingMarker = L.marker(arcPointsRef.current[0], { 
-      icon: pulseMarkerIcon,
-      zIndexOffset: 5000
-    }).addTo(map);
-    drawingMarkerRef.current = drawingMarker;
-    
-    const drawingDuration = 4000;
+    const drawingDuration = 3000;
     const totalPoints = arcPointsRef.current.length;
     const pointsPerFrame = Math.max(1, Math.ceil(totalPoints / (drawingDuration / 16)));
     
@@ -231,43 +186,17 @@ const FlightPath: React.FC<FlightPathProps> = ({
     const drawNextSegment = () => {
       if (currentPointIndex >= totalPoints) {
         console.log(`Drawing complete for ${departure.code} to ${arrival.code}`);
-        if (drawingMarkerRef.current) {
-          drawingMarkerRef.current.remove();
-          drawingMarkerRef.current = null;
-        }
         
-        const completionMarkerHtml = ReactDOMServer.renderToString(
-          <div className="completion-marker" style={{
-            backgroundColor: type === 'direct' ? '#4CAF50' : '#FFC107'
-          }}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
-          </div>
-        );
-        
-        const completionIcon = L.divIcon({
-          html: completionMarkerHtml,
-          className: 'completion-icon',
-          iconSize: [60, 60],
-          iconAnchor: [30, 30]
-        });
-        
-        const completionMarker = L.marker(arcPointsRef.current[arcPointsRef.current.length - 1], { 
-          icon: completionIcon,
-          zIndexOffset: 5000
-        }).addTo(map);
-        
+        // After drawing, pan to follow the whole path
         map.fitBounds(L.latLngBounds([
           [departure.lat, departure.lng],
           [arrival.lat, arrival.lng]
         ]), {
           padding: [50, 50],
-          duration: 1
+          duration: 1.5
         });
         
         setTimeout(() => {
-          completionMarker.remove();
           console.log(`Starting flying phase for ${departure.code} to ${arrival.code}`);
           startFlyingPhase();
         }, 1500);
@@ -279,8 +208,12 @@ const FlightPath: React.FC<FlightPathProps> = ({
       const newPoints = arcPointsRef.current.slice(0, newIndex);
       setDisplayedPoints(newPoints);
       
-      if (drawingMarkerRef.current && newIndex > 0 && newPoints[newIndex - 1]) {
-        drawingMarkerRef.current.setLatLng(newPoints[newIndex - 1]);
+      // Move map to follow the drawing path
+      if (newIndex > 0 && newPoints[newIndex - 1]) {
+        const midPoint = Math.floor(newIndex / 2);
+        if (midPoint > 0 && midPoint < newPoints.length) {
+          map.panTo(newPoints[midPoint], { duration: 0.5, easeLinearity: 0.5 });
+        }
       }
       
       currentPointIndex = newIndex;
@@ -300,46 +233,41 @@ const FlightPath: React.FC<FlightPathProps> = ({
     setAnimationPhase('flying');
     console.log(`Flying phase active: Plane taking off from ${departure.code} to ${arrival.code}`);
     
-    const takeoffMarkerHtml = ReactDOMServer.renderToString(
-      <div className="takeoff-animation">
-        <div className="takeoff-rays"></div>
-      </div>
-    );
-    
-    const takeoffMarkerIcon = L.divIcon({
-      html: takeoffMarkerHtml,
-      className: 'takeoff-marker-icon',
-      iconSize: [60, 60],
-      iconAnchor: [30, 30]
-    });
-    
-    const takeoffMarker = L.marker([departure.lat, departure.lng], { 
-      icon: takeoffMarkerIcon,
-      zIndexOffset: 5000
-    }).addTo(map);
-    
     setPlanePosition([departure.lat, departure.lng]);
     
-    // Create plane marker
-    // if (planeMarkerRef.current) {
-    //   planeMarkerRef.current.remove();
-    // }
+    // Remove any existing plane marker
     if (planeMarkerRef.current) {
       planeMarkerRef.current.remove();
-      planeMarkerRef.current = null; // ✅ Ensures no duplicate markers
+      planeMarkerRef.current = null;
     }
     
+    // Create a better plane icon with color and fill
     const planeIconHtml = ReactDOMServer.renderToString(
       <div className="plane-icon" style={{ transform: `rotate(${planeRotation}deg)` }}>
-        <Plane size={20} className="text-primary-600" />
+        <svg 
+          xmlns="http://www.w3.org/2000/svg" 
+          width="18" 
+          height="18" 
+          viewBox="0 0 24 24" 
+          fill={type === 'direct' ? '#4CAF50' : '#FFC107'}
+          stroke={isDarkMode ? 'white' : 'black'} 
+          strokeWidth="1" 
+          strokeLinecap="round" 
+          strokeLinejoin="round"
+        >
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+          <path d="M16.95 17.95l-4.24-4.24a1 1 0 0 0-1.42 0l-2.12 2.12a1 1 0 0 0 0 1.42l4.24 4.24a1 1 0 0 0 1.42 0l2.12-2.12a1 1 0 0 0 0-1.42z"></path>
+          <path d="M14.83 14.83l-1.41-1.41a1 1 0 0 0-1.42 0l-2.12 2.12a1 1 0 0 0 0 1.42l1.41 1.41a1 1 0 0 0 1.42 0l2.12-2.12a1 1 0 0 0 0-1.42z"></path>
+          <path d="M21.18 8.04l-5.3-5.3a1 1 0 0 0-1.42 0l-2.12 2.12a1 1 0 0 0 0 1.42l5.3 5.3a1 1 0 0 0 1.42 0l2.12-2.12a1 1 0 0 0 0-1.42z"></path>
+        </svg>
       </div>
     );
     
     const planeIcon = L.divIcon({
       html: planeIconHtml,
       className: 'plane-marker',
-      iconSize: [24, 24],
-      iconAnchor: [12, 12]
+      iconSize: [18, 18],
+      iconAnchor: [9, 9]
     });
     
     const planeMarker = L.marker([departure.lat, departure.lng], {
@@ -349,7 +277,10 @@ const FlightPath: React.FC<FlightPathProps> = ({
     
     planeMarkerRef.current = planeMarker;
     
-    const speed = 40;
+    // Adjust speed based on flight duration for more realistic animation
+    const flightMinutes = getFlightMinutes();
+    const speed = Math.max(30, Math.min(60, 40 - flightMinutes / 60)); // Faster for shorter flights
+    
     let step = 0;
     const totalSteps = arcPointsRef.current.length - 1;
     
@@ -366,29 +297,36 @@ const FlightPath: React.FC<FlightPathProps> = ({
             const currPoint = arcPointsRef.current[step];
             const nextPoint = arcPointsRef.current[step + 1];
             if (currPoint && nextPoint) {
-              // const bearing = getBearing(currPoint[0], currPoint[1], nextPoint[0], nextPoint[1]);
               const newBearing = getBearing(currPoint[0], currPoint[1], nextPoint[0], nextPoint[1]);
 
-              if (newBearing !== planeRotation) { // ✅ Only update when bearing changes
+              if (Math.abs(newBearing - planeRotation) > 3) {
                 setPlaneRotation(newBearing);
                 const newPlaneIconHtml = ReactDOMServer.renderToString(
                   <div className="plane-icon" style={{ transform: `rotate(${newBearing}deg)` }}>
-                    <Plane size={20} className="text-primary-600" />
+                    <svg 
+                      xmlns="http://www.w3.org/2000/svg" 
+                      width="18" 
+                      height="18" 
+                      viewBox="0 0 24 24" 
+                      fill={type === 'direct' ? '#4CAF50' : '#FFC107'}
+                      stroke={isDarkMode ? 'white' : 'black'} 
+                      strokeWidth="1" 
+                      strokeLinecap="round" 
+                      strokeLinejoin="round"
+                    >
+                      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                      <path d="M16.95 17.95l-4.24-4.24a1 1 0 0 0-1.42 0l-2.12 2.12a1 1 0 0 0 0 1.42l4.24 4.24a1 1 0 0 0 1.42 0l2.12-2.12a1 1 0 0 0 0-1.42z"></path>
+                      <path d="M14.83 14.83l-1.41-1.41a1 1 0 0 0-1.42 0l-2.12 2.12a1 1 0 0 0 0 1.42l1.41 1.41a1 1 0 0 0 1.42 0l2.12-2.12a1 1 0 0 0 0-1.42z"></path>
+                      <path d="M21.18 8.04l-5.3-5.3a1 1 0 0 0-1.42 0l-2.12 2.12a1 1 0 0 0 0 1.42l5.3 5.3a1 1 0 0 0 1.42 0l2.12-2.12a1 1 0 0 0 0-1.42z"></path>
+                    </svg>
                   </div>
                 );
-
-              // if (planeMarkerRef.current) {
-              //   const newPlaneIconHtml = ReactDOMServer.renderToString(
-              //     <div className="plane-icon" style={{ transform: `rotate(${bearing}deg)` }}>
-              //       <Plane size={20} className="text-primary-600" />
-              //     </div>
-              //   );
                 
                 const newPlaneIcon = L.divIcon({
                   html: newPlaneIconHtml,
                   className: 'plane-marker',
-                  iconSize: [24, 24],
-                  iconAnchor: [12, 12]
+                  iconSize: [18, 18],
+                  iconAnchor: [9, 9]
                 });
                 
                 planeMarkerRef.current.setIcon(newPlaneIcon);
@@ -402,40 +340,14 @@ const FlightPath: React.FC<FlightPathProps> = ({
           setTimeout(animate, speed);
         });
       } else {
-        if (arrival) {
-          const arrivalMarkerHtml = ReactDOMServer.renderToString(
-            <div className="animation-circle" >
-            </div>
-          );
-          
-          const arrivalMarkerIcon = L.divIcon({
-            html: arrivalMarkerHtml,
-            className: 'arrival-marker-icon',
-            iconSize: [60, 60],
-            iconAnchor: [30, 30]
-          });
-          
-          const arrivalMarker = L.marker([arrival.lat, arrival.lng], { 
-            icon: arrivalMarkerIcon,
-            zIndexOffset: 5000
-          }).addTo(map);
-          
-          setTimeout(() => {
-            arrivalMarker.remove();
-            setAnimationComplete(true);
-          }, 3000);
-        }
-        
-        takeoffMarker.remove();
-        
         console.log(`Flight animation complete for ${departure.code} to ${arrival.code}`);
         setAnimationComplete(true);
         
         setTimeout(() => {
-          if (Math.random() > 0.99) {
+          if (Math.random() > 0.7) {
             createInfoPopup();
           }
-        }, 2000);
+        }, 1500);
       }
     };
     
@@ -492,8 +404,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
   };
   
   const color = type === 'direct' ? '#4CAF50' : '#FFC107';
-
-  const weight = isActive ? 5 : 3;
+  const weight = isActive ? 4 : 3;
   const opacity = isActive ? 0.8 : 0.6;
   
   return (
