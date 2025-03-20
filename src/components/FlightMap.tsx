@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useRef } from 'react';
 import { TileLayer, useMap, MapContainer as LeafletMapContainer } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -319,21 +320,29 @@ const FlightMap: React.FC<FlightMapProps> = ({
             attribution={attribution}
           />
           
-          {/* Render flight paths */}
-          {selectedFlight ? (
-            // Render selected flight path
-            selectedFlight.type === 'direct' ? (
-              // Direct flight
+          {/* Always render all flight paths with animations */}
+          <>
+            {/* Direct flights */}
+            {directFlights.map(flight => (
               <FlightPath
-                departure={(selectedFlight.flight as Flight).departureAirport}
-                arrival={(selectedFlight.flight as Flight).arrivalAirport}
+                key={flight.id}
+                departure={flight.departureAirport}
+                arrival={flight.arrivalAirport}
                 type="direct"
                 isActive={true}
                 isDarkMode={isDarkMode}
+                duration={flight.duration}
+                flightNumber={flight.flightNumber}
+                departureTime={flight.departureTime}
+                arrivalTime={flight.arrivalTime}
+                airline={flight.airline?.name}
+                price={Math.floor(Math.random() * 500) + 300}
               />
-            ) : (
-              // Connecting flight
-              (selectedFlight.flight as ConnectionFlight).flights.map((flight, index) => (
+            ))}
+            
+            {/* Connecting flights */}
+            {connectingFlights.map(connection => 
+              connection.flights.map(flight => (
                 <FlightPath
                   key={flight.id}
                   departure={flight.departureAirport}
@@ -341,36 +350,16 @@ const FlightMap: React.FC<FlightMapProps> = ({
                   type="connecting"
                   isActive={true}
                   isDarkMode={isDarkMode}
+                  duration={flight.duration}
+                  flightNumber={flight.flightNumber}
+                  departureTime={flight.departureTime}
+                  arrivalTime={flight.arrivalTime}
+                  airline={flight.airline?.name}
+                  price={Math.floor(Math.random() * 400) + 400}
                 />
               ))
-            )
-          ) : (
-            // Render all flight paths when no flight is selected
-            <>
-              {directFlights.map(flight => (
-                <FlightPath
-                  key={flight.id}
-                  departure={flight.departureAirport}
-                  arrival={flight.arrivalAirport}
-                  type="direct"
-                  isActive={false}
-                  isDarkMode={isDarkMode}
-                />
-              ))}
-              {connectingFlights.map(connection => 
-                connection.flights.map(flight => (
-                  <FlightPath
-                    key={flight.id}
-                    departure={flight.departureAirport}
-                    arrival={flight.arrivalAirport}
-                    type="connecting"
-                    isActive={false}
-                    isDarkMode={isDarkMode}
-                  />
-                ))
-              )}
-            </>
-          )}
+            )}
+          </>
           
           {/* Render airport markers */}
           {allAirports.map(airport => (
