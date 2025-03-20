@@ -42,7 +42,10 @@ const FlightPath: React.FC<FlightPathProps> = ({
   const [showDetails, setShowDetails] = useState(false);
   const [detailsPosition, setDetailsPosition] = useState<[number, number]>([0, 0]);
   const [popupExpanded, setPopupExpanded] = useState(false);
+  const [animationPhase, setAnimationPhase] = useState<'idle' | 'drawing' | 'flying'>('idle');
+  const [displayedPoints, setDisplayedPoints] = useState<[number, number][]>([]);
   const animationRef = useRef<number | null>(null);
+  const drawingRef = useRef<number | null>(null);
   const planeMarkerRef = useRef<L.Marker | null>(null);
   const popupRef = useRef<L.Popup | null>(null);
   const map = useMap();
@@ -74,12 +77,98 @@ const FlightPath: React.FC<FlightPathProps> = ({
     );
     setArcPoints(points);
     
-    // Initially set plane at departure
-    setPlanePosition([departure.lat, departure.lng]);
+    // Start with no visible points - we'll animate them in
+    setDisplayedPoints([]);
     
     // Calculate initial bearing
-    const bearing = getBearing(departure.lat, departure.lng, arrival.lat, arrival.lng);
-    setPlaneRotation(bearing);
+    if (departure && arrival) {
+      const bearing = getBearing(departure.lat, departure.lng, arrival.lat, arrival.lng);
+      setPlaneRotation(bearing);
+    }
+    
+    // Start with animation phase idle - will trigger drawing and flying later
+    setTimeout(() => {
+      startDrawingPhase();
+    }, 500 + Math.random() * 1000); // Staggered start
+    
+    // Clean up on unmount
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+      if (drawingRef.current) {
+        cancelAnimationFrame(drawingRef.current);
+      }
+      if (planeMarkerRef.current) {
+        planeMarkerRef.current.remove();
+      }
+      if (popupRef.current) {
+        map.closePopup(popupRef.current);
+      }
+    };
+  }, [departure, arrival, type]);
+  
+  // Start the line drawing animation
+  const startDrawingPhase = () => {
+    if (!arcPoints.length) return;
+    
+    setAnimationPhase('drawing');
+    // Focus on departure airport
+    if (departure) {
+      map.flyTo([departure.lat, departure.lng], 5, {
+        duration: 1.5
+      });
+    }
+    
+    // Initialize with just the starting point
+    setDisplayedPoints([arcPoints[0]]);
+    
+    // Determine drawing speed based on path length
+    const flightMinutes = getFlightMinutes();
+    const drawingDuration = Math.min(2000, Math.max(1000, flightMinutes * 5)); // Between 1-2 seconds
+    const totalPoints = arcPoints.length;
+    const pointsPerFrame = Math.max(1, Math.ceil(totalPoints / (drawingDuration / 16))); // 16ms per frame approx
+    
+    let currentPointIndex = 1; // Start from 1 since we already have the first point
+    
+    const drawNextSegment = () => {
+      if (currentPointIndex >= totalPoints) {
+        // Drawing complete, start flying
+        setTimeout(() => {
+          startFlyingPhase();
+        }, 500); // Short delay before plane starts moving
+        return;
+      }
+      
+      // Add next batch of points
+      const newIndex = Math.min(totalPoints, currentPointIndex + pointsPerFrame);
+      setDisplayedPoints(arcPoints.slice(0, newIndex));
+      currentPointIndex = newIndex;
+      
+      // Continue drawing
+      drawingRef.current = requestAnimationFrame(drawNextSegment);
+    };
+    
+    // Start drawing animation
+    drawingRef.current = requestAnimationFrame(drawNextSegment);
+  };
+  
+  // Start the plane flying animation after line is drawn
+  const startFlyingPhase = () => {
+    setAnimationPhase('flying');
+    
+    // Initialize with plane at departure
+    if (departure) {
+      setPlanePosition([departure.lat, departure.lng]);
+    }
+    
+    // Fit view to see the entire flight path
+    if (departure && arrival && arcPoints.length > 0) {
+      map.fitBounds(L.latLngBounds([
+        [departure.lat, departure.lng],
+        [arrival.lat, arrival.lng]
+      ]), { padding: [50, 50] });
+    }
     
     // Calculate adaptive speed based on flight duration
     const flightMinutes = getFlightMinutes();
@@ -90,15 +179,6 @@ const FlightPath: React.FC<FlightPathProps> = ({
     const speedFactor = Math.max(0.5, Math.min(2, 1 + durationFactor));
     const speed = Math.max(20, Math.min(80, baseSpeed * speedFactor));
     
-    // Set starting point for flight animation - staggered starts
-    // Use flight hash from flightNumber to create a more predictable but varied start time
-    const hashCode = (s: string) => {
-      return s.split('').reduce((a, b) => {
-        a = ((a << 5) - a) + b.charCodeAt(0);
-        return a & a;
-      }, 0);
-    };
-    
     // Use a hash of flightNumber or fallback to random
     let hashValue = 0;
     if (flightNumber) {
@@ -107,20 +187,24 @@ const FlightPath: React.FC<FlightPathProps> = ({
       hashValue = Math.floor(Math.random() * 100000);
     }
     
-    const staggerOffset = hashValue % Math.floor(points.length / 3);
-    let step = staggerOffset; // Staggered start within first third based on hash
-    const totalSteps = points.length - 1;
+    let step = 0; // Start from beginning
+    const totalSteps = arcPoints.length - 1;
     
     const animate = () => {
       if (step < totalSteps) {
-        setPlanePosition(points[step]);
-        
-        // Calculate bearing for rotation
-        if (step < totalSteps - 1) {
-          const currPoint = points[step];
-          const nextPoint = points[step + 1];
-          const bearing = getBearing(currPoint[0], currPoint[1], nextPoint[0], nextPoint[1]);
-          setPlaneRotation(bearing);
+        const point = arcPoints[step];
+        if (point) {
+          setPlanePosition([point[0], point[1]]);
+          
+          // Calculate bearing for rotation
+          if (step < totalSteps - 1) {
+            const currPoint = arcPoints[step];
+            const nextPoint = arcPoints[step + 1];
+            if (currPoint && nextPoint) {
+              const bearing = getBearing(currPoint[0], currPoint[1], nextPoint[0], nextPoint[1]);
+              setPlaneRotation(bearing);
+            }
+          }
         }
         
         step++;
@@ -136,24 +220,17 @@ const FlightPath: React.FC<FlightPathProps> = ({
       }
     };
     
-    // Start animation after a small delay based on hash to create staggered takeoffs
-    setTimeout(() => {
-      animate();
-    }, (hashValue % 3000)); // Stagger up to 3 seconds for takeoff
-    
-    // Clean up on unmount
-    return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-      if (planeMarkerRef.current) {
-        planeMarkerRef.current.remove();
-      }
-      if (popupRef.current) {
-        map.closePopup(popupRef.current);
-      }
-    };
-  }, [departure, arrival, animated, type, duration, flightNumber, map]);
+    // Start animation
+    setTimeout(animate, 300);
+  };
+  
+  // Helper function to hash string for consistent randomness
+  const hashCode = (s: string) => {
+    return s.split('').reduce((a, b) => {
+      a = ((a << 5) - a) + b.charCodeAt(0);
+      return a & a;
+    }, 0);
+  };
   
   // Create a plane icon component that will be animated along the path
   useEffect(() => {
@@ -202,9 +279,11 @@ const FlightPath: React.FC<FlightPathProps> = ({
     
     // Add click handler to show details
     marker.on('click', (e) => {
-      setDetailsPosition([e.latlng.lat, e.latlng.lng]);
-      setShowDetails(true);
-      setPopupExpanded(false); // Reset to collapsed state when opening new popup
+      if (e.originalEvent && e.latlng) {
+        setDetailsPosition([e.latlng.lat, e.latlng.lng]);
+        setShowDetails(true);
+        setPopupExpanded(true); // Start with expanded view on direct click
+      }
     });
     
     marker.addTo(map);
@@ -217,24 +296,28 @@ const FlightPath: React.FC<FlightPathProps> = ({
     };
   }, [planePosition, planeRotation, map, type]);
   
-  // Add click handler to the path to show details
+  // Handle hover/click on flight path
   const handlePathHover = (e: L.LeafletMouseEvent) => {
-    // Show minimal popup with airline info on hover
-    setDetailsPosition([e.latlng.lat, e.latlng.lng]);
-    setShowDetails(true);
-    setPopupExpanded(false); // Start in collapsed state on hover
+    if (e && e.latlng) {
+      // Show basic popup with airline info on hover
+      setDetailsPosition([e.latlng.lat, e.latlng.lng]);
+      setShowDetails(true);
+      setPopupExpanded(false); // Collapsed state on hover
+    }
   };
   
   const handlePathClick = (e: L.LeafletMouseEvent) => {
-    // Toggle expanded details on click
-    setDetailsPosition([e.latlng.lat, e.latlng.lng]);
-    setShowDetails(true);
-    setPopupExpanded(true); // Expand to show all details on click
+    if (e && e.latlng) {
+      // Show expanded details on click
+      setDetailsPosition([e.latlng.lat, e.latlng.lng]);
+      setShowDetails(true); 
+      setPopupExpanded(true); // Expanded state on click
+    }
   };
   
   // Create a popup component for flight details
   const FlightDetailsPopup = () => {
-    if (!showDetails || !detailsPosition) return null;
+    if (!showDetails || !detailsPosition || !departure || !arrival) return null;
     
     // Use Leaflet's popup with expandable content
     useEffect(() => {
@@ -305,7 +388,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
         </div>
       `;
       
-      // Create popup with appropriate content
+      // Create popup with appropriate content and make sure it closes with close button only
       const popup = L.popup({
         className: 'flight-details-popup',
         closeButton: true,
@@ -329,28 +412,23 @@ const FlightPath: React.FC<FlightPathProps> = ({
         });
       }
       
-      // Close popup when user clicks away
-      const handleMapClick = (e: L.LeafletMouseEvent) => {
-        // Check if click is outside the popup
-        const popupElement = document.querySelector('.flight-details-popup');
-        if (popupElement && !popupElement.contains(e.originalEvent.target as Node)) {
-          setShowDetails(false);
-          map.removeEventListener('click', handleMapClick);
-        }
-      };
-      
-      map.addEventListener('click', handleMapClick);
-      
+      // Only close popup when user clicks the close button
       popup.on('remove', () => {
         setShowDetails(false);
-        map.removeEventListener('click', handleMapClick);
       });
+      
+      // Prevent map click from closing the popup
+      const popupElement = document.querySelector('.flight-details-popup');
+      if (popupElement) {
+        popupElement.addEventListener('click', (e) => {
+          e.stopPropagation();
+        });
+      }
       
       return () => {
         if (popupRef.current) {
           map.closePopup(popupRef.current);
         }
-        map.removeEventListener('click', handleMapClick);
       };
     }, [detailsPosition, showDetails, popupExpanded]);
     
@@ -382,20 +460,27 @@ const FlightPath: React.FC<FlightPathProps> = ({
   
   return (
     <>
+      {/* Draw only the currently displayed points from the animation */}
       <Polyline 
-        positions={arcPoints}
+        positions={animationPhase === 'idle' ? [] : displayedPoints}
         pathOptions={getPathOptions()}
         eventHandlers={{
           click: handlePathClick,
           mouseover: (e) => {
-            const path = e.target;
-            path.setStyle({ weight: 5, opacity: 1 });
-            handlePathHover(e.originalEvent as unknown as L.LeafletMouseEvent);
+            if (e && e.target) {
+              const path = e.target;
+              path.setStyle({ weight: 5, opacity: 1 });
+              if (e.originalEvent) {
+                handlePathHover(e.originalEvent as unknown as L.LeafletMouseEvent);
+              }
+            }
           },
           mouseout: (e) => {
-            const path = e.target;
-            path.setStyle({ weight: 3, opacity: 0.85 });
-            // Don't hide popup on mouseout, let it stay until clicked away
+            if (e && e.target) {
+              const path = e.target;
+              path.setStyle({ weight: 3, opacity: 0.85 });
+              // Don't hide popup on mouseout, let it stay until closed
+            }
           }
         }}
       />
@@ -451,6 +536,24 @@ const FlightPath: React.FC<FlightPathProps> = ({
           0% { transform: scale(1); opacity: 1; }
           50% { transform: scale(1.2); opacity: 0.8; }
           100% { transform: scale(1); opacity: 1; }
+        }
+        
+        /* Fix popup flickering */
+        .leaflet-popup {
+          pointer-events: auto !important;
+        }
+        
+        .leaflet-popup-content-wrapper {
+          pointer-events: auto !important;
+        }
+        
+        .leaflet-popup-content {
+          pointer-events: auto !important;
+        }
+        
+        /* Only close popup when close button is clicked */
+        .leaflet-popup-close-button {
+          display: block !important;
         }
       `}</style>
     </>
