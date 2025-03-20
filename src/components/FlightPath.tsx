@@ -6,7 +6,6 @@ import { Airport } from '../types/flightTypes';
 import { calculateArcPoints, getBearing } from '../utils/flightUtils';
 import { Plane } from 'lucide-react';
 import ReactDOMServer from 'react-dom/server';
-import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 
 interface FlightPathProps {
   departure: Airport;
@@ -80,35 +79,25 @@ const FlightPath: React.FC<FlightPathProps> = ({
     const bearing = getBearing(departure.lat, departure.lng, arrival.lat, arrival.lng);
     setPlaneRotation(bearing);
     
-    // Start animation immediately regardless of selection
-    // Animate plane along path
-    let step = 0;
-    const totalSteps = points.length - 1;
-    
     // Calculate adaptive speed based on flight duration
-    // Longer flights should have slower animation
     const flightMinutes = getFlightMinutes();
-    
-    // Base speed of animation (lower = faster)
-    // For shorter flights (e.g. 60 min), we want faster animations
-    // For longer flights (e.g. 600 min), we want slower animations
     const baseSpeed = 40; // milliseconds
-    
-    // Scale factor to adjust speed based on flight duration
-    // This ensures proportional speeds between short and long flights
-    const maxDuration = 600; // 10 hours as reference max duration
-    const minDuration = 60; // 1 hour as reference min duration
+    const maxDuration = 600; // 10 hours as max duration
+    const minDuration = 60; // 1 hour as min duration
     const durationFactor = (flightMinutes - minDuration) / (maxDuration - minDuration);
     const speedFactor = Math.max(0.5, Math.min(2, 1 + durationFactor));
-    
-    // Final speed with limits to avoid extremely fast or slow animations
     const speed = Math.max(20, Math.min(80, baseSpeed * speedFactor));
+    
+    // Set a unique starting point along the path based on the flight ID
+    // This creates staggered starts for each flight
+    let step = Math.floor(Math.random() * (points.length / 3)); // Random start within first third
+    const totalSteps = points.length - 1;
     
     const animate = () => {
       if (step < totalSteps) {
         setPlanePosition(points[step]);
         
-        // Calculate bearing between current and next point for rotation
+        // Calculate bearing for rotation
         if (step < totalSteps - 1) {
           const currPoint = points[step];
           const nextPoint = points[step + 1];
@@ -118,14 +107,13 @@ const FlightPath: React.FC<FlightPathProps> = ({
         
         step++;
         animationRef.current = requestAnimationFrame(() => {
-          setTimeout(animate, speed); // Use calculated speed
+          setTimeout(animate, speed); // Use adaptive speed based on flight duration
         });
       } else {
         // Loop animation continuously
         step = 0;
-        setPlanePosition([departure.lat, departure.lng]);
         animationRef.current = requestAnimationFrame(() => {
-          setTimeout(animate, 1000); // Pause 1 second before restart
+          setTimeout(animate, 800); // Brief pause before restart
         });
       }
     };
@@ -233,7 +221,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
               <p><span class="font-medium">From:</span> ${departure.name} (${departure.code})</p>
               <p><span class="font-medium">To:</span> ${arrival.name} (${arrival.code})</p>
               ${departureTime ? `<p><span class="font-medium">Departure:</span> ${departureTime.split('T')[1]?.substring(0, 5) || departureTime}</p>` : ''}
-              ${arrivalTime ? `<p><span class="font-medium">Arrival:</span> ${new Date(arrivalTime).toTimeString().substring(0, 5)}</p>` : ''}
+              ${arrivalTime ? `<p><span class="font-medium">Arrival:</span> ${arrivalTime.split('T')[1]?.substring(0, 5) || arrivalTime}</p>` : ''}
               ${duration ? `<p><span class="font-medium">Duration:</span> ${duration}</p>` : ''}
               ${price ? `<p class="font-semibold text-primary">Price: $${price}</p>` : ''}
             </div>

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import { TileLayer, useMap, MapContainer as LeafletMapContainer } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -335,7 +334,7 @@ const FlightMap: React.FC<FlightMapProps> = ({
                 flightNumber={flight.flightNumber}
                 departureTime={flight.departureTime}
                 arrivalTime={flight.arrivalTime}
-                airline={flight.airline?.name}
+                airline={flight.airline}
                 price={Math.floor(Math.random() * 500) + 300}
               />
             ))}
@@ -354,7 +353,7 @@ const FlightMap: React.FC<FlightMapProps> = ({
                   flightNumber={flight.flightNumber}
                   departureTime={flight.departureTime}
                   arrivalTime={flight.arrivalTime}
-                  airline={flight.airline?.name}
+                  airline={flight.airline}
                   price={Math.floor(Math.random() * 400) + 400}
                 />
               ))

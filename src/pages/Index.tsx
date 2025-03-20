@@ -42,7 +42,7 @@ const Index = () => {
       if (totalFlights > 0) {
         toast({
           title: `Found ${totalFlights} flights`,
-          description: `Click or hover over flight paths to see details`,
+          description: `Hover over or click flight paths to see details`,
           duration: 3000,
         });
       } else {
@@ -79,7 +79,7 @@ const Index = () => {
           <div className="lg:col-span-1">
             <SearchPanel onSearch={handleSearch} loading={searchResults.loading} />
             
-            {/* Info text instead of flight list */}
+            {/* Flight information legend */}
             {hasSearched && !searchResults.loading && (
               <div className="mt-6 glass-panel rounded-2xl p-6 animate-slide-up">
                 <h3 className="text-lg font-semibold mb-2">Flight Visualization</h3>
@@ -101,6 +101,12 @@ const Index = () => {
                       <span>Connecting Flights</span>
                     </div>
                   </div>
+                </div>
+                
+                {/* Display total flights count */}
+                <div className="mt-4 text-sm text-muted-foreground">
+                  <div>Direct Flights: <span className="font-medium">{searchResults.directFlights.length}</span></div>
+                  <div>Connecting Flights: <span className="font-medium">{searchResults.connectingFlights.length}</span></div>
                 </div>
               </div>
             )}
