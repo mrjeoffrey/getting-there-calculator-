@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useRef } from 'react';
 import { Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -323,6 +324,31 @@ const FlightPath: React.FC<FlightPathProps> = ({
     
     setPlanePosition([departure.lat, departure.lng]);
     
+    // Create plane marker
+    if (planeMarkerRef.current) {
+      planeMarkerRef.current.remove();
+    }
+    
+    const planeIconHtml = ReactDOMServer.renderToString(
+      <div className="plane-icon" style={{ transform: `rotate(${planeRotation}deg)` }}>
+        <Plane size={20} className="text-primary-600" />
+      </div>
+    );
+    
+    const planeIcon = L.divIcon({
+      html: planeIconHtml,
+      className: 'plane-marker',
+      iconSize: [24, 24],
+      iconAnchor: [12, 12]
+    });
+    
+    const planeMarker = L.marker([departure.lat, departure.lng], {
+      icon: planeIcon,
+      zIndexOffset: 6000
+    }).addTo(map);
+    
+    planeMarkerRef.current = planeMarker;
+    
     const speed = 40;
     let step = 0;
     const totalSteps = arcPointsRef.current.length - 1;
@@ -331,14 +357,34 @@ const FlightPath: React.FC<FlightPathProps> = ({
       if (step < totalSteps) {
         const point = arcPointsRef.current[step];
         if (point) {
-          setPlanePosition([point[0], point[1]]);
+          // Update plane position
+          if (planeMarkerRef.current) {
+            planeMarkerRef.current.setLatLng(point);
+          }
           
           if (step < totalSteps - 1) {
             const currPoint = arcPointsRef.current[step];
             const nextPoint = arcPointsRef.current[step + 1];
             if (currPoint && nextPoint) {
               const bearing = getBearing(currPoint[0], currPoint[1], nextPoint[0], nextPoint[1]);
-              setPlaneRotation(bearing);
+              
+              // Update plane rotation
+              if (planeMarkerRef.current) {
+                const newPlaneIconHtml = ReactDOMServer.renderToString(
+                  <div className="plane-icon" style={{ transform: `rotate(${bearing}deg)` }}>
+                    <Plane size={20} className="text-primary-600" />
+                  </div>
+                );
+                
+                const newPlaneIcon = L.divIcon({
+                  html: newPlaneIconHtml,
+                  className: 'plane-marker',
+                  iconSize: [24, 24],
+                  iconAnchor: [12, 12]
+                });
+                
+                planeMarkerRef.current.setIcon(newPlaneIcon);
+              }
             }
           }
         }
@@ -380,5 +426,103 @@ const FlightPath: React.FC<FlightPathProps> = ({
         
         setTimeout(() => {
           if (Math.random() > 0.7) {
+            createInfoPopup();
+          }
+        }, 2000);
+      }
+    };
+    
+    setTimeout(() => {
+      console.log(`Starting plane animation for ${departure.code} to ${arrival.code}`);
+      animationRef.current = requestAnimationFrame(animate);
+    }, 100);
+  };
+  
+  const createInfoPopup = () => {
+    if (!planeMarkerRef.current || !map) return;
+    
+    const popupContent = ReactDOMServer.renderToString(
+      <div className="flight-popup">
+        <div className="flight-popup-header">
+          <span className={`flight-type ${type === 'direct' ? 'direct' : 'connecting'}`}>
+            {type === 'direct' ? 'Direct' : 'Connecting'}
+          </span>
+          <span className="flight-number">{flightNumber}</span>
+        </div>
+        <div className="flight-popup-content">
+          <div className="flight-route">
+            <div className="flight-airport">
+              <div className="airport-code">{departure.code}</div>
+              <div className="airport-time">{departureTime}</div>
+            </div>
+            <div className="flight-duration">
+              <div className="duration-line"></div>
+              <div className="duration-text">{duration}</div>
+            </div>
+            <div className="flight-airport">
+              <div className="airport-code">{arrival.code}</div>
+              <div className="airport-time">{arrivalTime}</div>
+            </div>
+          </div>
+          <div className="flight-airline">
+            <span>{airline}</span>
+            {price > 0 && <span className="flight-price">${price}</span>}
+          </div>
+        </div>
+      </div>
+    );
+    
+    const popup = L.popup({
+      closeButton: true,
+      autoClose: false,
+      className: `flight-info-popup ${type === 'direct' ? 'direct' : 'connecting'}`
+    })
+      .setLatLng(planeMarkerRef.current.getLatLng())
+      .setContent(popupContent)
+      .openOn(map);
+    
+    popupRef.current = popup;
+  };
+  
+  const color = type === 'direct' ? '#4CAF50' : '#FFC107';
+  const weight = isActive ? 5 : 3;
+  const opacity = isActive ? 0.8 : 0.6;
+  
+  return (
+    <>
+      {displayedPoints.length >= 2 && (
+        <Polyline
+          positions={displayedPoints}
+          pathOptions={{
+            color,
+            weight,
+            opacity,
+            dashArray: type === 'connecting' ? '5, 10' : '',
+            className: `flight-path ${animationComplete ? 'animation-complete' : ''}`
+          }}
+          eventHandlers={{
+            click: () => {
+              createInfoPopup();
+            },
+            mouseover: () => {
+              setShowDetails(true);
+              
+              if (arcPoints.length > 0) {
+                const midIndex = Math.floor(arcPoints.length / 2);
+                const midPoint = arcPoints[midIndex];
+                if (midPoint) {
+                  setDetailsPosition(midPoint);
+                }
+              }
+            },
+            mouseout: () => {
+              setShowDetails(false);
+            }
+          }}
+        />
+      )}
+    </>
+  );
+};
 
-
+export default FlightPath;
