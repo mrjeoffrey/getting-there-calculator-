@@ -36,6 +36,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
   airline = '',
   price = 0
 }) => {
+  const arcPointsRef = useRef<[number, number][]>([]);
   const [arcPoints, setArcPoints] = useState<[number, number][]>([]);
   const [planePosition, setPlanePosition] = useState<[number, number] | null>(null);
   const [planeRotation, setPlaneRotation] = useState(0);
@@ -80,11 +81,18 @@ console.log("Arrival:", arrival);
       arrival.lng,
       arcHeight
     );
+    if (!points || points.length === 0) {
+      console.error("ERROR: calculateArcPoints returned empty points!");
+      return;
+    }
+  
+    console.log("Generated Arc Points:", points);
     setArcPoints(points);
+    arcPointsRef.current = points; 
     console.log("Generated Arc Points:", points); // Debugging
     
     // Start with no visible points - we'll animate them in
-    setDisplayedPoints([]);
+    setDisplayedPoints([arcPointsRef.current[0]]);
     
     // Calculate initial bearing
     if (departure && arrival) {
@@ -105,31 +113,48 @@ console.log("Arrival:", arrival);
     
     // Cleanup function
     return cleanup;
-  }, [departure, arrival, type]);
+  }, [departure, arrival]);
+  
+  useEffect(() => {
+    console.log("Updating arcPoints:", arcPoints);
+  }, [arcPoints]);
   
   // Cleanup function to remove markers and cancel animations
   const cleanup = () => {
+    console.log("Running cleanup...");
+  
+    console.log("Before cleanup, arcPoints:", arcPointsRef.current);
+  
     if (animationRef.current) {
+      console.log("Cancelling animation...");
       cancelAnimationFrame(animationRef.current);
       animationRef.current = null;
     }
     if (drawingRef.current) {
+      console.log("Cancelling drawing...");
       cancelAnimationFrame(drawingRef.current);
       drawingRef.current = null;
     }
     if (planeMarkerRef.current) {
+      console.log("Removing plane marker...");
       planeMarkerRef.current.remove();
       planeMarkerRef.current = null;
     }
-    if (popupRef.current) {
+    if (popupRef.current && map) {
+      console.log("Closing popup...");
       map.closePopup(popupRef.current);
       popupRef.current = null;
     }
     if (drawingMarkerRef.current) {
+      console.log("Removing drawing marker...");
       drawingMarkerRef.current.remove();
       drawingMarkerRef.current = null;
     }
+  
+    console.log("After cleanup, arcPoints:", arcPointsRef.current);
   };
+  
+  
   
   // Start by zooming into the origin airport
   const startZoomingPhase = () => {
@@ -176,6 +201,7 @@ console.log("Arrival:", arrival);
     
     // After zoom completes, start drawing the path
     setTimeout(() => {
+      console.log("arcPoints before zoom:", arcPoints);
       zoomMarker.remove();
       console.log("arcPoints before drawing:", arcPoints);
       console.log(`Zoom complete, starting drawing phase for ${departure.code} to ${arrival.code}`);
@@ -416,7 +442,15 @@ console.log("Arrival:", arrival);
             iconSize: [80, 80],
             iconAnchor: [40, 40]
           });
+          if (!map) {
+            console.error("ERROR: Leaflet map is undefined when adding marker.");
+            return;
+          }
           
+          if (!arrival || !arrival.lat || !arrival.lng) {
+            console.error("ERROR: Arrival data is missing:", arrival);
+            return;
+          }
           // Add a temporary marker for arrival effect
           const arrivalMarker = L.marker([arrival.lat, arrival.lng], { 
             icon: arrivalMarkerIcon,
