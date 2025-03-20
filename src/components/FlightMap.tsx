@@ -37,6 +37,7 @@ const FlightMap: React.FC<FlightMapProps> = ({
   const [mapStyle, setMapStyle] = useState<'google-like' | 'satellite' | 'standard'>('google-like');
   const [mapRef, setMapRef] = useState<L.Map | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [animationStarted, setAnimationStarted] = useState(false);
   
   // Collect all unique airports from flights
   useEffect(() => {
@@ -57,6 +58,14 @@ const FlightMap: React.FC<FlightMapProps> = ({
     });
     
     setAllAirports(Array.from(airports.values()));
+    
+    // Reset animation flag when flights change
+    setAnimationStarted(false);
+    
+    // Trigger animation after a short delay
+    setTimeout(() => {
+      setAnimationStarted(true);
+    }, 500);
   }, [directFlights, connectingFlights]);
   
   // Get selected flight details
@@ -237,6 +246,11 @@ const FlightMap: React.FC<FlightMapProps> = ({
     else setMapStyle('google-like');
   };
   
+  // Stagger flight paths for better visualization
+  const getStaggerDelay = (index: number, total: number) => {
+    return (index / total) * 1000; // Spread animations across 1 second
+  };
+  
   // Loading component or fallback
   if (loading) {
     return (
@@ -298,6 +312,16 @@ const FlightMap: React.FC<FlightMapProps> = ({
         </Toggle>
       </div>
       
+      {/* Animation Control Indicator */}
+      {animationStarted && (
+        <div className="fixed bottom-4 left-4 z-50 p-2 bg-black/60 text-white rounded-md text-xs animate-fade-in">
+          <div className="flex items-center">
+            <span className="animate-ping mr-2 h-2 w-2 rounded-full bg-primary inline-flex"></span>
+            <span>Animating Flights</span>
+          </div>
+        </div>
+      )}
+      
       {/* Map container with 3D globe effect */}
       <div 
         ref={containerRef} 
@@ -320,15 +344,32 @@ const FlightMap: React.FC<FlightMapProps> = ({
             attribution={attribution}
           />
           
-          {/* Always render all flight paths with animations */}
-          <>
-            {/* Direct flights */}
-            {directFlights.map(flight => (
+          {/* Render direct flights with staggered animation */}
+          {animationStarted && directFlights.map((flight, index) => (
+            <FlightPath
+              key={flight.id}
+              departure={flight.departureAirport}
+              arrival={flight.arrivalAirport}
+              type="direct"
+              isActive={true}
+              isDarkMode={isDarkMode}
+              duration={flight.duration}
+              flightNumber={flight.flightNumber}
+              departureTime={flight.departureTime}
+              arrivalTime={flight.arrivalTime}
+              airline={flight.airline}
+              price={Math.floor(Math.random() * 500) + 300}
+            />
+          ))}
+          
+          {/* Render connecting flights with staggered animation */}
+          {animationStarted && connectingFlights.map((connection, connIndex) => 
+            connection.flights.map((flight, flightIndex) => (
               <FlightPath
-                key={flight.id}
+                key={`${connection.id}-${flight.id}`}
                 departure={flight.departureAirport}
                 arrival={flight.arrivalAirport}
-                type="direct"
+                type="connecting"
                 isActive={true}
                 isDarkMode={isDarkMode}
                 duration={flight.duration}
@@ -336,30 +377,10 @@ const FlightMap: React.FC<FlightMapProps> = ({
                 departureTime={flight.departureTime}
                 arrivalTime={flight.arrivalTime}
                 airline={flight.airline}
-                price={Math.floor(Math.random() * 500) + 300}
+                price={Math.floor(Math.random() * 400) + 400}
               />
-            ))}
-            
-            {/* Connecting flights */}
-            {connectingFlights.map(connection => 
-              connection.flights.map(flight => (
-                <FlightPath
-                  key={flight.id}
-                  departure={flight.departureAirport}
-                  arrival={flight.arrivalAirport}
-                  type="connecting"
-                  isActive={true}
-                  isDarkMode={isDarkMode}
-                  duration={flight.duration}
-                  flightNumber={flight.flightNumber}
-                  departureTime={flight.departureTime}
-                  arrivalTime={flight.arrivalTime}
-                  airline={flight.airline}
-                  price={Math.floor(Math.random() * 400) + 400}
-                />
-              ))
-            )}
-          </>
+            ))
+          )}
           
           {/* Render airport markers */}
           {allAirports.map(airport => (
@@ -382,7 +403,7 @@ const FlightMap: React.FC<FlightMapProps> = ({
         /* Make flight paths and markers more visible */
         .flight-path-solid {
           stroke-linecap: round;
-          filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.8));
+          filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.8));
         }
         
         .google-like-map .leaflet-tile-pane {
@@ -397,6 +418,7 @@ const FlightMap: React.FC<FlightMapProps> = ({
         /* Origin and destination markers */
         .origin-marker .marker-inner {
           background-color: #E91E63;
+          animation: pulse 2s infinite;
         }
         
         .destination-marker .marker-inner {
@@ -453,6 +475,21 @@ const FlightMap: React.FC<FlightMapProps> = ({
         
         .leaflet-popup-content {
           pointer-events: auto !important;
+        }
+        
+        /* Fix SVG overflow issue */
+        .leaflet-overlay-pane svg {
+          overflow: visible !important;
+        }
+        
+        /* Enhanced animation effect */
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        
+        .leaflet-container {
+          animation: fadeIn 0.5s ease-out;
         }
       `}</style>
     </div>

@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Flight, ConnectionFlight, SearchParams, SearchResults } from '../types/flightTypes';
 import { searchFlights } from '../utils/flightUtils';
 import Header from '../components/Header';
@@ -17,11 +17,13 @@ const Index = () => {
   
   const [selectedFlightId, setSelectedFlightId] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
+  const [animationInProgress, setAnimationInProgress] = useState(false);
   
   // Handle search
   const handleSearch = async (params: SearchParams) => {
     setSearchResults(prev => ({ ...prev, loading: true, error: null }));
     setSelectedFlightId(null);
+    setAnimationInProgress(true);
     
     try {
       // Show searching toast
@@ -43,15 +45,20 @@ const Index = () => {
       
       setHasSearched(true);
       
-      // Show toast with results summary
+      // Show toast with animation guidance
       const totalFlights = results.directFlights.length + results.connectingFlights.length;
       
       if (totalFlights > 0) {
         toast({
           title: `Found ${totalFlights} flights`,
-          description: `Hover over flight paths to see details. Click for more information.`,
-          duration: 3000,
+          description: `Watch as we animate the flight paths. Hover over routes for details.`,
+          duration: 4000,
         });
+        
+        // Reset animation flag after a while
+        setTimeout(() => {
+          setAnimationInProgress(false);
+        }, 8000);
       } else {
         toast({
           title: "No flights found",
@@ -59,6 +66,7 @@ const Index = () => {
           variant: "destructive",
           duration: 3000,
         });
+        setAnimationInProgress(false);
       }
     } catch (error) {
       setSearchResults({
@@ -74,8 +82,21 @@ const Index = () => {
         variant: "destructive",
         duration: 3000,
       });
+      
+      setAnimationInProgress(false);
     }
   };
+  
+  // Show animation guidance toast on initial load
+  useEffect(() => {
+    if (!hasSearched && searchResults.directFlights.length === 0 && searchResults.connectingFlights.length === 0) {
+      toast({
+        title: "Welcome to Flight Explorer",
+        description: "Search for flights to see animated routes and information",
+        duration: 4000,
+      });
+    }
+  }, []);
   
   return (
     <div className="min-h-screen bg-background p-6">
@@ -92,7 +113,7 @@ const Index = () => {
                 <h3 className="text-lg font-semibold mb-2">Flight Visualization</h3>
                 <p className="text-muted-foreground">
                   {searchResults.directFlights.length + searchResults.connectingFlights.length > 0 
-                    ? "Hover over flight paths for basic info. Click for more details." 
+                    ? "Hover over flight paths for airline info. Click for full details." 
                     : "No flights found. Try different airports or dates."}
                 </p>
                 
@@ -116,13 +137,25 @@ const Index = () => {
                   <div>Connecting Flights: <span className="font-medium">{searchResults.connectingFlights.length}</span></div>
                 </div>
                 
+                {/* Animation status indicator */}
+                {animationInProgress && (
+                  <div className="mt-4 p-3 bg-accent/20 rounded-lg text-xs">
+                    <h4 className="text-sm font-medium mb-1 flex items-center">
+                      <span className="w-2 h-2 rounded-full bg-accent mr-2 animate-pulse"></span>
+                      Animation in Progress
+                    </h4>
+                    <p>Watch as flights take off after paths are drawn</p>
+                  </div>
+                )}
+                
                 {/* Interaction tips */}
                 <div className="mt-4 p-3 bg-muted/50 rounded-lg text-xs">
                   <h4 className="text-sm font-medium mb-1">Interaction Tips</h4>
                   <ul className="space-y-1 list-disc list-inside">
-                    <li>Hover over flight paths to see basic info</li>
+                    <li>Hover over flight paths to see airline info</li>
                     <li>Click on flight paths or planes for detailed info</li>
-                    <li>Flights take off with varying speeds based on journey duration</li>
+                    <li>Popups stay open until you close them</li>
+                    <li>Use the map controls for different views</li>
                   </ul>
                 </div>
               </div>

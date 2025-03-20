@@ -135,6 +135,31 @@ export default {
 				'flight-dot': {
 					'0%': { strokeDashoffset: '1000' },
 					'100%': { strokeDashoffset: '0' }
+				},
+				// New animation keyframes
+				'draw-path': {
+					'0%': { strokeDashoffset: '1000' },
+					'100%': { strokeDashoffset: '0' }
+				},
+				'zoom-to-point': {
+					'0%': { transform: 'scale(4)', opacity: '0' },
+					'100%': { transform: 'scale(1)', opacity: '1' }
+				},
+				'fly-along-path': {
+					'0%': { offsetDistance: '0%', opacity: '0.5' },
+					'10%': { opacity: '1' },
+					'90%': { opacity: '1' },
+					'100%': { offsetDistance: '100%', opacity: '0.5' }
+				},
+				'pulse-plane': {
+					'0%': { transform: 'scale(1)' },
+					'50%': { transform: 'scale(1.1)' },
+					'100%': { transform: 'scale(1)' }
+				},
+				'takeoff': {
+					'0%': { transform: 'translateY(0) scale(0.9)', opacity: '0.5' },
+					'30%': { transform: 'translateY(-10px) scale(1.1)', opacity: '1' },
+					'100%': { transform: 'translateY(-5px) scale(1)', opacity: '1' }
 				}
 			},
 			animation: {
@@ -147,7 +172,13 @@ export default {
 				'slide-down': 'slide-down 0.4s ease-out',
 				'plane-move': 'plane-move 3s ease-in-out forwards',
 				'pulse-marker': 'pulse-marker 2s ease-in-out infinite',
-				'flight-dot': 'flight-dot 2s linear forwards'
+				'flight-dot': 'flight-dot 2s linear forwards',
+				// New animations
+				'draw-path': 'draw-path 2s ease-out forwards',
+				'zoom-to-point': 'zoom-to-point 1.5s ease-out',
+				'fly-along-path': 'fly-along-path 5s linear forwards',
+				'pulse-plane': 'pulse-plane 2s infinite',
+				'takeoff': 'takeoff 1s ease-out forwards'
 			},
 			backgroundImage: {
 				'gradient-glass': 'linear-gradient(135deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.1))',
