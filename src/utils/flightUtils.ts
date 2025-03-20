@@ -1,3 +1,4 @@
+
 import { Airport, Flight, ConnectionFlight } from '../types/flightTypes';
 
 // Sample airport data
@@ -202,7 +203,7 @@ export const formatTime = (dateString: string): string => {
   });
 };
 
-// Calculate flight path arc points
+// Calculate flight path arc points - FIXED to ensure it never returns null or empty array
 export const calculateArcPoints = (
   startLat: number, 
   startLng: number, 
@@ -210,20 +211,45 @@ export const calculateArcPoints = (
   endLng: number, 
   bend: number = 0.2
 ): [number, number][] => {
+  // Safety check for valid coordinates
+  if (isNaN(startLat) || isNaN(startLng) || isNaN(endLat) || isNaN(endLng)) {
+    console.error("Invalid coordinates provided to calculateArcPoints:", { startLat, startLng, endLat, endLng });
+    // Return a fallback straight line with at least two points
+    return [[startLat || 0, startLng || 0], [endLat || 0, endLng || 0]];
+  }
+  
   const points: [number, number][] = [];
   const segments = 100;
   
-  for (let i = 0; i <= segments; i++) {
-    const t = i / segments;
-    const lat = startLat * (1 - t) + endLat * t;
-    const lng = startLng * (1 - t) + endLng * t;
+  try {
+    // Always add the starting point first
+    points.push([startLat, startLng]);
     
-    // Add curvature
-    const altitude = Math.sin(Math.PI * t) * bend * calculateDistance(startLat, startLng, endLat, endLng) / 111; // 111 km per degree
-    const curvedLat = lat + altitude * (endLng - startLng) / Math.sqrt(Math.pow(endLng - startLng, 2) + Math.pow(endLat - startLat, 2));
-    const curvedLng = lng - altitude * (endLat - startLat) / Math.sqrt(Math.pow(endLng - startLng, 2) + Math.pow(endLat - startLat, 2));
+    for (let i = 1; i < segments; i++) {
+      const t = i / segments;
+      const lat = startLat * (1 - t) + endLat * t;
+      const lng = startLng * (1 - t) + endLng * t;
+      
+      // Add curvature
+      const altitude = Math.sin(Math.PI * t) * bend * calculateDistance(startLat, startLng, endLat, endLng) / 111; // 111 km per degree
+      const curvedLat = lat + altitude * (endLng - startLng) / Math.sqrt(Math.pow(endLng - startLng, 2) + Math.pow(endLat - startLat, 2));
+      const curvedLng = lng - altitude * (endLat - startLat) / Math.sqrt(Math.pow(endLng - startLng, 2) + Math.pow(endLat - startLat, 2));
+      
+      points.push([curvedLat, curvedLng]);
+    }
     
-    points.push([curvedLat, curvedLng]);
+    // Always add the ending point last
+    points.push([endLat, endLng]);
+    
+    // Verify we have at least 2 points
+    if (points.length < 2) {
+      console.warn("Generated less than 2 points, adding fallback points");
+      points.push([startLat, startLng], [endLat, endLng]);
+    }
+  } catch (error) {
+    console.error("Error in calculateArcPoints:", error);
+    // Return a fallback straight line
+    return [[startLat, startLng], [endLat, endLng]];
   }
   
   return points;

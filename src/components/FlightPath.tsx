@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import { Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -53,7 +52,6 @@ const FlightPath: React.FC<FlightPathProps> = ({
   const drawingMarkerRef = useRef<L.Marker | null>(null);
   const map = useMap();
   
-  // Get flight minutes for speed calculation
   const getFlightMinutes = () => {
     if (!duration) return 180;
     
@@ -66,115 +64,92 @@ const FlightPath: React.FC<FlightPathProps> = ({
     return 180;
   };
   
-  // Calculate arc points for the flight path
   useEffect(() => {
-    // Use less arc height to match reference image flat arc
-    const arcHeight = type === 'direct' ? 0.2 : 0.15;
-    console.log("Departure:", departure);
-console.log("Arrival:", arrival);
-
-    
-    const points = calculateArcPoints(
-      departure.lat, 
-      departure.lng, 
-      arrival.lat, 
-      arrival.lng,
-      arcHeight
-    );
-    if (!points || points.length === 0) {
-      console.error("ERROR: calculateArcPoints returned empty points!");
-      return;
-    }
-  
-    console.log("Generated Arc Points:", points);
-    setArcPoints(points);
-    arcPointsRef.current = points; 
-    console.log("Generated Arc Points:", points); // Debugging
-    
-    // Start with no visible points - we'll animate them in
-    setDisplayedPoints([arcPointsRef.current[0]]);
-    
-    // Calculate initial bearing
-    if (departure && arrival) {
-      const bearing = getBearing(departure.lat, departure.lng, arrival.lat, arrival.lng);
-      setPlaneRotation(bearing);
-    }
-
-    console.log(`Starting animation for flight from ${departure.code} to ${arrival.code}`);
-    
-    // Clean up previous animations and markers
     cleanup();
     
-    // Start animation sequence with zooming to origin
-    setTimeout(() => {
-      console.log(`Starting zoom phase for ${departure.code} to ${arrival.code}`);
-      startZoomingPhase();
-    }, 500 + Math.random() * 1000); // Staggered start
+    if (!departure || !arrival || !departure.lat || !departure.lng || !arrival.lat || !arrival.lng) {
+      console.error("Invalid departure or arrival data:", { departure, arrival });
+      return;
+    }
     
-    // Cleanup function
+    console.log(`Starting animation for flight from ${departure.code} to ${arrival.code}`);
+    console.log("Departure:", departure);
+    console.log("Arrival:", arrival);
+    
+    const arcHeight = type === 'direct' ? 0.2 : 0.15;
+    
+    try {
+      const points = calculateArcPoints(
+        departure.lat, 
+        departure.lng, 
+        arrival.lat, 
+        arrival.lng,
+        arcHeight
+      );
+      
+      if (!points || points.length < 2) {
+        console.error("ERROR: calculateArcPoints returned insufficient points!");
+        return;
+      }
+      
+      console.log("Generated Arc Points:", points);
+      setArcPoints(points);
+      arcPointsRef.current = points; 
+      
+      setDisplayedPoints([points[0]]);
+      
+      const bearing = getBearing(departure.lat, departure.lng, arrival.lat, arrival.lng);
+      setPlaneRotation(bearing);
+      
+      setTimeout(() => {
+        console.log(`Starting zoom phase for ${departure.code} to ${arrival.code}`);
+        startZoomingPhase();
+      }, 500 + Math.random() * 1000);
+    } catch (error) {
+      console.error("Error initializing flight path:", error);
+    }
+    
     return cleanup;
   }, [departure, arrival]);
   
   useEffect(() => {
-    console.log("Updating arcPoints:", arcPoints);
-  }, [arcPoints]);
+    if (arcPoints.length > 0) {
+      console.log(`arcPoints updated: ${departure.code} to ${arrival.code}, length: ${arcPoints.length}`);
+    }
+  }, [arcPoints, departure, arrival]);
   
-  // Cleanup function to remove markers and cancel animations
   const cleanup = () => {
     console.log("Running cleanup...");
-  
-    console.log("Before cleanup, arcPoints:", arcPointsRef.current);
-  
+    
     if (animationRef.current) {
-      console.log("Cancelling animation...");
       cancelAnimationFrame(animationRef.current);
       animationRef.current = null;
     }
     if (drawingRef.current) {
-      console.log("Cancelling drawing...");
       cancelAnimationFrame(drawingRef.current);
       drawingRef.current = null;
     }
     if (planeMarkerRef.current) {
-      console.log("Removing plane marker...");
       planeMarkerRef.current.remove();
       planeMarkerRef.current = null;
     }
     if (popupRef.current && map) {
-      console.log("Closing popup...");
       map.closePopup(popupRef.current);
       popupRef.current = null;
     }
     if (drawingMarkerRef.current) {
-      console.log("Removing drawing marker...");
       drawingMarkerRef.current.remove();
       drawingMarkerRef.current = null;
     }
-  
-    console.log("After cleanup, arcPoints:", arcPointsRef.current);
   };
   
-  
-  
-  // Start by zooming into the origin airport
   const startZoomingPhase = () => {
     setAnimationPhase('zooming');
     console.log(`Zoom phase active: Flying to ${departure.code}`);
     
-    // Create a larger, more visible zoom animation marker
     const zoomMarkerHtml = ReactDOMServer.renderToString(
-      <div className="zoom-animation-marker" style={{ visibility: 'visible', opacity: 1 }}>
-        <div className="zoom-circle" style={{
-          width: '80px',
-          height: '80px',
-          background: 'rgba(0, 120, 255, 0.5)',
-          border: '4px solid rgba(0, 120, 255, 0.9)',
-          borderRadius: '50%',
-          boxShadow: '0 0 30px 10px rgba(0, 120, 255, 0.3)',
-          animation: 'zoom-pulse 1.5s infinite',
-          visibility: 'visible',
-          opacity: 1
-        }}></div>
+      <div className="zoom-animation-marker">
+        <div className="zoom-circle"></div>
       </div>
     );
     
@@ -185,56 +160,54 @@ console.log("Arrival:", arrival);
       iconAnchor: [40, 40]
     });
     
-    // Add a more visible temporary marker to highlight the zoom location
     const zoomMarker = L.marker([departure.lat, departure.lng], { 
       icon: zoomMarkerIcon,
       zIndexOffset: 1000
     }).addTo(map);
     
-    // Zoom in with a more dramatic effect
     map.flyTo([departure.lat, departure.lng], 5, {
-      duration: 2.5, // Longer duration for more visibility
+      duration: 2.5,
       easeLinearity: 0.5
     });
     
     console.log(`Zooming to ${departure.code} at [${departure.lat}, ${departure.lng}]`);
     
-    // After zoom completes, start drawing the path
     setTimeout(() => {
-      console.log("arcPoints before zoom:", arcPoints);
       zoomMarker.remove();
-      console.log("arcPoints before drawing:", arcPoints);
       console.log(`Zoom complete, starting drawing phase for ${departure.code} to ${arrival.code}`);
       startDrawingPhase();
-    }, 2500); // Match the duration of the flyTo
+    }, 2500);
   };
   
-  // Enhanced line drawing animation with more visible feedback
   const startDrawingPhase = () => {
-    if (!arcPoints.length) return;
+    if (arcPointsRef.current.length < 2) {
+      console.error("Not enough points to draw path:", arcPointsRef.current);
+      if (departure && arrival) {
+        const newPoints = calculateArcPoints(
+          departure.lat, 
+          departure.lng, 
+          arrival.lat, 
+          arrival.lng
+        );
+        if (newPoints.length >= 2) {
+          arcPointsRef.current = newPoints;
+          setArcPoints(newPoints);
+        } else {
+          arcPointsRef.current = [[departure.lat, departure.lng], [arrival.lat, arrival.lng]];
+          setArcPoints([[departure.lat, departure.lng], [arrival.lat, arrival.lng]]);
+        }
+      }
+    }
     
     setAnimationPhase('drawing');
     console.log(`Drawing phase active: Creating path from ${departure.code} to ${arrival.code}`);
     
-    // Initialize with just the starting point
-    setDisplayedPoints([arcPoints[0]]);
+    setDisplayedPoints([arcPointsRef.current[0]]);
     
-    // Add a larger, more visible pulsing dot effect at the starting point
     const pulseMarkerHtml = ReactDOMServer.renderToString(
-      <div className="drawing-animation-marker" style={{ 
-        visibility: 'visible', 
-        opacity: 1, 
-        zIndex: 5000 
-      }}>
+      <div className="drawing-animation-marker">
         <div className="pulse-circle" style={{
-          width: '30px',
-          height: '30px',
-          background: type === 'direct' ? '#4CAF50' : '#FFC107',
-          borderRadius: '50%',
-          boxShadow: '0 0 30px 10px rgba(255, 255, 255, 0.9)',
-          animation: 'pulse-fast 0.8s infinite',
-          visibility: 'visible',
-          opacity: 1
+          backgroundColor: type === 'direct' ? '#4CAF50' : '#FFC107'
         }}></div>
       </div>
     );
@@ -246,19 +219,17 @@ console.log("Arrival:", arrival);
       iconAnchor: [15, 15]
     });
     
-    // Create a moving marker that follows the drawing
-    let drawingMarker = L.marker(arcPoints[0], { 
+    let drawingMarker = L.marker(arcPointsRef.current[0], { 
       icon: pulseMarkerIcon,
       zIndexOffset: 5000
     }).addTo(map);
     drawingMarkerRef.current = drawingMarker;
     
-    // Make drawing MUCH slower and more visible
-    const drawingDuration = 4000; // 4 seconds for drawing
-    const totalPoints = arcPoints.length;
-    const pointsPerFrame = Math.max(1, Math.ceil(totalPoints / (drawingDuration / 16))); // 16ms per frame approx
+    const drawingDuration = 4000;
+    const totalPoints = arcPointsRef.current.length;
+    const pointsPerFrame = Math.max(1, Math.ceil(totalPoints / (drawingDuration / 16)));
     
-    let currentPointIndex = 1; // Start from 1 since we already have the first point
+    let currentPointIndex = 1;
     
     const drawNextSegment = () => {
       if (currentPointIndex >= totalPoints) {
@@ -268,22 +239,9 @@ console.log("Arrival:", arrival);
           drawingMarkerRef.current = null;
         }
         
-        // Drawing complete, show larger, more visible confirmation and start flying
         const completionMarkerHtml = ReactDOMServer.renderToString(
           <div className="completion-marker" style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '60px',
-            height: '60px',
-            background: type === 'direct' ? '#4CAF50' : '#FFC107',
-            borderRadius: '50%',
-            color: 'white',
-            boxShadow: '0 0 0 15px rgba(76, 175, 80, 0.4), 0 0 30px rgba(0, 0, 0, 0.5)',
-            animation: 'scale-pop 0.5s ease-out',
-            visibility: 'visible',
-            opacity: 1,
-            zIndex: 5000
+            backgroundColor: type === 'direct' ? '#4CAF50' : '#FFC107'
           }}>
             <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="20 6 9 17 4 12"></polyline>
@@ -298,76 +256,56 @@ console.log("Arrival:", arrival);
           iconAnchor: [30, 30]
         });
         
-        // Show checkmark at destination
-        const completionMarker = L.marker(arcPoints[arcPoints.length - 1], { 
+        const completionMarker = L.marker(arcPointsRef.current[arcPointsRef.current.length - 1], { 
           icon: completionIcon,
           zIndexOffset: 5000
         }).addTo(map);
         
-        // Fit view to see the entire flight path before plane starts
-        if (departure && arrival) {
-          map.fitBounds(L.latLngBounds([
-            [departure.lat, departure.lng],
-            [arrival.lat, arrival.lng]
-          ]), { 
-            padding: [50, 50],
-            duration: 1
-          });
-        }
+        map.fitBounds(L.latLngBounds([
+          [departure.lat, departure.lng],
+          [arrival.lat, arrival.lng]
+        ]), {
+          padding: [50, 50],
+          duration: 1
+        });
         
-        // Remove the completion marker after a short delay
         setTimeout(() => {
           completionMarker.remove();
           console.log(`Starting flying phase for ${departure.code} to ${arrival.code}`);
           startFlyingPhase();
-        }, 1500); // Longer delay for more visibility
+        }, 1500);
         
         return;
       }
       
-      // Add next batch of points
       const newIndex = Math.min(totalPoints, currentPointIndex + pointsPerFrame);
-      const newPoints = arcPoints.slice(0, newIndex);
+      const newPoints = arcPointsRef.current.slice(0, newIndex);
       setDisplayedPoints(newPoints);
       
-      // Move the drawing marker to the latest point
       if (drawingMarkerRef.current && newIndex > 0 && newPoints[newIndex - 1]) {
         drawingMarkerRef.current.setLatLng(newPoints[newIndex - 1]);
       }
       
       currentPointIndex = newIndex;
       
-      // Continue drawing with visible animation
       drawingRef.current = requestAnimationFrame(() => {
-        setTimeout(drawNextSegment, 16); // Slightly delay for more visible animation
+        setTimeout(drawNextSegment, 16);
       });
     };
     
-    // Start drawing animation with a slight delay
     setTimeout(() => {
       console.log(`Starting to draw path segments for ${departure.code} to ${arrival.code}`);
       drawingRef.current = requestAnimationFrame(drawNextSegment);
     }, 300);
   };
   
-  // Start the plane flying animation after line is drawn with more visual feedback
   const startFlyingPhase = () => {
     setAnimationPhase('flying');
     console.log(`Flying phase active: Plane taking off from ${departure.code} to ${arrival.code}`);
     
-    // Create a larger, more visible takeoff effect at the departure airport
     const takeoffMarkerHtml = ReactDOMServer.renderToString(
-      <div className="takeoff-animation" style={{ visibility: 'visible', opacity: 1, zIndex: 5000 }}>
-        <div className="takeoff-rays" style={{
-          width: '80px',
-          height: '80px',
-          background: 'rgba(255, 255, 255, 0.5)',
-          borderRadius: '50%',
-          boxShadow: '0 0 0 30px rgba(255, 255, 255, 0.2), 0 0 50px rgba(255, 255, 255, 0.7)',
-          animation: 'takeoff-pulse 1s infinite',
-          visibility: 'visible',
-          opacity: 1
-        }}></div>
+      <div className="takeoff-animation">
+        <div className="takeoff-rays"></div>
       </div>
     );
     
@@ -378,34 +316,26 @@ console.log("Arrival:", arrival);
       iconAnchor: [40, 40]
     });
     
-    // Add a temporary marker for takeoff effect
     const takeoffMarker = L.marker([departure.lat, departure.lng], { 
       icon: takeoffMarkerIcon,
       zIndexOffset: 5000
     }).addTo(map);
     
-    // Initialize with plane at departure
-    if (departure) {
-      setPlanePosition([departure.lat, departure.lng]);
-    }
+    setPlanePosition([departure.lat, departure.lng]);
     
-    // Make the animation much slower for better visibility
-    // Use a slower speed so users can clearly see the plane moving
-    const speed = 80; // milliseconds - slower to make animation more visible
-    
-    let step = 0; // Start from beginning
-    const totalSteps = arcPoints.length - 1;
+    const speed = 80;
+    let step = 0;
+    const totalSteps = arcPointsRef.current.length - 1;
     
     const animate = () => {
       if (step < totalSteps) {
-        const point = arcPoints[step];
+        const point = arcPointsRef.current[step];
         if (point) {
           setPlanePosition([point[0], point[1]]);
           
-          // Calculate bearing for rotation
           if (step < totalSteps - 1) {
-            const currPoint = arcPoints[step];
-            const nextPoint = arcPoints[step + 1];
+            const currPoint = arcPointsRef.current[step];
+            const nextPoint = arcPointsRef.current[step + 1];
             if (currPoint && nextPoint) {
               const bearing = getBearing(currPoint[0], currPoint[1], nextPoint[0], nextPoint[1]);
               setPlaneRotation(bearing);
@@ -418,21 +348,10 @@ console.log("Arrival:", arrival);
           setTimeout(animate, speed);
         });
       } else {
-        // Show arrival animation
         if (arrival) {
           const arrivalMarkerHtml = ReactDOMServer.renderToString(
-            <div className="arrival-animation" style={{ visibility: 'visible', opacity: 1, zIndex: 5000 }}>
-              <div className="arrival-pulse" style={{
-                width: '80px',
-                height: '80px',
-                background: 'rgba(76, 175, 80, 0.5)',
-                border: '5px solid rgba(76, 175, 80, 0.9)',
-                borderRadius: '50%',
-                boxShadow: '0 0 0 20px rgba(76, 175, 80, 0.3), 0 0 50px rgba(76, 175, 80, 0.8)',
-                animation: 'arrival-pulse 1s infinite',
-                visibility: 'visible',
-                opacity: 1
-              }}></div>
+            <div className="arrival-animation">
+              <div className="arrival-pulse"></div>
             </div>
           );
           
@@ -442,67 +361,49 @@ console.log("Arrival:", arrival);
             iconSize: [80, 80],
             iconAnchor: [40, 40]
           });
-          if (!map) {
-            console.error("ERROR: Leaflet map is undefined when adding marker.");
-            return;
-          }
           
-          if (!arrival || !arrival.lat || !arrival.lng) {
-            console.error("ERROR: Arrival data is missing:", arrival);
-            return;
-          }
-          // Add a temporary marker for arrival effect
           const arrivalMarker = L.marker([arrival.lat, arrival.lng], { 
             icon: arrivalMarkerIcon,
             zIndexOffset: 5000
           }).addTo(map);
           
-          // Remove after animation completes
           setTimeout(() => {
             arrivalMarker.remove();
             setAnimationComplete(true);
-          }, 3000); // Longer display time for arrival effect
+          }, 3000);
         }
         
-        // Remove takeoff marker
         takeoffMarker.remove();
         
-        // Mark animation as complete
         console.log(`Flight animation complete for ${departure.code} to ${arrival.code}`);
         setAnimationComplete(true);
         
-        // Loop animation with pause at destination
         setTimeout(() => {
-          if (Math.random() > 0.5) { // Only restart some flights to avoid too much movement
+          if (Math.random() > 0.5) {
             step = 0;
             animationRef.current = requestAnimationFrame(() => {
-              animate(); // Restart animation
+              animate();
             });
           }
-        }, 8000); // Longer pause before restart
+        }, 8000);
       }
     };
     
-    // Start animation after a short delay
     setTimeout(() => {
       console.log(`Plane taking off from ${departure.code}`);
       animate();
-    }, 1000); // Longer delay for more visibility
+    }, 1000);
   };
   
-  // Create a plane icon component that will be animated along the path
   useEffect(() => {
     if (!planePosition) return;
     
-    // Remove previous marker if exists
     if (planeMarkerRef.current) {
       planeMarkerRef.current.remove();
     }
     
-    // Determine color based on flight type (matching the lines)
     const color = type === 'direct' ? '#4CAF50' : '#FFC107';
     
-    // Create a plane SVG with proper rotation and tilt - make it MUCH larger
     const iconHtml = ReactDOMServer.renderToString(
       <div 
         className="plane-icon"
@@ -510,21 +411,16 @@ console.log("Arrival:", arrival);
           transform: `rotate(${planeRotation}deg)`,
           background: 'white',
           borderRadius: '50%',
-          padding: '10px',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.8)',
-          visibility: 'visible',
-          opacity: 1,
-          zIndex: 5000
+          padding: '6px',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.8)'
         }}
       >
         <Plane 
-          size={60} // Much larger plane
+          size={30}
           fill={color}
           color={color}
           style={{ 
-            filter: 'drop-shadow(0 5px 10px rgba(0,0,0,0.6))',
-            visibility: 'visible',
-            opacity: 1
+            filter: 'drop-shadow(0 5px 10px rgba(0,0,0,0.6))'
           }}
         />
       </div>
@@ -533,22 +429,20 @@ console.log("Arrival:", arrival);
     const planeIcon = L.divIcon({
       html: iconHtml,
       className: 'custom-plane-icon',
-      iconSize: [80, 80], // Larger size for better visibility
-      iconAnchor: [40, 40]
+      iconSize: [40, 40],
+      iconAnchor: [20, 20]
     });
     
-    // Custom marker with the plane icon
     const marker = L.marker(planePosition, { 
       icon: planeIcon,
-      zIndexOffset: 5000 // Ensure it's above everything
+      zIndexOffset: 5000
     });
     
-    // Add click handler to show details
     marker.on('click', (e) => {
       if (e.originalEvent && e.latlng) {
         setDetailsPosition([e.latlng.lat, e.latlng.lng]);
         setShowDetails(true);
-        setPopupExpanded(true); // Start with expanded view on direct click
+        setPopupExpanded(true);
       }
     });
     
@@ -562,37 +456,30 @@ console.log("Arrival:", arrival);
     };
   }, [planePosition, planeRotation, map, type]);
   
-  // Handle hover/click on flight path
   const handlePathHover = (e: L.LeafletMouseEvent) => {
     if (e && e.latlng) {
-      // Show basic popup with airline info on hover
       setDetailsPosition([e.latlng.lat, e.latlng.lng]);
       setShowDetails(true);
-      setPopupExpanded(false); // Collapsed state on hover
+      setPopupExpanded(false);
     }
   };
   
   const handlePathClick = (e: L.LeafletMouseEvent) => {
     if (e && e.latlng) {
-      // Show expanded details on click
       setDetailsPosition([e.latlng.lat, e.latlng.lng]);
       setShowDetails(true); 
-      setPopupExpanded(true); // Expanded state on click
+      setPopupExpanded(true);
     }
   };
   
-  // Create a popup component for flight details
   const FlightDetailsPopup = () => {
     if (!showDetails || !detailsPosition || !departure || !arrival) return null;
     
-    // Use Leaflet's popup with expandable content
     useEffect(() => {
-      // Close any existing popup
       if (popupRef.current) {
         map.closePopup(popupRef.current);
       }
       
-      // Create popup content based on expanded state
       const basicContent = `
         <div class="p-3 flight-popup">
           <div class="flex items-center justify-between">
@@ -654,7 +541,6 @@ console.log("Arrival:", arrival);
         </div>
       `;
       
-      // Create popup with appropriate content and make sure it closes with close button only
       const popup = L.popup({
         className: 'flight-details-popup',
         closeButton: true,
@@ -669,7 +555,6 @@ console.log("Arrival:", arrival);
       
       popupRef.current = popup;
       
-      // Add event listeners for expand/collapse button
       const expandBtn = document.querySelector('.popup-expand-btn');
       if (expandBtn) {
         expandBtn.addEventListener('click', (e) => {
@@ -678,12 +563,10 @@ console.log("Arrival:", arrival);
         });
       }
       
-      // Only close popup when user clicks the close button
       popup.on('remove', () => {
         setShowDetails(false);
       });
       
-      // Prevent map click from closing the popup
       const popupElement = document.querySelector('.flight-details-popup');
       if (popupElement) {
         popupElement.addEventListener('click', (e) => {
@@ -701,16 +584,12 @@ console.log("Arrival:", arrival);
     return null;
   };
   
-  // Determine path colors based on mode and type
   const getPathOptions = () => {
-    // Use more visibility for the flight paths
     let color;
     
     if (type === 'direct') {
-      // Bright green like in the reference image
       color = '#4CAF50';
     } else {
-      // Amber color for connecting flights
       color = '#FFC107';
     }
     
@@ -719,21 +598,19 @@ console.log("Arrival:", arrival);
       opacity: 0.9,
       weight: 4,
       className: 'flight-path-solid',
-      // Enable interactions
       interactive: true,
     };
   };
   
   return (
     <>
-      {/* Draw only the currently displayed points from the animation */}
       <Polyline 
-        positions={animationPhase === 'idle' ? [] : displayedPoints}
+        positions={displayedPoints}
         pathOptions={{
           ...getPathOptions(),
-          dashArray: animationPhase === 'drawing' ? '5, 10' : null, // Dashed line during drawing
+          dashArray: animationPhase === 'drawing' ? '5, 10' : null,
           dashOffset: animationPhase === 'drawing' ? '10' : null,
-          weight: animationPhase === 'drawing' ? 6 : 4, // Thicker line during drawing
+          weight: animationPhase === 'drawing' ? 6 : 4,
         }}
         eventHandlers={{
           click: handlePathClick,
@@ -753,7 +630,6 @@ console.log("Arrival:", arrival);
                 weight: animationPhase === 'drawing' ? 6 : 4, 
                 opacity: 0.9 
               });
-              // Don't hide popup on mouseout, let it stay until closed
             }
           }
         }}
@@ -761,15 +637,12 @@ console.log("Arrival:", arrival);
       
       <FlightDetailsPopup />
       
-      {/* Add CSS for better visibility on top of map */}
       <style>{`
         .flight-path-solid {
           filter: drop-shadow(0 0 10px rgba(255, 255, 255, 1));
           cursor: pointer;
           transition: all 0.3s ease;
           z-index: 450 !important;
-          opacity: 1 !important;
-          visibility: visible !important;
         }
         
         .custom-plane-icon {
@@ -778,8 +651,6 @@ console.log("Arrival:", arrival);
           transition: transform 0.3s ease;
           transform-origin: center center;
           animation: pulse-plane 2s infinite;
-          visibility: visible !important;
-          opacity: 1 !important;
         }
         
         @keyframes pulse-plane {
@@ -787,45 +658,9 @@ console.log("Arrival:", arrival);
           50% { transform: scale(1.1); }
         }
         
-        .flight-details-popup .leaflet-popup-content-wrapper {
-          background: rgba(255, 255, 255, 0.95);
-          border-radius: 12px;
-          backdrop-filter: blur(10px);
-          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-        }
-        
-        .flight-details-popup .leaflet-popup-content {
-          margin: 8px 0;
-          min-width: 220px;
-        }
-        
-        .flight-details-popup .leaflet-popup-tip {
-          background: rgba(255, 255, 255, 0.95);
-        }
-        
-        .flight-popup {
-          user-select: none;
-        }
-        
-        .popup-expand-btn {
-          cursor: pointer;
-          transition: transform 0.2s ease;
-        }
-        
-        .popup-expand-btn:hover {
-          transform: scale(1.1);
-        }
-        
-        .chevron {
-          transition: transform 0.3s ease;
-        }
-        
-        /* Enhanced animation markers */
         .zoom-animation-marker {
-          position: relative;
           visibility: visible !important;
           opacity: 1 !important;
-          z-index: 5000 !important;
         }
         
         .zoom-circle {
@@ -845,7 +680,6 @@ console.log("Arrival:", arrival);
         }
         
         .drawing-animation-marker {
-          position: relative;
           visibility: visible !important;
           opacity: 1 !important;
           z-index: 5000 !important;
@@ -883,7 +717,6 @@ console.log("Arrival:", arrival);
         }
         
         .takeoff-animation {
-          position: relative;
           visibility: visible !important;
           opacity: 1 !important;
           z-index: 5000 !important;
@@ -905,7 +738,6 @@ console.log("Arrival:", arrival);
         }
         
         .arrival-animation {
-          position: relative;
           visibility: visible !important;
           opacity: 1 !important;
           z-index: 5000 !important;
@@ -927,7 +759,6 @@ console.log("Arrival:", arrival);
           opacity: 1 !important;
         }
         
-        /* Enhanced keyframe animations */
         @keyframes zoom-pulse {
           0%, 100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.7; }
           50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
@@ -954,75 +785,16 @@ console.log("Arrival:", arrival);
           50% { transform: translate(-50%, -50%) scale(1.3); opacity: 0.7; }
         }
         
-        @keyframes pulse {
-          0% { transform: scale(1); opacity: 1; }
-          50% { transform: scale(1.2); opacity: 0.8; }
-          100% { transform: scale(1); opacity: 1; }
-        }
-        
-        /* Fix popup flickering */
-        .leaflet-popup {
-          pointer-events: auto !important;
-          z-index: 6000 !important;
-        }
-        
-        .leaflet-popup-content-wrapper {
-          pointer-events: auto !important;
-        }
-        
-        .leaflet-popup-content {
-          pointer-events: auto !important;
-        }
-        
-        /* Only close popup when close button is clicked */
-        .leaflet-popup-close-button {
-          display: block !important;
-          z-index: 6100 !important;
-        }
-        
-        /* Ensure flight paths and planes have high z-index */
-        .leaflet-pane {
-          z-index: 400 !important;
-          visibility: visible !important;
-        }
-        
         .leaflet-overlay-pane {
           z-index: 450 !important;
-          visibility: visible !important;
-        }
-        
-        svg.leaflet-zoom-animated {
-          z-index: 450 !important;
-          visibility: visible !important;
-        }
-        
-        .custom-plane-icon {
-          z-index: 5000 !important;
-          visibility: visible !important;
-        }
-        
-        /* Make sure all markers and animations are visible */
-        .zoom-marker-icon, .drawing-marker-icon, .completion-icon, .takeoff-marker-icon, .arrival-marker-icon {
-          z-index: 5000 !important;
-          visibility: visible !important;
-          opacity: 1 !important;
-        }
-        
-        /* Ensure map panes are in correct order */
-        .leaflet-map-pane {
-          z-index: 100 !important;
-        }
-        
-        .leaflet-tile-pane {
-          z-index: 200 !important;
-        }
-        
-        .leaflet-overlay-pane {
-          z-index: 400 !important;
         }
         
         .leaflet-marker-pane {
           z-index: 600 !important;
+        }
+        
+        .leaflet-popup-pane {
+          z-index: 700 !important;
         }
       `}</style>
     </>
