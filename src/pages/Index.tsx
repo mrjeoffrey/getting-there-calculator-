@@ -6,6 +6,9 @@ import Header from '../components/Header';
 import SearchPanel from '../components/SearchPanel';
 import FlightMap from '../components/FlightMap';
 import { toast } from '@/components/ui/use-toast';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Plane, Clock, Calendar, CreditCard, Users } from 'lucide-react';
 
 const Index = () => {
   const [searchResults, setSearchResults] = useState<SearchResults>({
@@ -18,6 +21,8 @@ const Index = () => {
   const [selectedFlightId, setSelectedFlightId] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
   const [animationInProgress, setAnimationInProgress] = useState(false);
+  const [selectedFlightDetails, setSelectedFlightDetails] = useState<any>(null);
+  const [isFlightDetailsOpen, setIsFlightDetailsOpen] = useState(false);
   
   // Handle search
   const handleSearch = async (params: SearchParams) => {
@@ -99,6 +104,21 @@ const Index = () => {
     }
   }, []);
   
+  // Handle flight selection for details display
+  const handleFlightSelect = (flightInfo: any) => {
+    setSelectedFlightDetails(flightInfo);
+    setIsFlightDetailsOpen(true);
+  };
+  
+  // Format price for display
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+    }).format(price);
+  };
+  
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto">
@@ -177,10 +197,158 @@ const Index = () => {
               connectingFlights={searchResults.connectingFlights}
               selectedFlightId={selectedFlightId}
               loading={searchResults.loading}
+              onFlightSelect={handleFlightSelect}
             />
           </div>
         </div>
       </div>
+      
+      {/* Flight Details Side Sheet */}
+      <Sheet open={isFlightDetailsOpen} onOpenChange={setIsFlightDetailsOpen}>
+        <SheetContent className="w-full sm:max-w-md overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-2">
+              <Plane className="h-5 w-5" />
+              Flight Details
+            </SheetTitle>
+            <SheetDescription>
+              {selectedFlightDetails?.airline 
+                ? `${selectedFlightDetails.airline} Flight ${selectedFlightDetails.flightNumber}`
+                : 'Multiple flight connection'}
+            </SheetDescription>
+          </SheetHeader>
+          
+          {selectedFlightDetails && (
+            <div className="mt-6 space-y-6">
+              {/* For direct flights */}
+              {!Array.isArray(selectedFlightDetails.flights) && (
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center p-4 bg-muted/30 rounded-lg">
+                    <div className="text-center">
+                      <p className="text-lg font-bold">{selectedFlightDetails.departureAirport?.code}</p>
+                      <p className="text-sm text-muted-foreground">{selectedFlightDetails.departureTime}</p>
+                    </div>
+                    
+                    <div className="flex flex-col items-center">
+                      <p className="text-xs text-muted-foreground">Direct Flight</p>
+                      <div className="w-24 h-0.5 bg-primary my-2 relative">
+                        <Plane 
+                          className="absolute -top-2 text-primary" 
+                          style={{left: '50%', transform: 'translateX(-50%)'}}
+                          size={16}
+                          fill="currentColor"
+                        />
+                      </div>
+                      <p className="text-xs">{selectedFlightDetails.duration}</p>
+                    </div>
+                    
+                    <div className="text-center">
+                      <p className="text-lg font-bold">{selectedFlightDetails.arrivalAirport?.code}</p>
+                      <p className="text-sm text-muted-foreground">{selectedFlightDetails.arrivalTime}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex items-center gap-2 p-3 rounded-lg border">
+                      <Users className="text-muted-foreground" size={16} />
+                      <div>
+                        <p className="text-xs text-muted-foreground">Airline</p>
+                        <p className="font-medium">{selectedFlightDetails.airline}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 p-3 rounded-lg border">
+                      <CreditCard className="text-muted-foreground" size={16} />
+                      <div>
+                        <p className="text-xs text-muted-foreground">Price</p>
+                        <p className="font-medium">{formatPrice(selectedFlightDetails.price || 0)}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 p-3 rounded-lg border">
+                      <Calendar className="text-muted-foreground" size={16} />
+                      <div>
+                        <p className="text-xs text-muted-foreground">Flight</p>
+                        <p className="font-medium">{selectedFlightDetails.flightNumber}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 p-3 rounded-lg border">
+                      <Clock className="text-muted-foreground" size={16} />
+                      <div>
+                        <p className="text-xs text-muted-foreground">Duration</p>
+                        <p className="font-medium">{selectedFlightDetails.duration}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {/* For connecting flights */}
+              {Array.isArray(selectedFlightDetails.flights) && (
+                <div className="space-y-4">
+                  <div className="p-4 bg-muted/30 rounded-lg">
+                    <div className="flex justify-between items-center mb-4">
+                      <div className="text-sm font-medium">{selectedFlightDetails.flights[0].departureAirport?.code}</div>
+                      <div className="text-xs">{selectedFlightDetails.totalDuration}</div>
+                      <div className="text-sm font-medium">
+                        {selectedFlightDetails.flights[selectedFlightDetails.flights.length - 1].arrivalAirport?.code}
+                      </div>
+                    </div>
+                    
+                    {selectedFlightDetails.flights.map((flight: any, index: number) => (
+                      <div key={index} className="mb-2 last:mb-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Plane size={14} className="text-primary" />
+                          <span className="text-sm font-medium">{flight.airline} {flight.flightNumber}</span>
+                        </div>
+                        <div className="flex justify-between text-xs">
+                          <div>
+                            <div className="font-semibold">{flight.departureAirport?.code} {flight.departureTime}</div>
+                            <div className="text-muted-foreground">{flight.departureAirport?.city}</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-muted-foreground">{flight.duration}</div>
+                            <div className="h-0.5 w-16 bg-muted mt-1 mx-auto relative">
+                              <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 text-primary">
+                                <Plane size={12} fill="currentColor" />
+                              </div>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="font-semibold">{flight.arrivalAirport?.code} {flight.arrivalTime}</div>
+                            <div className="text-muted-foreground">{flight.arrivalAirport?.city}</div>
+                          </div>
+                        </div>
+                        
+                        {index < selectedFlightDetails.flights.length - 1 && (
+                          <div className="my-2 py-2 px-3 bg-accent/20 rounded text-xs flex justify-between items-center">
+                            <span>Layover at {flight.arrivalAirport?.code}</span>
+                            <span className="font-medium">{selectedFlightDetails.stopoverDuration}</span>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <div className="flex justify-between items-center p-3 rounded-lg border">
+                    <div className="flex items-center gap-2">
+                      <CreditCard size={16} className="text-muted-foreground" />
+                      <div>
+                        <p className="text-xs text-muted-foreground">Total Price</p>
+                        <p className="font-medium">{formatPrice(selectedFlightDetails.price || 0)}</p>
+                      </div>
+                    </div>
+                    <div className="text-xs px-2 py-1 bg-primary/10 text-primary rounded-full">
+                      {selectedFlightDetails.flights.length} flights
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };
