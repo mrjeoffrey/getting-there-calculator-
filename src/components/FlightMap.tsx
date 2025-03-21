@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, useMap, ZoomControl } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -116,9 +117,9 @@ const FlightMap: React.FC<FlightMapProps> = ({
             />
           ))}
           
-          {/* Render connecting flight paths */}
+          {/* Render connecting flight paths - Replace Fragment with div having display: 'contents' */}
           {connectingFlights.map(connection => (
-            <React.Fragment key={`connection-${connection.id}`}>
+            <div key={`connection-${connection.id}`} style={{ display: 'contents' }}>
               {connection.flights.map((flight, index, flights) => {
                 const isLast = index === flights.length - 1;
                 const nextFlight = !isLast ? flights[index + 1] : null;
@@ -147,7 +148,7 @@ const FlightMap: React.FC<FlightMapProps> = ({
                   />
                 );
               })}
-            </React.Fragment>
+            </div>
           ))}
         </>
       )}
