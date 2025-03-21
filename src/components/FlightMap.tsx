@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, useMap, ZoomControl } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -16,22 +15,19 @@ interface FlightMapProps {
   onFlightSelect?: (flight: any) => void;
 }
 
-const FlightMap: React.FC<FlightMapProps> = ({ 
-  directFlights, 
-  connectingFlights, 
+const FlightMap: React.FC<FlightMapProps> = ({
+  directFlights,
+  connectingFlights,
   selectedFlightId,
   loading = false,
   onFlightSelect
 }) => {
   const [mapReady, setMapReady] = useState(false);
   const allFlights = [...directFlights, ...connectingFlights.flatMap(cf => cf.flights)];
-  
-  // Only show map contents when it's not loading
+
   const showContent = !loading && mapReady;
-  
-  // Get all unique airports to show markers
+
   const airports = new Map();
-  
   if (showContent) {
     allFlights.forEach(flight => {
       if (flight.departureAirport && !airports.has(flight.departureAirport.code)) {
@@ -42,59 +38,48 @@ const FlightMap: React.FC<FlightMapProps> = ({
       }
     });
   }
-  
+
   const ResetMapView = () => {
     const map = useMap();
-    
+
     useEffect(() => {
       setMapReady(true);
-      
-      // Initial map view - set a default world view
       map.setView([20, 0], 2);
-      
-      // Handle map responsiveness
-      const handleResize = () => {
-        map.invalidateSize();
-      };
-      
+
+      const handleResize = () => map.invalidateSize();
       window.addEventListener('resize', handleResize);
-      return () => {
-        window.removeEventListener('resize', handleResize);
-      };
+      return () => window.removeEventListener('resize', handleResize);
     }, [map]);
-    
+
     return null;
   };
-  
+
   return (
     <MapContainer
       center={[20, 0]}
       zoom={2}
       style={{ height: '100%', width: '100%' }}
       zoomControl={false}
-      worldCopyJump={true} // Allow the map to pan infinitely in the horizontal direction
-      className="google-like-map" // Add custom class for enhanced styling
+      worldCopyJump={true}
+      className="colorful-flight-map"
     >
-      {/* Using a more colorful map style with clear country borders */}
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-        url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+        url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
       />
       <ZoomControl position="bottomright" />
       <ResetMapView />
-      
+
       {showContent && (
         <>
-          {/* Render airport markers */}
           {Array.from(airports.values()).map(airport => (
             <AirportMarker
               key={`airport-${airport.code}`}
               airport={airport}
-              type="origin"
+              type="highlighted"
             />
           ))}
-          
-          {/* Render direct flight paths */}
+
           {directFlights.map(flight => (
             <FlightPath
               key={`direct-${flight.id}`}
@@ -113,19 +98,18 @@ const FlightMap: React.FC<FlightMapProps> = ({
                 departureTime: flight.departureTime,
                 arrivalTime: flight.arrivalTime,
                 duration: flight.duration,
-                price: 250 // Placeholder price
+                price: 250
               }]}
               onFlightSelect={onFlightSelect}
             />
           ))}
-          
-          {/* Render connecting flight paths */}
+
           {connectingFlights.map(connection => (
             <div key={`connection-${connection.id}`} style={{ display: 'contents' }}>
               {connection.flights.map((flight, index, flights) => {
                 const isLast = index === flights.length - 1;
                 const nextFlight = !isLast ? flights[index + 1] : null;
-                
+
                 return (
                   <FlightPath
                     key={`connection-leg-${flight.id}-${index}`}
@@ -144,7 +128,7 @@ const FlightMap: React.FC<FlightMapProps> = ({
                       departureTime: f.departureTime,
                       arrivalTime: f.arrivalTime,
                       duration: f.duration,
-                      price: connection.price / connection.flights.length // Distribute price across flights
+                      price: connection.price / connection.flights.length
                     }))}
                     onFlightSelect={onFlightSelect}
                   />
