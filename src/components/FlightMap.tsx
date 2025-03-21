@@ -74,9 +74,10 @@ const FlightMap: React.FC<FlightMapProps> = ({
       zoomControl={false}
       worldCopyJump={true} // Allow the map to pan infinitely in the horizontal direction
     >
+      {/* Using a map tile layer that clearly shows city names */}
       <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+        url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png"
       />
       <ZoomControl position="bottomright" />
       <ResetMapView />
