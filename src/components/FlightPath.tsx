@@ -74,6 +74,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
   };
   
   useEffect(() => {
+    // Always run cleanup when dependencies change
     cleanup();
     
     if (!departure || !arrival || !departure.lat || !departure.lng || !arrival.lat || !arrival.lng) {
@@ -83,18 +84,18 @@ const FlightPath: React.FC<FlightPathProps> = ({
     
     console.log(`Initializing flight path from ${departure.code} to ${arrival.code}`);
     
-    if (!isInitializedRef.current) {
-      isInitializedRef.current = true;
-      
-      const initTimer = setTimeout(() => {
-        initializeFlightPath();
-      }, 600);
-      
-      return () => clearTimeout(initTimer);
-    }
+    // Reset initialization state for new searches
+    isInitializedRef.current = true;
     
-    return cleanup;
-  }, [departure, arrival]);
+    const initTimer = setTimeout(() => {
+      initializeFlightPath();
+    }, 600);
+    
+    return () => {
+      clearTimeout(initTimer);
+      cleanup();
+    };
+  }, [departure, arrival, type, isActive]); // Add additional dependencies
   
   const cleanup = () => {
     if (drawingTimerRef.current) {

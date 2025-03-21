@@ -76,7 +76,6 @@ const FlightMap: React.FC<FlightMapProps> = ({
             <AirportMarker
               key={`airport-${airport.code}`}
               airport={airport}
-              type="highlighted"
             />
           ))}
 
