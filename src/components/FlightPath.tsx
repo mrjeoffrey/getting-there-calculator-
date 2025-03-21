@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useRef } from 'react';
 import { Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -51,6 +52,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
   const popupRef = useRef<L.Popup | null>(null);
   const planeMarkersRef = useRef<L.Marker[]>([]);
   const currentIndexRef = useRef<number>(1);
+  const isInitializedRef = useRef<boolean>(false);
   const map = useMap();
   
   // Calculate flight duration in minutes for animation timing
@@ -76,42 +78,52 @@ const FlightPath: React.FC<FlightPathProps> = ({
     
     console.log(`Initializing flight path from ${departure.code} to ${arrival.code}`);
     
-    // Initial map setup to show origin airport
-    zoomToOrigin();
-    
-    const arcHeight = type === 'direct' ? 0.2 : 0.15;
-    
-    try {
-      // Calculate the arc points for the flight path
-      const points = calculateArcPoints(
-        departure.lat, 
-        departure.lng, 
-        arrival.lat, 
-        arrival.lng,
-        arcHeight
-      );
+    // Wait for map to be ready before initializing
+    if (!isInitializedRef.current) {
+      const initializeFlightPath = () => {
+        // Set initial map view to show both departure and arrival
+        initializeMapView();
+        
+        const arcHeight = type === 'direct' ? 0.2 : 0.15;
+        
+        try {
+          // Calculate the arc points for the flight path
+          const points = calculateArcPoints(
+            departure.lat, 
+            departure.lng, 
+            arrival.lat, 
+            arrival.lng,
+            arcHeight
+          );
+          
+          if (!points || points.length < 2) {
+            console.error("ERROR: calculateArcPoints returned insufficient points!");
+            return;
+          }
+          
+          setArcPoints(points);
+          arcPointsRef.current = points;
+          
+          // Calculate the initial bearing
+          calculateInitialRotation(points);
+          
+          // Start with just the departure point and begin drawing
+          setDisplayedPoints([points[0]]);
+          
+          // Begin drawing after a short stabilization delay
+          setTimeout(() => {
+            startPathDrawing();
+          }, 600);
+        } catch (error) {
+          console.error("Error initializing flight path:", error);
+        }
+      };
       
-      if (!points || points.length < 2) {
-        console.error("ERROR: calculateArcPoints returned insufficient points!");
-        return;
-      }
-      
-      setArcPoints(points);
-      arcPointsRef.current = points;
-      
-      // Start with just the departure point
-      setDisplayedPoints([points[0]]);
-      
-      // Calculate the initial bearing for later use
-      const bearing = getBearing(departure.lat, departure.lng, arrival.lat, arrival.lng);
-      setPlaneRotation(bearing);
-      
-      // Begin drawing after a short delay
+      // Allow map to stabilize before starting the animation
       setTimeout(() => {
-        startPathDrawing();
-      }, 500);
-    } catch (error) {
-      console.error("Error initializing flight path:", error);
+        isInitializedRef.current = true;
+        initializeFlightPath();
+      }, 300);
     }
     
     return cleanup;
@@ -139,14 +151,43 @@ const FlightPath: React.FC<FlightPathProps> = ({
     currentIndexRef.current = 1;
   };
   
-  // Zoom to origin airport
-  const zoomToOrigin = () => {
-    if (!departure || !departure.lat || !departure.lng) return;
+  // Initialize map view to show both departure and arrival airports
+  const initializeMapView = () => {
+    if (!departure || !arrival || !departure.lat || !departure.lng || !arrival.lat || !arrival.lng) return;
     
-    map.flyTo([departure.lat, departure.lng], 6, {
-      duration: 1,
-      animate: true
+    // Create bounds that include both airports
+    const bounds = L.latLngBounds(
+      [departure.lat, departure.lng],
+      [arrival.lat, arrival.lng]
+    );
+    
+    // Add some padding
+    const paddedBounds = bounds.pad(0.2);
+    
+    // Set view to center of flight path with appropriate zoom
+    map.fitBounds(paddedBounds, {
+      animate: false,
+      duration: 0 // Disable animation for initial view
     });
+    
+    // After initial fit, fly to the departure airport for the animation start
+    setTimeout(() => {
+      map.flyTo([departure.lat, departure.lng], 6, {
+        duration: 1,
+        animate: true
+      });
+    }, 200);
+  };
+  
+  // Calculate initial rotation for planes based on the path
+  const calculateInitialRotation = (points: [number, number][]) => {
+    if (points.length < 2) return;
+    
+    // Calculate bearing at the start
+    const startPoint = points[0];
+    const nextPoint = points[1];
+    const initialBearing = getBearing(startPoint[0], startPoint[1], nextPoint[0], nextPoint[1]);
+    setPlaneRotation(initialBearing);
   };
   
   // Create plane markers for all flights on this path
@@ -233,7 +274,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
         position[1] + (index * 0.02)
       ];
       
-      // Move the plane to the new position
+      // Set new position with transition enabled in CSS
       marker.setLatLng(positionWithOffset);
       
       // Update rotation if we have a next position
@@ -260,25 +301,31 @@ const FlightPath: React.FC<FlightPathProps> = ({
     currentIndexRef.current = 1;
     const totalPoints = points.length;
     
-    // Use fewer map updates to prevent glitching
-    const mapUpdateInterval = Math.max(5, Math.floor(totalPoints / 20));
+    // Reduce map updates frequency to prevent glitching
+    const mapUpdateInterval = Math.max(10, Math.floor(totalPoints / 15));
     
-    // Draw points with timing proportional to flight duration
+    // Calculate animation duration based on flight duration
     const durationInMinutes = getDurationInMinutes();
-    const animationDuration = 2000; // Base animation in ms
-    const pointDelay = animationDuration / totalPoints;
+    const drawAnimationDuration = Math.min(3000, Math.max(2000, durationInMinutes * 10)); // Cap between 2-3 seconds
+    const pointDelay = drawAnimationDuration / totalPoints;
     
+    // Draw the path progressively
     const drawNextSegment = () => {
       if (currentIndexRef.current < totalPoints) {
         // Add the next point to displayed points
         setDisplayedPoints(points.slice(0, currentIndexRef.current + 1));
         
-        // Only pan the map occasionally to reduce jerkiness
+        // Only update map view occasionally to reduce jerkiness
         if (currentIndexRef.current % mapUpdateInterval === 0) {
-          // Smooth pan to follow the path
-          map.panTo(points[currentIndexRef.current], {
+          // Calculate center point between current and next point
+          const centerLat = (points[currentIndexRef.current][0] + points[Math.min(currentIndexRef.current + mapUpdateInterval, totalPoints - 1)][0]) / 2;
+          const centerLng = (points[currentIndexRef.current][1] + points[Math.min(currentIndexRef.current + mapUpdateInterval, totalPoints - 1)][1]) / 2;
+          
+          // Pan map to follow the path
+          map.panTo([centerLat, centerLng], {
             animate: true,
-            duration: 0.5
+            duration: pointDelay * mapUpdateInterval / 1000, // Convert to seconds
+            easeLinearity: 0.2 // Make it smoother
           });
         }
         
@@ -287,9 +334,12 @@ const FlightPath: React.FC<FlightPathProps> = ({
         // Schedule the next segment
         drawingTimerRef.current = setTimeout(drawNextSegment, pointDelay);
       } else {
-        // Drawing complete, create plane markers and start flight
-        createPlaneMarkers();
-        startFlightAnimation();
+        // Drawing complete
+        // Setup plane markers and start flight animation after a short pause
+        setTimeout(() => {
+          createPlaneMarkers();
+          startFlightAnimation();
+        }, 300);
       }
     };
     
@@ -320,6 +370,15 @@ const FlightPath: React.FC<FlightPathProps> = ({
           
         // Update all plane positions
         updatePlanePositions(currentPosition, nextPosition);
+        
+        // Update map position to follow the plane, but less frequently
+        if (currentIndexRef.current % 10 === 0) {
+          map.panTo(currentPosition, {
+            animate: true,
+            duration: 0.5,
+            easeLinearity: 0.5
+          });
+        }
         
         currentIndexRef.current++;
         
@@ -522,7 +581,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
           }
           
           .plane-marker svg {
-            transition: transform 0.2s ease-in-out;
+            transition: all 0.5s ease-in-out;
           }
           
           .flight-path {
@@ -548,6 +607,11 @@ const FlightPath: React.FC<FlightPathProps> = ({
             height: 1px;
             background-color: #ddd;
             margin: 8px 0;
+          }
+          
+          /* Add CSS transitions for smoother marker movement */
+          .leaflet-marker-icon {
+            transition: transform 0.5s cubic-bezier(0.45, 0, 0.55, 1);
           }
         `}
       </style>
