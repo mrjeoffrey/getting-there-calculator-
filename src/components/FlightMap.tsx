@@ -73,11 +73,12 @@ const FlightMap: React.FC<FlightMapProps> = ({
       style={{ height: '100%', width: '100%' }}
       zoomControl={false}
       worldCopyJump={true} // Allow the map to pan infinitely in the horizontal direction
+      className="google-like-map" // Add custom class for enhanced styling
     >
-      {/* Using a map tile layer that clearly shows city names */}
+      {/* Using a more colorful map style with clear country borders */}
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-        url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png"
+        url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
       />
       <ZoomControl position="bottomright" />
       <ResetMapView />
@@ -118,7 +119,7 @@ const FlightMap: React.FC<FlightMapProps> = ({
             />
           ))}
           
-          {/* Render connecting flight paths - Replace Fragment with div having display: 'contents' */}
+          {/* Render connecting flight paths */}
           {connectingFlights.map(connection => (
             <div key={`connection-${connection.id}`} style={{ display: 'contents' }}>
               {connection.flights.map((flight, index, flights) => {
