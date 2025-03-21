@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import { Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -78,52 +77,16 @@ const FlightPath: React.FC<FlightPathProps> = ({
     
     console.log(`Initializing flight path from ${departure.code} to ${arrival.code}`);
     
-    // Wait for map to be ready before initializing
+    // Single initialization process to prevent multiple map movements
     if (!isInitializedRef.current) {
-      const initializeFlightPath = () => {
-        // Set initial map view to show both departure and arrival
-        initializeMapView();
-        
-        const arcHeight = type === 'direct' ? 0.2 : 0.15;
-        
-        try {
-          // Calculate the arc points for the flight path
-          const points = calculateArcPoints(
-            departure.lat, 
-            departure.lng, 
-            arrival.lat, 
-            arrival.lng,
-            arcHeight
-          );
-          
-          if (!points || points.length < 2) {
-            console.error("ERROR: calculateArcPoints returned insufficient points!");
-            return;
-          }
-          
-          setArcPoints(points);
-          arcPointsRef.current = points;
-          
-          // Calculate the initial bearing
-          calculateInitialRotation(points);
-          
-          // Start with just the departure point and begin drawing
-          setDisplayedPoints([points[0]]);
-          
-          // Begin drawing after a short stabilization delay
-          setTimeout(() => {
-            startPathDrawing();
-          }, 600);
-        } catch (error) {
-          console.error("Error initializing flight path:", error);
-        }
-      };
+      isInitializedRef.current = true;
       
-      // Allow map to stabilize before starting the animation
-      setTimeout(() => {
-        isInitializedRef.current = true;
+      // Wait for map to be fully ready before doing any operations
+      const initTimer = setTimeout(() => {
         initializeFlightPath();
-      }, 300);
+      }, 600);
+      
+      return () => clearTimeout(initTimer);
     }
     
     return cleanup;
@@ -151,8 +114,49 @@ const FlightPath: React.FC<FlightPathProps> = ({
     currentIndexRef.current = 1;
   };
   
-  // Initialize map view to show both departure and arrival airports
-  const initializeMapView = () => {
+  // Initialize flight path setup and drawing without moving the map
+  const initializeFlightPath = () => {
+    // First set the map view to show the entire flight path
+    setInitialMapView();
+    
+    // Calculate flight path data
+    const arcHeight = type === 'direct' ? 0.2 : 0.15;
+    
+    try {
+      // Calculate the arc points for the flight path
+      const points = calculateArcPoints(
+        departure.lat, 
+        departure.lng, 
+        arrival.lat, 
+        arrival.lng,
+        arcHeight
+      );
+      
+      if (!points || points.length < 2) {
+        console.error("ERROR: calculateArcPoints returned insufficient points!");
+        return;
+      }
+      
+      setArcPoints(points);
+      arcPointsRef.current = points;
+      
+      // Calculate the initial bearing
+      calculateInitialRotation(points);
+      
+      // Start with just the departure point
+      setDisplayedPoints([points[0]]);
+      
+      // Begin drawing after the map has settled
+      setTimeout(() => {
+        startPathDrawing();
+      }, 800);
+    } catch (error) {
+      console.error("Error initializing flight path:", error);
+    }
+  };
+  
+  // Set the initial map view just once, with NO animation
+  const setInitialMapView = () => {
     if (!departure || !arrival || !departure.lat || !departure.lng || !arrival.lat || !arrival.lng) return;
     
     // Create bounds that include both airports
@@ -162,21 +166,13 @@ const FlightPath: React.FC<FlightPathProps> = ({
     );
     
     // Add some padding
-    const paddedBounds = bounds.pad(0.2);
+    const paddedBounds = bounds.pad(0.3);
     
-    // Set view to center of flight path with appropriate zoom
+    // Set view to show the entire flight path at once - NO ANIMATION
     map.fitBounds(paddedBounds, {
       animate: false,
-      duration: 0 // Disable animation for initial view
+      duration: 0
     });
-    
-    // After initial fit, fly to the departure airport for the animation start
-    setTimeout(() => {
-      map.flyTo([departure.lat, departure.lng], 6, {
-        duration: 1,
-        animate: true
-      });
-    }, 200);
   };
   
   // Calculate initial rotation for planes based on the path
@@ -293,7 +289,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
     });
   };
   
-  // Start drawing the path while panning the map
+  // Start drawing the path WITHOUT moving the map
   const startPathDrawing = () => {
     const points = arcPointsRef.current;
     if (points.length < 2) return;
@@ -301,33 +297,16 @@ const FlightPath: React.FC<FlightPathProps> = ({
     currentIndexRef.current = 1;
     const totalPoints = points.length;
     
-    // Reduce map updates frequency to prevent glitching
-    const mapUpdateInterval = Math.max(10, Math.floor(totalPoints / 15));
-    
     // Calculate animation duration based on flight duration
     const durationInMinutes = getDurationInMinutes();
     const drawAnimationDuration = Math.min(3000, Math.max(2000, durationInMinutes * 10)); // Cap between 2-3 seconds
     const pointDelay = drawAnimationDuration / totalPoints;
     
-    // Draw the path progressively
+    // Draw the path progressively WITHOUT panning the map
     const drawNextSegment = () => {
       if (currentIndexRef.current < totalPoints) {
         // Add the next point to displayed points
         setDisplayedPoints(points.slice(0, currentIndexRef.current + 1));
-        
-        // Only update map view occasionally to reduce jerkiness
-        if (currentIndexRef.current % mapUpdateInterval === 0) {
-          // Calculate center point between current and next point
-          const centerLat = (points[currentIndexRef.current][0] + points[Math.min(currentIndexRef.current + mapUpdateInterval, totalPoints - 1)][0]) / 2;
-          const centerLng = (points[currentIndexRef.current][1] + points[Math.min(currentIndexRef.current + mapUpdateInterval, totalPoints - 1)][1]) / 2;
-          
-          // Pan map to follow the path
-          map.panTo([centerLat, centerLng], {
-            animate: true,
-            duration: pointDelay * mapUpdateInterval / 1000, // Convert to seconds
-            easeLinearity: 0.2 // Make it smoother
-          });
-        }
         
         currentIndexRef.current++;
         
@@ -339,7 +318,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
         setTimeout(() => {
           createPlaneMarkers();
           startFlightAnimation();
-        }, 300);
+        }, 500);
       }
     };
     
@@ -347,7 +326,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
     drawNextSegment();
   };
   
-  // Animate planes along the complete path
+  // Animate planes along the complete path WITHOUT moving the map
   const startFlightAnimation = () => {
     const points = arcPointsRef.current;
     if (points.length < 2) return;
@@ -371,14 +350,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
         // Update all plane positions
         updatePlanePositions(currentPosition, nextPosition);
         
-        // Update map position to follow the plane, but less frequently
-        if (currentIndexRef.current % 10 === 0) {
-          map.panTo(currentPosition, {
-            animate: true,
-            duration: 0.5,
-            easeLinearity: 0.5
-          });
-        }
+        // NO MAP PANNING during animation
         
         currentIndexRef.current++;
         
@@ -609,7 +581,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
             margin: 8px 0;
           }
           
-          /* Add CSS transitions for smoother marker movement */
+          /* Add CSS transitions for smoother plane movement */
           .leaflet-marker-icon {
             transition: transform 0.5s cubic-bezier(0.45, 0, 0.55, 1);
           }
