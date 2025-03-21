@@ -5,7 +5,12 @@ import { Airport } from '../types/flightTypes';
 import { calculateArcPoints, getBearing } from '../utils/flightUtils';
 import ReactDOMServer from 'react-dom/server';
 import { Plane } from 'lucide-react';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+
+declare module 'leaflet' {
+  interface Marker {
+    flightData?: any;
+  }
+}
 
 interface FlightPathProps {
   departure: Airport;

@@ -7,6 +7,7 @@ import { Airport } from '../types/flightTypes';
 interface AirportMarkerProps {
   airport: Airport;
   isPulsing?: boolean;
+  isHighlighted?: boolean;
   type?: 'origin' | 'destination' | 'connection';
   isDarkMode?: boolean;
 }
@@ -14,6 +15,7 @@ interface AirportMarkerProps {
 const AirportMarker: React.FC<AirportMarkerProps> = ({ 
   airport, 
   isPulsing = false,
+  isHighlighted = false,
   type = 'origin',
   isDarkMode = false
 }) => {
