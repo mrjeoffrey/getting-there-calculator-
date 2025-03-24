@@ -1,3 +1,4 @@
+
 import { Airport, Flight, ConnectionFlight } from '../types/flightTypes';
 import axios from 'axios';
 
@@ -13,6 +14,11 @@ export const airports: Airport[] = [
   { code: 'YYZ', name: 'Toronto Pearson International Airport', city: 'Toronto', country: 'Canada', lat: 43.6777, lng: -79.6248 },
   { code: 'FCO', name: 'Leonardo da Vinci International Airport', city: 'Rome', country: 'Italy', lat: 41.8003, lng: 12.2389 },
   { code: 'HKG', name: 'Hong Kong International Airport', city: 'Hong Kong', country: 'China', lat: 22.3080, lng: 113.9185 },
+  { code: 'HND', name: 'Tokyo Haneda Airport', city: 'Tokyo', country: 'Japan', lat: 35.5494, lng: 139.7798 },
+  { code: 'NRT', name: 'Narita International Airport', city: 'Tokyo', country: 'Japan', lat: 35.7719, lng: 140.3928 },
+  { code: 'FRA', name: 'Frankfurt Airport', city: 'Frankfurt', country: 'Germany', lat: 50.0379, lng: 8.5622 },
+  { code: 'ICN', name: 'Incheon International Airport', city: 'Seoul', country: 'South Korea', lat: 37.4602, lng: 126.4407 },
+  { code: 'AMS', name: 'Amsterdam Airport Schiphol', city: 'Amsterdam', country: 'Netherlands', lat: 52.3105, lng: 4.7683 },
 ];
 
 // Find airport by code (kept as is)
@@ -31,6 +37,20 @@ export const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2
     Math.sin(dLon/2) * Math.sin(dLon/2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   return R * c;
+};
+
+// Generate flight number
+export const generateFlightNumber = (airline: string = "JS"): string => {
+  const number = Math.floor(Math.random() * 9000) + 1000;
+  return `${airline}${number}`;
+};
+
+// Calculate flight duration
+export const calculateFlightDuration = (departureTime: Date, arrivalTime: Date): string => {
+  const durationMs = arrivalTime.getTime() - departureTime.getTime();
+  const hours = Math.floor(durationMs / (60 * 60 * 1000));
+  const minutes = Math.floor((durationMs % (60 * 60 * 1000)) / (60 * 1000));
+  return `${hours}h ${minutes}m`;
 };
 
 // Aviationstack API configuration
@@ -98,7 +118,13 @@ const convertToFlightType = (aviationstackFlight: any): Flight | null => {
       flightNumber: aviationstackFlight.flight.iata || aviationstackFlight.flight.number,
       airline: aviationstackFlight.airline.iata || aviationstackFlight.airline.name.substring(0, 2),
       duration: `${durationHours}h ${durationMinutes}m`,
-      direct: true
+      direct: true,
+      segments: [{
+        departureAirport: { code: departure.code },
+        arrivalAirport: { code: arrival.code },
+        departureTime: departureTime.toISOString(),
+        arrivalTime: arrivalTime.toISOString()
+      }]
     };
   } catch (error) {
     console.error('Error converting flight data:', error);
@@ -220,129 +246,13 @@ const fallbackToMockedData = async (fromCode: string, toCode: string, date: stri
 }> => {
   console.warn('Falling back to mocked data due to API failure');
   
-  // Below is your original mocked data generation (commented out but accessible)
-  /* 
-  // Original mock data functions are commented out but kept for reference
-  
-  // Generate a random flight number
-  const generateFlightNumber = (airline: string): string => {
-    const number = Math.floor(Math.random() * 9000) + 1000;
-    return `${airline}${number}`;
-  };
-
-  // Mock airlines
-  const airlines = ['BA', 'AA', 'UA', 'DL', 'LH', 'AF', 'EK', 'SQ', 'CX', 'QF'];
-
-  // Generate a sample direct flight
-  const generateDirectFlight = (fromCode: string, toCode: string, date: string): Flight | null => {
-    const departure = findAirportByCode(fromCode);
-    const arrival = findAirportByCode(toCode);
-    
-    if (!departure || !arrival) return null;
-    
-    const airline = airlines[Math.floor(Math.random() * airlines.length)];
-    
-    // Generate departure time (between 6 AM and 10 PM)
-    const departureHour = Math.floor(Math.random() * 16) + 6;
-    const departureMinute = Math.floor(Math.random() * 60);
-    const departureTimeString = `${date}T${departureHour.toString().padStart(2, '0')}:${departureMinute.toString().padStart(2, '0')}:00`;
-    
-    // Calculate duration
-    const duration = calculateFlightDuration(departure.lat, departure.lng, arrival.lat, arrival.lng);
-    
-    // Calculate arrival time based on duration
-    const durationHours = parseInt(duration.split('h')[0]);
-    const durationMinutes = parseInt(duration.split('h ')[1].split('m')[0]);
-    const departureTime = new Date(departureTimeString);
-    const arrivalTime = new Date(departureTime.getTime() + (durationHours * 60 + durationMinutes) * 60000);
-    
-    return {
-      id: `${fromCode}-${toCode}-${Math.random().toString(36).substring(2, 9)}`,
-      departureAirport: departure,
-      arrivalAirport: arrival,
-      departureTime: departureTimeString,
-      arrivalTime: arrivalTime.toISOString(),
-      flightNumber: generateFlightNumber(airline),
-      airline: airline,
-      duration: duration,
-      direct: true
-    };
-  };
-
-  // Generate connecting flights
-  const generateConnectionFlight = (fromCode: string, toCode: string, date: string): ConnectionFlight | null => {
-    const departure = findAirportByCode(fromCode);
-    const arrival = findAirportByCode(toCode);
-    
-    if (!departure || !arrival) return null;
-    
-    // Randomly select a connecting airport (different from departure and arrival)
-    const potentialConnections = airports.filter(a => a.code !== fromCode && a.code !== toCode);
-    if (potentialConnections.length === 0) return null;
-    
-    const connectingAirport = potentialConnections[Math.floor(Math.random() * potentialConnections.length)];
-    
-    // Generate first flight
-    const firstFlight = generateDirectFlight(fromCode, connectingAirport.code, date);
-    if (!firstFlight) return null;
-    
-    // Generate layover time (1-3 hours)
-    const layoverHours = Math.floor(Math.random() * 2) + 1;
-    const layoverMinutes = Math.floor(Math.random() * 60);
-    const stopoverDuration = `${layoverHours}h ${layoverMinutes}m`;
-    
-    // Calculate second flight departure time
-    const firstArrivalTime = new Date(firstFlight.arrivalTime);
-    const secondDepartureTime = new Date(firstArrivalTime.getTime() + (layoverHours * 60 + layoverMinutes) * 60000);
-    
-    // Generate second flight
-    const airline = airlines[Math.floor(Math.random() * airlines.length)];
-    const duration = calculateFlightDuration(connectingAirport.lat, connectingAirport.lng, arrival.lat, arrival.lng);
-    const durationHours = parseInt(duration.split('h')[0]);
-    const durationMinutes = parseInt(duration.split('h ')[1].split('m')[0]);
-    const secondArrivalTime = new Date(secondDepartureTime.getTime() + (durationHours * 60 + durationMinutes) * 60000);
-    
-    const secondFlight: Flight = {
-      id: `${connectingAirport.code}-${toCode}-${Math.random().toString(36).substring(2, 9)}`,
-      departureAirport: connectingAirport,
-      arrivalAirport: arrival,
-      departureTime: secondDepartureTime.toISOString(),
-      arrivalTime: secondArrivalTime.toISOString(),
-      flightNumber: generateFlightNumber(airline),
-      airline: airline,
-      duration: duration,
-      direct: false
-    };
-    
-    // Calculate total duration
-    const totalDurationMs = secondArrivalTime.getTime() - new Date(firstFlight.departureTime).getTime();
-    const totalHours = Math.floor(totalDurationMs / (1000 * 60 * 60));
-    const totalMinutes = Math.floor((totalDurationMs % (1000 * 60 * 60)) / (1000 * 60));
-    const totalDuration = `${totalHours}h ${totalMinutes}m`;
-    
-    // Generate random price between $500 and $2000
-    const price = Math.floor(Math.random() * 1500) + 500;
-    
-    return {
-      id: `${fromCode}-${connectingAirport.code}-${toCode}-${Math.random().toString(36).substring(2, 9)}`,
-      flights: [firstFlight, secondFlight],
-      totalDuration: totalDuration,
-      stopoverDuration: stopoverDuration,
-      price: price
-    };
-  };
-  */
-  
-  // Implementing simplified mock data for fallback
-  const destinationCode = 'GND';
-  
   // Simplified direct flight generation
   const directFlights: Flight[] = [];
   const directFlightCount = Math.floor(Math.random() * 2) + 1;
   
   for (let i = 0; i < directFlightCount; i++) {
     const departure = findAirportByCode(fromCode);
-    const arrival = findAirportByCode(destinationCode);
+    const arrival = findAirportByCode(toCode);
     
     if (!departure || !arrival) continue;
     
@@ -360,7 +270,7 @@ const fallbackToMockedData = async (fromCode: string, toCode: string, date: stri
     const arrivalTime = new Date(departureTime.getTime() + (hours * 60 + minutes) * 60000);
     
     directFlights.push({
-      id: `${fromCode}-${destinationCode}-${Math.random().toString(36).substring(2, 9)}`,
+      id: `${fromCode}-${toCode}-${Math.random().toString(36).substring(2, 9)}`,
       departureAirport: departure,
       arrivalAirport: arrival,
       departureTime: departureTimeString,
@@ -368,7 +278,13 @@ const fallbackToMockedData = async (fromCode: string, toCode: string, date: stri
       flightNumber: `${airline}${Math.floor(Math.random() * 9000) + 1000}`,
       airline: airline,
       duration: duration,
-      direct: true
+      direct: true,
+      segments: [{
+        departureAirport: { code: fromCode },
+        arrivalAirport: { code: toCode },
+        departureTime: departureTimeString,
+        arrivalTime: arrivalTime.toISOString()
+      }]
     });
   }
   
@@ -378,12 +294,12 @@ const fallbackToMockedData = async (fromCode: string, toCode: string, date: stri
   
   for (let i = 0; i < connectingFlightCount; i++) {
     const departure = findAirportByCode(fromCode);
-    const arrival = findAirportByCode(destinationCode);
+    const arrival = findAirportByCode(toCode);
     
     if (!departure || !arrival) continue;
     
     // Select a connecting airport
-    const potentialConnections = airports.filter(a => a.code !== fromCode && a.code !== destinationCode);
+    const potentialConnections = airports.filter(a => a.code !== fromCode && a.code !== toCode);
     if (potentialConnections.length === 0) continue;
     
     const connectingAirport = potentialConnections[Math.floor(Math.random() * potentialConnections.length)];
@@ -411,7 +327,13 @@ const fallbackToMockedData = async (fromCode: string, toCode: string, date: stri
       flightNumber: `${airline1}${Math.floor(Math.random() * 9000) + 1000}`,
       airline: airline1,
       duration: duration1,
-      direct: true
+      direct: true,
+      segments: [{
+        departureAirport: { code: fromCode },
+        arrivalAirport: { code: connectingAirport.code },
+        departureTime: departureTimeString,
+        arrivalTime: firstArrivalTime.toISOString()
+      }]
     };
     
     // Layover
@@ -431,7 +353,7 @@ const fallbackToMockedData = async (fromCode: string, toCode: string, date: stri
     const secondArrivalTime = new Date(secondDepartureTime.getTime() + (hours2 * 60 + minutes2) * 60000);
     
     const secondFlight: Flight = {
-      id: `${connectingAirport.code}-${destinationCode}-${Math.random().toString(36).substring(2, 9)}`,
+      id: `${connectingAirport.code}-${toCode}-${Math.random().toString(36).substring(2, 9)}`,
       departureAirport: connectingAirport,
       arrivalAirport: arrival,
       departureTime: secondDepartureTime.toISOString(),
@@ -439,7 +361,13 @@ const fallbackToMockedData = async (fromCode: string, toCode: string, date: stri
       flightNumber: `${airline2}${Math.floor(Math.random() * 9000) + 1000}`,
       airline: airline2,
       duration: duration2,
-      direct: true
+      direct: true,
+      segments: [{
+        departureAirport: { code: connectingAirport.code },
+        arrivalAirport: { code: toCode },
+        departureTime: secondDepartureTime.toISOString(),
+        arrivalTime: secondArrivalTime.toISOString()
+      }]
     };
     
     // Total duration
@@ -452,7 +380,7 @@ const fallbackToMockedData = async (fromCode: string, toCode: string, date: stri
     const price = Math.floor(Math.random() * 1500) + 500;
     
     connectingFlights.push({
-      id: `${fromCode}-${connectingAirport.code}-${destinationCode}-${Math.random().toString(36).substring(2, 9)}`,
+      id: `${fromCode}-${connectingAirport.code}-${toCode}-${Math.random().toString(36).substring(2, 9)}`,
       flights: [firstFlight, secondFlight],
       totalDuration: totalDuration,
       stopoverDuration: stopoverDuration,

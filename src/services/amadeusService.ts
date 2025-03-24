@@ -1,3 +1,4 @@
+
 import axios from 'axios';
 import { Airport, Flight, ConnectionFlight } from '../types/flightTypes';
 import { findAirportByCode, generateFlightNumber, calculateFlightDuration } from '../utils/flightUtils';
@@ -218,6 +219,14 @@ const convertToFlightType = (amadeusFlightData: any, date: string): Flight | nul
   }
 };
 
+// Function to calculate duration between two dates
+const calculateFlightDuration = (start: Date, end: Date): string => {
+  const durationMs = end.getTime() - start.getTime();
+  const hours = Math.floor(durationMs / (1000 * 60 * 60));
+  const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
+  return `${hours}h ${minutes}m`;
+};
+
 // Enhanced search for weekly flights
 export const searchWeeklyFlights = async (fromCode: string, toCode: string): Promise<{
   directFlights: Flight[];
@@ -309,10 +318,32 @@ export const searchWeeklyFlights = async (fromCode: string, toCode: string): Pro
           
           for (let i = 0; i < flight.segments.length; i++) {
             const segment = flight.segments[i];
+            const fullDepartureAirport = findAirportByCode(segment.departureAirport.code);
+            const fullArrivalAirport = findAirportByCode(segment.arrivalAirport.code);
+            
+            // Create proper Airport objects with all required fields
+            const departureAirport: Airport = fullDepartureAirport || {
+              code: segment.departureAirport.code,
+              name: segment.departureAirport.name || 'Unknown Airport',
+              city: 'Unknown City',
+              country: 'Unknown Country',
+              lat: 0,
+              lng: 0
+            };
+            
+            const arrivalAirport: Airport = fullArrivalAirport || {
+              code: segment.arrivalAirport.code,
+              name: segment.arrivalAirport.name || 'Unknown Airport',
+              city: 'Unknown City',
+              country: 'Unknown Country',
+              lat: 0,
+              lng: 0
+            };
+            
             const segmentFlight: Flight = {
               id: `${flight.id}-segment-${i}`,
-              departureAirport: i === 0 ? flight.departureAirport : findAirportByCode(segment.departureAirport.code) || segment.departureAirport,
-              arrivalAirport: findAirportByCode(segment.arrivalAirport.code) || segment.arrivalAirport,
+              departureAirport: i === 0 ? flight.departureAirport : departureAirport,
+              arrivalAirport: arrivalAirport,
               departureTime: segment.departureTime,
               arrivalTime: segment.arrivalTime,
               flightNumber: `${flight.flightNumber}-${i+1}`,
@@ -344,56 +375,6 @@ export const searchWeeklyFlights = async (fromCode: string, toCode: string): Pro
     
       console.log('Total Connection Flights Created:', connectionFlights.length);
       return connectionFlights;
-    };
-    
-    const generateConnectionId = (flight: Flight): string => {
-      // Generate a unique ID for the connection flight
-      const segments = flight.segments;
-      if (segments.length < 2) return flight.id;
-
-      const firstSegmentStart = segments[0].departureAirport.code;
-      const lastSegmentEnd = segments[segments.length - 1].arrivalAirport.code;
-      
-      return `${firstSegmentStart}-${lastSegmentEnd}-${flight.flightNumber}`;
-    };
-    
-    const calculateConnectionPrice = (flight: Flight): number => {
-      // Basic price calculation logic - you might want to replace this with more sophisticated pricing
-      const basePrice = 100; // Base connection price
-      const segmentMultiplier = flight.segments.length;
-      
-      return basePrice * segmentMultiplier;
-    };
-    
-    interface ConnectionDetails {
-      stopoverDuration: string;
-    }
-    
-    const extractConnectionDetails = (flight: Flight): ConnectionDetails | null => {
-      // Ensure the flight has multiple segments
-      if (flight.segments.length <= 1) return null;
-
-      let totalStopoverDuration = 0;
-
-      // Iterate through segments to calculate stopover
-      for (let i = 0; i < flight.segments.length - 1; i++) {
-        const currentSegment = flight.segments[i];
-        const nextSegment = flight.segments[i + 1];
-
-        // Calculate stopover duration
-        const currentArrival = new Date(currentSegment.arrivalTime);
-        const nextDeparture = new Date(nextSegment.departureTime);
-        
-        const stopoverMs = nextDeparture.getTime() - currentArrival.getTime();
-        totalStopoverDuration += stopoverMs;
-      }
-
-      // Convert total stopover duration to readable format
-      const stopoverHours = Math.floor(totalStopoverDuration / (1000 * 60 * 60));
-      const stopoverMinutes = Math.floor((totalStopoverDuration % (1000 * 60 * 60)) / (1000 * 60));
-      const stopoverDuration = `${stopoverHours}h ${stopoverMinutes}m`;
-
-      return { stopoverDuration };
     };
     
     // If we don't have enough flights, generate some mocked data
@@ -547,7 +528,7 @@ const fallbackToMockedData = (originCode: string, destinationCode: string): Flig
   
   // Generate a few direct flights
   for (let i = 0; i < 3; i++) {
-    const flightNumber = generateFlightNumber();
+    const flightNumber = generateFlightNumber("JS");
     const departureTime = new Date();
     departureTime.setHours(8 + i * 4);
     departureTime.setMinutes(Math.floor(Math.random() * 60));
@@ -597,7 +578,7 @@ const generateMockConnectingFlights = (originCode: string, destinationCode: stri
   
   // Generate 3 connecting flights with different layovers
   for (let i = 0; i < 3; i++) {
-    const flightNumber = generateFlightNumber();
+    const flightNumber = generateFlightNumber("JS");
     const departureTime = new Date();
     departureTime.setHours(7 + i * 5);
     departureTime.setMinutes(Math.floor(Math.random() * 60));
@@ -633,8 +614,8 @@ const generateMockConnectingFlights = (originCode: string, destinationCode: stri
       const arrivalTime = new Date(currentDepartureTime.getTime() + flightDurationMs);
       
       segments.push({
-        departureAirport: { code: currentOrigin.code },
-        arrivalAirport: { code: layoverAirport.code },
+        departureAirport: currentOrigin,
+        arrivalAirport: layoverAirport,
         departureTime: currentDepartureTime.toISOString(),
         arrivalTime: arrivalTime.toISOString()
       });
@@ -650,8 +631,8 @@ const generateMockConnectingFlights = (originCode: string, destinationCode: stri
     const finalArrivalTime = new Date(currentDepartureTime.getTime() + finalFlightDurationMs);
     
     segments.push({
-      departureAirport: { code: currentOrigin.code },
-      arrivalAirport: { code: destinationAirport.code },
+      departureAirport: currentOrigin,
+      arrivalAirport: destinationAirport,
       departureTime: currentDepartureTime.toISOString(),
       arrivalTime: finalArrivalTime.toISOString()
     });
@@ -710,7 +691,7 @@ const createSpecificConnectionFlights = (originCode: string, destinationCode: st
     console.log(`Creating specific connection via ${connectingCode}`);
     
     // Create first leg
-    const firstFlightNumber = generateFlightNumber();
+    const firstFlightNumber = generateFlightNumber("JS");
     const firstDepartureTime = new Date();
     firstDepartureTime.setHours(8 + i * 3);
     firstDepartureTime.setMinutes(Math.floor(Math.random() * 60));
@@ -729,15 +710,15 @@ const createSpecificConnectionFlights = (originCode: string, destinationCode: st
       duration: `${Math.floor(firstFlightDurationMs / (60 * 60 * 1000))}h ${Math.floor((firstFlightDurationMs % (60 * 60 * 1000)) / (60 * 1000))}m`,
       direct: true,
       segments: [{
-        departureAirport: { code: originCode },
-        arrivalAirport: { code: connectingCode },
+        departureAirport: originAirport,
+        arrivalAirport: connectingAirport,
         departureTime: firstDepartureTime.toISOString(),
         arrivalTime: firstArrivalTime.toISOString()
       }]
     };
     
     // Create second leg
-    const secondFlightNumber = generateFlightNumber();
+    const secondFlightNumber = generateFlightNumber("JS");
     
     // Layover time
     const layoverTimeMs = (1 + Math.floor(Math.random() * 3)) * 60 * 60 * 1000;
@@ -757,8 +738,8 @@ const createSpecificConnectionFlights = (originCode: string, destinationCode: st
       duration: `${Math.floor(secondFlightDurationMs / (60 * 60 * 1000))}h ${Math.floor((secondFlightDurationMs % (60 * 60 * 1000)) / (60 * 1000))}m`,
       direct: true,
       segments: [{
-        departureAirport: { code: connectingCode },
-        arrivalAirport: { code: destinationCode },
+        departureAirport: connectingAirport,
+        arrivalAirport: destinationAirport,
         departureTime: secondDepartureTime.toISOString(),
         arrivalTime: secondArrivalTime.toISOString()
       }]
@@ -787,3 +768,4 @@ const createSpecificConnectionFlights = (originCode: string, destinationCode: st
   
   return connectionFlights;
 };
+
