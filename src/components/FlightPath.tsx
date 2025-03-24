@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import { Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -65,6 +64,8 @@ const FlightPath: React.FC<FlightPathProps> = ({
   const isInitializedRef = useRef<boolean>(false);
   const map = useMap();
   
+  const pathId = useRef<string>(`${type}-${departure?.code || 'unknown'}-${arrival?.code || 'unknown'}-${Math.random().toString(36).substr(2, 5)}`);
+  
   const getDurationInMinutes = (): number => {
     if (duration) {
       const hourMatch = duration.match(/(\d+)h/);
@@ -77,17 +78,15 @@ const FlightPath: React.FC<FlightPathProps> = ({
   };
   
   useEffect(() => {
-    // Always run cleanup when dependencies change
     cleanup();
     
     if (!departure || !arrival || !departure.lat || !departure.lng || !arrival.lat || !arrival.lng) {
-      console.error("Invalid departure or arrival data:", { departure, arrival });
+      console.error(`[${pathId.current}] Invalid departure or arrival data:`, { departure, arrival });
       return;
     }
     
-    console.log(`Initializing flight path from ${departure.code} to ${arrival.code}`);
+    console.log(`[${pathId.current}] Initializing flight path from ${departure.code} to ${arrival.code} (type: ${type})`);
     
-    // Reset initialization state for new searches
     isInitializedRef.current = true;
     
     const initTimer = setTimeout(() => {
@@ -98,11 +97,11 @@ const FlightPath: React.FC<FlightPathProps> = ({
       clearTimeout(initTimer);
       cleanup();
     };
-  }, [departure, arrival, type, isActive]); // Add additional dependencies
+  }, [departure, arrival, type, isActive]);
   
-  // Auto-animate connecting flights if flag is set
   useEffect(() => {
     if (autoAnimate && type === 'connecting' && !animationComplete && arcPointsRef.current.length > 0) {
+      console.log(`[${pathId.current}] Auto-animating connecting flight from ${departure?.code} to ${arrival?.code}`);
       setTimeout(() => {
         createPlaneMarkers();
         startFlightAnimation();
@@ -130,13 +129,17 @@ const FlightPath: React.FC<FlightPathProps> = ({
   };
   
   const initializeFlightPath = () => {
-    if (!departure || !arrival || !departure.lat || !departure.lng || !arrival.lat || !arrival.lng) return;
+    if (!departure || !arrival || !departure.lat || !departure.lng || !arrival.lat || !arrival.lng) {
+      console.error(`[${pathId.current}] Missing required airport data for flight path`);
+      return;
+    }
     
     setInitialMapView();
     
     const arcHeight = type === 'direct' ? 0.2 : 0.15;
     
     try {
+      console.log(`[${pathId.current}] Calculating arc points for ${departure.code} to ${arrival.code}`);
       const points = calculateArcPoints(
         departure.lat, 
         departure.lng, 
@@ -146,10 +149,11 @@ const FlightPath: React.FC<FlightPathProps> = ({
       );
       
       if (!points || points.length < 2) {
-        console.error("ERROR: calculateArcPoints returned insufficient points!");
+        console.error(`[${pathId.current}] ERROR: calculateArcPoints returned insufficient points!`);
         return;
       }
       
+      console.log(`[${pathId.current}] Generated ${points.length} arc points for flight path`);
       setArcPoints(points);
       arcPointsRef.current = points;
       
@@ -161,7 +165,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
         startPathDrawing();
       }, 800);
     } catch (error) {
-      console.error("Error initializing flight path:", error);
+      console.error(`[${pathId.current}] Error initializing flight path:`, error);
     }
   };
   
@@ -192,6 +196,8 @@ const FlightPath: React.FC<FlightPathProps> = ({
   
   const createPlaneMarkers = () => {
     if (planeMarkersRef.current.length > 0) return;
+    
+    console.log(`[${pathId.current}] Creating plane markers for ${type} flight`);
     
     const flights = flightInfo && flightInfo.length > 0 
       ? flightInfo 
@@ -281,6 +287,8 @@ const FlightPath: React.FC<FlightPathProps> = ({
     const points = arcPointsRef.current;
     if (points.length < 2) return;
     
+    console.log(`[${pathId.current}] Starting path drawing animation for ${type} flight`);
+    
     currentIndexRef.current = 1;
     const totalPoints = points.length;
     
@@ -296,7 +304,8 @@ const FlightPath: React.FC<FlightPathProps> = ({
         
         drawingTimerRef.current = setTimeout(drawNextSegment, pointDelay);
       } else {
-        // If autoAnimating, createPlaneMarkers and startFlightAnimation are called separately by useEffect
+        console.log(`[${pathId.current}] Path drawing complete for ${type} flight`);
+        
         if (!autoAnimate) {
           setTimeout(() => {
             createPlaneMarkers();
@@ -312,6 +321,8 @@ const FlightPath: React.FC<FlightPathProps> = ({
   const startFlightAnimation = () => {
     const points = arcPointsRef.current;
     if (points.length < 2) return;
+    
+    console.log(`[${pathId.current}] Starting flight animation for ${type} flight`);
     
     currentIndexRef.current = 0;
     const totalPoints = points.length;
@@ -333,7 +344,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
         
         drawingTimerRef.current = setTimeout(animateNextStep, pointDelay);
       } else {
-        console.log("Flight animation complete");
+        console.log(`[${pathId.current}] Flight animation complete for ${type} flight`);
         setAnimationComplete(true);
         
         const finalPosition = points[points.length - 1];

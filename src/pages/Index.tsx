@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '../components/Header';
 import SearchPanel from '../components/SearchPanel';
 import FlightMap from '../components/FlightMap';
@@ -15,15 +15,33 @@ const Index = () => {
   const [selectedFlightId, setSelectedFlightId] = useState<string | null>(null);
   const [searched, setSearched] = useState(false);
 
+  // Add debugging effect for monitoring flight data
+  useEffect(() => {
+    if (directFlights.length > 0) {
+      console.log(`Index: Loaded ${directFlights.length} direct flights`);
+    }
+    
+    if (connectingFlights.length > 0) {
+      console.log(`Index: Loaded ${connectingFlights.length} connecting flights`);
+      console.log("Connecting flight details:", connectingFlights);
+    }
+  }, [directFlights, connectingFlights]);
+
   const handleSearch = async (params: SearchParams) => {
     setLoading(true);
     setSearched(false);
+    setDirectFlights([]);
+    setConnectingFlights([]);
     
     try {
+      console.log(`Searching flights from ${params.from} to ${params.to || 'GND'}`);
+      
       const { directFlights, connectingFlights, weeklyData } = await searchWeeklyFlights(
         params.from,
         params.to || 'GND'
       );
+      
+      console.log(`Search completed. Found ${directFlights.length} direct and ${connectingFlights.length} connecting flights`);
       
       setDirectFlights(directFlights);
       setConnectingFlights(connectingFlights);
@@ -37,8 +55,15 @@ const Index = () => {
           console.log(`Connection #${idx+1}: ${cf.id} with ${cf.flights.length} legs`);
           cf.flights.forEach((leg, legIdx) => {
             console.log(`  Leg ${legIdx+1}: ${leg.departureAirport?.code} to ${leg.arrivalAirport?.code}`);
+            
+            // Additional validation of flight data
+            if (!leg.departureAirport || !leg.arrivalAirport) {
+              console.error(`  Missing airport data in leg ${legIdx+1} of connection ${idx+1}`);
+            }
           });
         });
+      } else {
+        console.warn("No connecting flights found in search results");
       }
       
       if (directFlights.length === 0 && connectingFlights.length === 0) {
@@ -55,6 +80,7 @@ const Index = () => {
   };
 
   const handleFlightSelect = (flight: any) => {
+    console.log("Selected flight:", flight);
     setSelectedFlightId(flight.id);
   };
 
