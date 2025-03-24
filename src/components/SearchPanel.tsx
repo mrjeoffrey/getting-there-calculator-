@@ -1,17 +1,10 @@
 
 import React, { useState } from 'react';
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { Calendar as CalendarIcon, Search } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { format } from "date-fns";
+import { Search } from "lucide-react";
 import { SearchParams } from '../types/flightTypes';
 import AirportSelector from './AirportSelector';
+import { toast } from "sonner";
 
 interface SearchPanelProps {
   onSearch: (params: SearchParams) => void;
@@ -20,17 +13,18 @@ interface SearchPanelProps {
 
 const SearchPanel: React.FC<SearchPanelProps> = ({ onSearch, loading }) => {
   const [from, setFrom] = useState('');
-  const [to, setTo] = useState('GND'); // Default to Grenada
-  const [date, setDate] = useState<Date>(new Date());
-  const [calendarOpen, setCalendarOpen] = useState(false);
+  const [to] = useState('GND'); // Default to Grenada, fixed value
 
   const handleSearch = () => {
-    if (!from || !to || !date) return;
+    if (!from) {
+      toast.error("Please select a departure airport");
+      return;
+    }
     
     onSearch({
       from,
       to,
-      date: date.toISOString().split('T')[0] // Format as YYYY-MM-DD
+      // No date required, will search for the next 7 days automatically
     });
   };
 
@@ -61,39 +55,16 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ onSearch, loading }) => {
           </div>
         </div>
         
-        <div>
-          <label className="text-sm font-medium text-muted-foreground mb-1 block">Departure Date</label>
-          <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-full justify-start text-left font-normal h-14 px-4 py-3 bg-white/50 hover:bg-white/60 border-white/20",
-                  !date && "text-muted-foreground"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {date ? format(date, "PPP") : <span>Pick a date</span>}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={date}
-                onSelect={(date) => {
-                  setDate(date || new Date());
-                  setCalendarOpen(false);
-                }}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
+        <div className="mt-4">
+          <p className="text-sm text-muted-foreground mb-2">
+            We'll show you flights for the next 7 days to help you find the best options.
+          </p>
         </div>
         
         <Button 
           className="w-full h-14 bg-primary hover:bg-primary/90 text-primary-foreground"
           onClick={handleSearch}
-          disabled={!from || !date || loading}
+          disabled={!from || loading}
         >
           {loading ? (
             <div className="flex items-center">

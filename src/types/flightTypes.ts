@@ -1,4 +1,3 @@
-
 export interface Airport {
   code: string;
   name: string;
@@ -31,7 +30,7 @@ export interface ConnectionFlight {
 export interface SearchParams {
   from: string;
   to: string;
-  date: string;
+  date?: string; // Make date optional
 }
 
 export interface SearchResults {
@@ -39,4 +38,12 @@ export interface SearchResults {
   connectingFlights: ConnectionFlight[];
   loading: boolean;
   error: string | null;
+}
+
+export interface WeeklyFlightData {
+  [date: string]: {
+    dayOfWeek: string;
+    flights: Flight[];
+    error?: string;
+  };
 }
