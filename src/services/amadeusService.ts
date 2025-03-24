@@ -1,4 +1,3 @@
-
 import axios from 'axios';
 import { Airport, Flight, ConnectionFlight } from '../types/flightTypes';
 import { findAirportByCode, generateFlightNumber, calculateFlightDuration } from '../utils/flightUtils';
@@ -324,7 +323,7 @@ export const searchWeeklyFlights = async (fromCode: string, toCode: string): Pro
             // Create proper Airport objects with all required fields
             const departureAirport: Airport = fullDepartureAirport || {
               code: segment.departureAirport.code,
-              name: segment.departureAirport.name || 'Unknown Airport',
+              name: segment.departureAirport.code + " Airport",
               city: 'Unknown City',
               country: 'Unknown Country',
               lat: 0,
@@ -333,7 +332,7 @@ export const searchWeeklyFlights = async (fromCode: string, toCode: string): Pro
             
             const arrivalAirport: Airport = fullArrivalAirport || {
               code: segment.arrivalAirport.code,
-              name: segment.arrivalAirport.name || 'Unknown Airport',
+              name: segment.arrivalAirport.code + " Airport",
               city: 'Unknown City',
               country: 'Unknown Country',
               lat: 0,
@@ -536,6 +535,25 @@ const fallbackToMockedData = (originCode: string, destinationCode: string): Flig
     const flightDurationMs = (5 + Math.floor(Math.random() * 3)) * 60 * 60 * 1000;
     const arrivalTime = new Date(departureTime.getTime() + flightDurationMs);
     
+    // Create a complete Airport object from the code
+    const segmentDepartureAirport: Airport = {
+      code: originCode,
+      name: originAirport.name,
+      city: originAirport.city,
+      country: originAirport.country,
+      lat: originAirport.lat,
+      lng: originAirport.lng
+    };
+    
+    const segmentArrivalAirport: Airport = {
+      code: destinationCode,
+      name: destinationAirport.name,
+      city: destinationAirport.city,
+      country: destinationAirport.country,
+      lat: destinationAirport.lat,
+      lng: destinationAirport.lng
+    };
+    
     const flight: Flight = {
       id: `${originCode}-${destinationCode}-${flightNumber}`,
       departureAirport: originAirport,
@@ -547,8 +565,8 @@ const fallbackToMockedData = (originCode: string, destinationCode: string): Flig
       duration: `${Math.floor(flightDurationMs / (60 * 60 * 1000))}h ${Math.floor((flightDurationMs % (60 * 60 * 1000)) / (60 * 1000))}m`,
       direct: true,
       segments: [{
-        departureAirport: { code: originCode },
-        arrivalAirport: { code: destinationCode },
+        departureAirport: segmentDepartureAirport,
+        arrivalAirport: segmentArrivalAirport,
         departureTime: departureTime.toISOString(),
         arrivalTime: arrivalTime.toISOString()
       }]
@@ -768,4 +786,3 @@ const createSpecificConnectionFlights = (originCode: string, destinationCode: st
   
   return connectionFlights;
 };
-
