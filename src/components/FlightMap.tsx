@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, useMap, ZoomControl } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -28,14 +27,11 @@ const FlightMap: React.FC<FlightMapProps> = ({
 
   const showContent = !loading && mapReady;
 
-  // Create a map of airports
   const airports = new Map();
-  // Create maps to track departure and arrival flights for each airport
   const airportDepartureFlights = new Map();
   const airportArrivalFlights = new Map();
 
   if (showContent) {
-    // Populate the airports and flight maps
     allFlights.forEach(flight => {
       if (flight.departureAirport && !airports.has(flight.departureAirport.code)) {
         airports.set(flight.departureAirport.code, flight.departureAirport);
@@ -46,14 +42,12 @@ const FlightMap: React.FC<FlightMapProps> = ({
         airportArrivalFlights.set(flight.arrivalAirport.code, []);
       }
       
-      // Add flight to departure airport's list
       if (flight.departureAirport) {
         const departures = airportDepartureFlights.get(flight.departureAirport.code) || [];
         departures.push(flight);
         airportDepartureFlights.set(flight.departureAirport.code, departures);
       }
       
-      // Add flight to arrival airport's list
       if (flight.arrivalAirport) {
         const arrivals = airportArrivalFlights.get(flight.arrivalAirport.code) || [];
         arrivals.push(flight);
@@ -95,7 +89,6 @@ const FlightMap: React.FC<FlightMapProps> = ({
 
       {showContent && (
         <>
-          {/* Render flight paths first (lower z-index) */}
           {directFlights.map(flight => (
             <FlightPath
               key={`direct-${flight.id}`}
@@ -116,8 +109,6 @@ const FlightMap: React.FC<FlightMapProps> = ({
                 duration: flight.duration,
                 price: 250
               }]}
-              // We still pass the onFlightSelect for potential future use, 
-              // but it won't be called from flight paths anymore
               onFlightSelect={onFlightSelect}
             />
           ))}
@@ -155,7 +146,6 @@ const FlightMap: React.FC<FlightMapProps> = ({
             </div>
           ))}
 
-          {/* Render airport markers after flight paths (higher z-index) */}
           {Array.from(airports.values()).map(airport => (
             <AirportMarker
               key={`airport-${airport.code}`}
@@ -176,4 +166,3 @@ const FlightMap: React.FC<FlightMapProps> = ({
 };
 
 export default FlightMap;
-
