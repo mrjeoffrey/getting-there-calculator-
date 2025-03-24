@@ -64,8 +64,8 @@ const Index = () => {
               />
               
               <FlightScheduleTable 
-                directFlights={directFlights}
-                connectingFlights={connectingFlights}
+                flights={directFlights}
+                connectionFlights={connectingFlights}
                 selectedFlightId={selectedFlightId}
                 onFlightSelect={handleFlightSelect}
               />
