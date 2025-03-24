@@ -81,18 +81,54 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
     return customIcon;
   };
 
-  // Format day of week from date string
+  // Format day of week from date string - modified to show first 3 letters
   const getDayOfWeek = (dateString: string) => {
     const date = new Date(dateString);
-    return ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][date.getDay()];
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    return days[date.getDay()];
+  };
+
+  // Group flights by day of week to concatenate multiple days
+  const groupFlightsByDay = (flights: Flight[]) => {
+    const flightMap = new Map<string, Set<string>>();
+    
+    flights.forEach(flight => {
+      const flightKey = `${flight.airline}-${flight.duration}-${flight.departureTime.split('T')[1]?.substring(0, 5)}-${flight.arrivalTime.split('T')[1]?.substring(0, 5)}`;
+      
+      if (!flightMap.has(flightKey)) {
+        flightMap.set(flightKey, new Set());
+      }
+      
+      const dayOfWeek = getDayOfWeek(flight.departureTime);
+      flightMap.get(flightKey)?.add(dayOfWeek);
+    });
+    
+    return Array.from(flightMap.entries()).map(([key, days]) => {
+      // Parse the key back into flight details
+      const [airline, duration, departureTime, arrivalTime] = key.split('-');
+      const daysString = Array.from(days).join(', ');
+      
+      return {
+        airline,
+        duration,
+        days: daysString,
+        departureTime,
+        arrivalTime
+      };
+    });
   };
 
   const hasFlights = departureFlights.length > 0 || arrivalFlights.length > 0;
+  
+  // Group flights by unique combinations with days combined
+  const groupedDepartureFlights = groupFlightsByDay(departureFlights);
+  const groupedArrivalFlights = groupFlightsByDay(arrivalFlights);
 
   return (
     <Marker 
       position={[airport.lat, airport.lng]} 
       icon={createCustomIcon(type)}
+      zIndexOffset={1000} // Ensure markers are above flight paths
     >
       <Popup className="flight-popup" minWidth={320} maxWidth={500}>
         <div className="p-2">
@@ -101,7 +137,7 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
           
           {hasFlights && (
             <div className="mt-3">
-              {departureFlights.length > 0 && (
+              {groupedDepartureFlights.length > 0 && (
                 <div className="mb-4">
                   <h4 className="font-medium text-sm text-primary mb-2 border-b pb-1">Departing Flights</h4>
                   <div className="overflow-x-auto">
@@ -110,19 +146,19 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
                         <tr className="bg-muted/50">
                           <th className="py-1 px-2 text-left">Airline</th>
                           <th className="py-1 px-2 text-left">Duration</th>
-                          <th className="py-1 px-2 text-left">Day</th>
+                          <th className="py-1 px-2 text-left">Days</th>
                           <th className="py-1 px-2 text-left">Departure</th>
                           <th className="py-1 px-2 text-left">Arrival</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {departureFlights.map((flight, index) => (
-                          <tr key={`dep-${flight.id}-${index}`} className={index % 2 === 0 ? 'bg-background' : 'bg-muted/20'}>
+                        {groupedDepartureFlights.map((flight, index) => (
+                          <tr key={`dep-${index}`} className={index % 2 === 0 ? 'bg-background' : 'bg-muted/20'}>
                             <td className="py-1 px-2">{flight.airline}</td>
                             <td className="py-1 px-2">{flight.duration}</td>
-                            <td className="py-1 px-2">{getDayOfWeek(flight.departureTime)}</td>
-                            <td className="py-1 px-2">{flight.departureTime.split('T')[1]?.substring(0, 5)}</td>
-                            <td className="py-1 px-2">{flight.arrivalTime.split('T')[1]?.substring(0, 5)}</td>
+                            <td className="py-1 px-2">{flight.days}</td>
+                            <td className="py-1 px-2">{flight.departureTime}</td>
+                            <td className="py-1 px-2">{flight.arrivalTime}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -131,7 +167,7 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
                 </div>
               )}
               
-              {arrivalFlights.length > 0 && (
+              {groupedArrivalFlights.length > 0 && (
                 <div>
                   <h4 className="font-medium text-sm text-primary mb-2 border-b pb-1">Arriving Flights</h4>
                   <div className="overflow-x-auto">
@@ -140,19 +176,19 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
                         <tr className="bg-muted/50">
                           <th className="py-1 px-2 text-left">Airline</th>
                           <th className="py-1 px-2 text-left">Duration</th>
-                          <th className="py-1 px-2 text-left">Day</th>
+                          <th className="py-1 px-2 text-left">Days</th>
                           <th className="py-1 px-2 text-left">Departure</th>
                           <th className="py-1 px-2 text-left">Arrival</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {arrivalFlights.map((flight, index) => (
-                          <tr key={`arr-${flight.id}-${index}`} className={index % 2 === 0 ? 'bg-background' : 'bg-muted/20'}>
+                        {groupedArrivalFlights.map((flight, index) => (
+                          <tr key={`arr-${index}`} className={index % 2 === 0 ? 'bg-background' : 'bg-muted/20'}>
                             <td className="py-1 px-2">{flight.airline}</td>
                             <td className="py-1 px-2">{flight.duration}</td>
-                            <td className="py-1 px-2">{getDayOfWeek(flight.departureTime)}</td>
-                            <td className="py-1 px-2">{flight.departureTime.split('T')[1]?.substring(0, 5)}</td>
-                            <td className="py-1 px-2">{flight.arrivalTime.split('T')[1]?.substring(0, 5)}</td>
+                            <td className="py-1 px-2">{flight.days}</td>
+                            <td className="py-1 px-2">{flight.departureTime}</td>
+                            <td className="py-1 px-2">{flight.arrivalTime}</td>
                           </tr>
                         ))}
                       </tbody>

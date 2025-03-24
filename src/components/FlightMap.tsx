@@ -84,31 +84,18 @@ const FlightMap: React.FC<FlightMapProps> = ({
       style={{ height: '100%', width: '100%' }}
       zoomControl={false}
       worldCopyJump={true}
-      className="colorful-flight-map"
+      className="colorful-flight-map google-like-map"
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-        url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+        url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
       />
       <ZoomControl position="bottomright" />
       <ResetMapView />
 
       {showContent && (
         <>
-          {Array.from(airports.values()).map(airport => (
-            <AirportMarker
-              key={`airport-${airport.code}`}
-              airport={airport}
-              departureFlights={airportDepartureFlights.get(airport.code) || []}
-              arrivalFlights={airportArrivalFlights.get(airport.code) || []}
-              type={airport.code === (directFlights[0]?.departureAirport?.code || connectingFlights[0]?.flights[0]?.departureAirport?.code) 
-                ? 'origin' 
-                : airport.code === (directFlights[0]?.arrivalAirport?.code || connectingFlights[0]?.flights[connectingFlights[0]?.flights.length - 1]?.arrivalAirport?.code) 
-                  ? 'destination' 
-                  : 'connection'}
-            />
-          ))}
-
+          {/* Render flight paths first (lower z-index) */}
           {directFlights.map(flight => (
             <FlightPath
               key={`direct-${flight.id}`}
@@ -164,6 +151,21 @@ const FlightMap: React.FC<FlightMapProps> = ({
                 );
               })}
             </div>
+          ))}
+
+          {/* Render airport markers after flight paths (higher z-index) */}
+          {Array.from(airports.values()).map(airport => (
+            <AirportMarker
+              key={`airport-${airport.code}`}
+              airport={airport}
+              departureFlights={airportDepartureFlights.get(airport.code) || []}
+              arrivalFlights={airportArrivalFlights.get(airport.code) || []}
+              type={airport.code === (directFlights[0]?.departureAirport?.code || connectingFlights[0]?.flights[0]?.departureAirport?.code) 
+                ? 'origin' 
+                : airport.code === (directFlights[0]?.arrivalAirport?.code || connectingFlights[0]?.flights[connectingFlights[0]?.flights.length - 1]?.arrivalAirport?.code) 
+                  ? 'destination' 
+                  : 'connection'}
+            />
           ))}
         </>
       )}
