@@ -116,6 +116,8 @@ const FlightMap: React.FC<FlightMapProps> = ({
                 duration: flight.duration,
                 price: 250
               }]}
+              // We still pass the onFlightSelect for potential future use, 
+              // but it won't be called from flight paths anymore
               onFlightSelect={onFlightSelect}
             />
           ))}
@@ -174,3 +176,4 @@ const FlightMap: React.FC<FlightMapProps> = ({
 };
 
 export default FlightMap;
+

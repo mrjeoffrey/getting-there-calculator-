@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useRef } from 'react';
 import { Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -328,99 +329,8 @@ const FlightPath: React.FC<FlightPathProps> = ({
     animateNextStep();
   };
   
-  const createFlightListPopup = (e: L.LeafletMouseEvent) => {
-    if (!map) return;
-    
-    if (popupRef.current) {
-      map.closePopup(popupRef.current);
-    }
-    
-    const flights = flightInfo && flightInfo.length > 0 
-      ? flightInfo 
-      : [{
-          flightNumber: flightNumber || `FL${Math.floor(Math.random() * 1000)}`,
-          airline: airline || 'Airline',
-          departureTime: departureTime || '09:00',
-          arrivalTime: arrivalTime || '11:30',
-          duration: duration || '2h 30m',
-          price: price || Math.floor(Math.random() * 500) + 200
-        }];
-    
-    const uniqueAirlines = new Map<string, number>();
-    flights.forEach(flight => {
-      const airlineName = flight.airline;
-      uniqueAirlines.set(airlineName, (uniqueAirlines.get(airlineName) || 0) + 1);
-    });
-    
-    const airlinesHtml = Array.from(uniqueAirlines.entries()).map(([airline, count]) => {
-      return `
-        <div class="airline-item" data-airline="${airline}">
-          <div class="airline-name">${airline}</div>
-          <div class="flight-count">${count} flight${count > 1 ? 's' : ''}</div>
-        </div>
-      `;
-    }).join('');
-    
-    const popupContent = `
-      <div class="flight-list-popup ${type === 'direct' ? 'direct' : 'connecting'}">
-        <div class="flight-list-header">
-          <span class="route-label">${departure.code} → ${arrival.code}</span>
-          <span class="flight-type-label">${type === 'direct' ? 'Direct' : 'Connecting'}</span>
-        </div>
-        <div class="airlines-list">${airlinesHtml}</div>
-      </div>
-    `;
-    
-    const popup = L.popup({
-      closeButton: true,
-      autoClose: false,
-      className: `flight-list-popup-container ${type === 'direct' ? 'direct' : 'connecting'}`
-    })
-      .setLatLng(e.latlng)
-      .setContent(popupContent)
-      .openOn(map);
-    
-    setTimeout(() => {
-      const airlineItems = document.querySelectorAll('.airline-item');
-      airlineItems.forEach(item => {
-        item.addEventListener('click', () => {
-          const airlineName = item.getAttribute('data-airline');
-          const airlineFlights = flights.filter(f => f.airline === airlineName);
-          
-          if (type === 'direct' && airlineFlights.length > 0) {
-            const flight = {
-              ...airlineFlights[0],
-              departureAirport: departure,
-              arrivalAirport: arrival,
-              direct: true
-            };
-            onFlightSelect && onFlightSelect(flight);
-          } else if (type === 'connecting' && airlineFlights.length > 0) {
-            const connectionInfo = {
-              flights: airlineFlights.map(f => ({
-                ...f,
-                departureAirport: departure,
-                arrivalAirport: arrival,
-                direct: false
-              })),
-              totalDuration: duration,
-              stopoverDuration: '2h 15m',
-              price: airlineFlights.reduce((total, f) => total + (f.price || 0), 0)
-            };
-            onFlightSelect && onFlightSelect(connectionInfo);
-          }
-          
-          map.closePopup(popup);
-        });
-      });
-    }, 100);
-    
-    popupRef.current = popup;
-  };
-  
-  const handlePathClick = (e: L.LeafletMouseEvent) => {
-    createFlightListPopup(e);
-  };
+  // Note: Removed the createFlightListPopup and handlePathClick functions that
+  // were previously responsible for showing popups when clicking on flight paths
   
   const color = type === 'direct' ? '#4CAF50' : '#FFC107';
   const weight = isActive ? 4 : 3;
@@ -438,170 +348,11 @@ const FlightPath: React.FC<FlightPathProps> = ({
             dashArray: type === 'connecting' ? '5, 10' : '',
             className: `flight-path ${type} ${animationComplete ? 'animation-complete' : ''}`
           }}
-          eventHandlers={{
-            click: handlePathClick
-          }}
+          // Removed the click handler to disable popup on flight path click
         />
       )}
       <style>
         {`
-          .flight-list-popup-container {
-            min-width: 250px;
-          }
-          
-          .flight-list-popup {
-            width: 100%;
-          }
-          
-          .flight-list-header {
-            padding: 8px 12px;
-            border-bottom: 1px solid #eee;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-          }
-          
-          .flight-list-popup-container.direct .flight-list-header {
-            background-color: rgba(76, 175, 80, 0.1);
-          }
-          
-          .flight-list-popup-container.connecting .flight-list-header {
-            background-color: rgba(255, 193, 7, 0.1);
-          }
-          
-          .route-label {
-            font-weight: bold;
-            font-size: 14px;
-          }
-          
-          .flight-type-label {
-            font-size: 12px;
-            padding: 2px 6px;
-            border-radius: 12px;
-          }
-          
-          .flight-list-popup-container.direct .flight-type-label {
-            background-color: #4CAF50;
-            color: white;
-          }
-          
-          .flight-list-popup-container.connecting .flight-type-label {
-            background-color: #FFC107;
-            color: #333;
-          }
-          
-          .airlines-list {
-            padding: 8px 0;
-          }
-          
-          .airline-item {
-            padding: 8px 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #f0f0f0;
-            cursor: pointer;
-            transition: background-color 0.2s;
-          }
-          
-          .airline-item:last-child {
-            border-bottom: none;
-          }
-          
-          .airline-item:hover {
-            background-color: #f9f9f9;
-          }
-          
-          .airline-name {
-            font-weight: 500;
-            font-size: 14px;
-          }
-          
-          .flight-count {
-            font-size: 12px;
-            color: #666;
-          }
-          
-          .flight-info-popup {
-            min-width: 220px;
-          }
-          
-          .flight-popup-header {
-            padding: 6px 10px;
-            border-radius: 4px 4px 0 0;
-            color: white;
-            display: flex;
-            justify-content: space-between;
-          }
-          
-          .flight-info-popup.direct .flight-popup-header {
-            background-color: #4CAF50;
-          }
-          
-          .flight-info-popup.connecting .flight-popup-header {
-            background-color: #FFC107;
-            color: #333;
-          }
-          
-          .flight-popup-content {
-            padding: 10px;
-          }
-          
-          .flight-route {
-            display: flex;
-            align-items: center;
-            margin-bottom: 8px;
-          }
-          
-          .flight-airport {
-            text-align: center;
-          }
-          
-          .airport-code {
-            font-weight: bold;
-            font-size: 14px;
-          }
-          
-          .airport-time {
-            font-size: 12px;
-            color: #555;
-          }
-          
-          .flight-duration {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin: 0 10px;
-          }
-          
-          .duration-line {
-            height: 2px;
-            width: 100%;
-            background-color: #ddd;
-            position: relative;
-          }
-          
-          .duration-text {
-            font-size: 11px;
-            color: #777;
-            margin-top: 2px;
-          }
-          
-          .flight-details {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 12px;
-            border-top: 1px solid #eee;
-            padding-top: 8px;
-          }
-          
-          .flight-price {
-            font-weight: bold;
-            color: #d32f2f;
-          }
-          
           .plane-icon-marker {
             z-index: 1500;
           }
@@ -611,28 +362,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
           }
           
           .flight-path {
-            cursor: pointer;
-          }
-          
-          .flight-path:hover {
-            stroke-opacity: 1;
-          }
-          
-          .flight-popup.multi-flights {
-            max-height: 300px;
-            overflow-y: auto;
-          }
-          
-          .flight-popup-item.multi-flight {
-            border: 1px solid #eee;
-            border-radius: 4px;
-            margin-bottom: 8px;
-          }
-          
-          .flight-separator {
-            height: 1px;
-            background-color: #ddd;
-            margin: 8px 0;
+            cursor: default;
           }
           
           .leaflet-marker-icon {
@@ -645,3 +375,4 @@ const FlightPath: React.FC<FlightPathProps> = ({
 };
 
 export default FlightPath;
+
