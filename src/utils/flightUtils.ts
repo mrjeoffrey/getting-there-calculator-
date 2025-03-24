@@ -1,25 +1,25 @@
 
 import { Airport, Flight, ConnectionFlight } from '../types/flightTypes';
+import { airports } from './airports.json';
 
-// Sample airport data
-export const airports: Airport[] = [
-  { code: 'JFK', name: 'John F. Kennedy International Airport', city: 'New York', country: 'USA', lat: 40.6413, lng: -73.7781 },
-  { code: 'LHR', name: 'Heathrow Airport', city: 'London', country: 'UK', lat: 51.4700, lng: -0.4543 },
-  { code: 'CDG', name: 'Charles de Gaulle Airport', city: 'Paris', country: 'France', lat: 49.0097, lng: 2.5479 },
-  { code: 'SIN', name: 'Singapore Changi Airport', city: 'Singapore', country: 'Singapore', lat: 1.3644, lng: 103.9915 },
-  { code: 'DXB', name: 'Dubai International Airport', city: 'Dubai', country: 'UAE', lat: 25.2532, lng: 55.3657 },
-  { code: 'GND', name: 'Maurice Bishop International Airport', city: 'Grenada', country: 'Grenada', lat: 12.0042, lng: -61.7863 },
-  { code: 'MIA', name: 'Miami International Airport', city: 'Miami', country: 'USA', lat: 25.7952, lng: -80.2857 },
-  { code: 'YYZ', name: 'Toronto Pearson International Airport', city: 'Toronto', country: 'Canada', lat: 43.6777, lng: -79.6248 },
-  { code: 'FCO', name: 'Leonardo da Vinci International Airport', city: 'Rome', country: 'Italy', lat: 41.8003, lng: 12.2389 },
-  { code: 'HKG', name: 'Hong Kong International Airport', city: 'Hong Kong', country: 'China', lat: 22.3080, lng: 113.9185 },
-];
 
-// Find airport by code
-export const findAirportByCode = (code: string): Airport | undefined => {
-  return airports.find(airport => airport.code === code);
+
+export const transformAirports = (originalAirports: any[]): Airport[] => {
+  return originalAirports.map(airport => ({
+    code: airport.iata_code,
+    name: airport.name,
+    city: airport.city,
+    country: airport.country,
+    lat: airport._geoloc.lat,
+    lng: airport._geoloc.lng
+  }));
 };
 
+const transformedAirports = transformAirports(airports);
+
+export const findAirportByCode = (code: string): Airport | undefined => {
+  return transformedAirports.find(airport => airport.code === code);
+};
 // Calculate distance between two points using Haversine formula
 export const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
   const R = 6371; // Earth's radius in km
@@ -83,7 +83,10 @@ export const generateDirectFlight = (fromCode: string, toCode: string, date: str
     flightNumber: generateFlightNumber(airline),
     airline: airline,
     duration: duration,
-    direct: true
+    direct: true,
+    segments: [
+     
+    ],
   };
 };
 
@@ -95,7 +98,7 @@ export const generateConnectionFlight = (fromCode: string, toCode: string, date:
   if (!departure || !arrival) return null;
   
   // Randomly select a connecting airport (different from departure and arrival)
-  const potentialConnections = airports.filter(a => a.code !== fromCode && a.code !== toCode);
+  const potentialConnections = transformedAirports.filter(a => a.code !== fromCode && a.code !== toCode);
   if (potentialConnections.length === 0) return null;
   
   const connectingAirport = potentialConnections[Math.floor(Math.random() * potentialConnections.length)];
@@ -129,7 +132,8 @@ export const generateConnectionFlight = (fromCode: string, toCode: string, date:
     flightNumber: generateFlightNumber(airline),
     airline: airline,
     duration: duration,
-    direct: false
+    direct: false,
+    segments: [],
   };
   
   // Calculate total duration

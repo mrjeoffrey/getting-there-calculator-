@@ -16,21 +16,22 @@ let token: AmadeusToken | null = null;
 
 // Get authentication token
 const getAuthToken = async (): Promise<string> => {
-  // Check if token is still valid
-  if (token && token.expires_at > Date.now()) {
-    return token.access_token;
-  }
-
-  // Get new token
-  const authUrl = `${AMADEUS_API_BASE_URL}/security/oauth2/token`;
-  const headers = { "Content-Type": "application/x-www-form-urlencoded" };
-  const data = {
-    grant_type: "client_credentials",
-    client_id: AMADEUS_CLIENT_ID,
-    client_secret: AMADEUS_CLIENT_SECRET
-  };
-
   try {
+    // Check if token is still valid
+    if (token && token.expires_at > Date.now()) {
+      console.log('Using existing authentication token');
+      return token.access_token;
+    }
+
+    console.log('Requesting new authentication token');
+    const authUrl = `${AMADEUS_API_BASE_URL}/security/oauth2/token`;
+    const headers = { "Content-Type": "application/x-www-form-urlencoded" };
+    const data = {
+      grant_type: "client_credentials",
+      client_id: AMADEUS_CLIENT_ID,
+      client_secret: AMADEUS_CLIENT_SECRET
+    };
+
     const response = await axios.post(authUrl, new URLSearchParams(data), { headers });
     
     if (response.status === 200) {
@@ -39,13 +40,14 @@ const getAuthToken = async (): Promise<string> => {
         access_token: tokenData.access_token,
         expires_at: Date.now() + (tokenData.expires_in - 60) * 1000
       };
+      console.log('Authentication token obtained successfully');
       return token.access_token;
     } else {
-      console.error("Authentication failed:", response.status, response.data);
+      console.error('Authentication failed', response.status, response.data);
       throw new Error(`Authentication failed: ${response.status}`);
     }
   } catch (error) {
-    console.error("Error getting auth token:", error);
+    console.error('Error obtaining authentication token', error);
     throw error;
   }
 };
@@ -53,6 +55,7 @@ const getAuthToken = async (): Promise<string> => {
 // Make authenticated request to Amadeus API
 const makeRequest = async (endpoint: string, params?: Record<string, any>): Promise<any> => {
   try {
+    console.log('Making API request', { endpoint, params });
     const token = await getAuthToken();
     const headers = {
       "Authorization": `Bearer ${token}`,
@@ -67,13 +70,14 @@ const makeRequest = async (endpoint: string, params?: Record<string, any>): Prom
     const response = await axios.get(url, { headers, params });
 
     if (response.status === 200) {
+      console.log('API request successful', endpoint, response.data ? Object.keys(response.data).length : 0);
       return response.data;
     } else {
-      console.error("API request failed:", response.status, response.data);
+      console.error('API request failed', response.status, response.data);
       throw new Error(`API request failed: ${response.status}`);
     }
   } catch (error) {
-    console.error("Error making API request:", error);
+    console.error('Error making API request', endpoint, params, error);
     throw error;
   }
 };
@@ -119,32 +123,81 @@ export const searchFlightOffers = async (
 const convertToFlightType = (amadeusFlightData: any, date: string): Flight | null => {
   try {
     if (!amadeusFlightData.itineraries || !amadeusFlightData.itineraries.length) {
+      console.warn('No itineraries found in flight data');
       return null;
     }
     
     const itinerary = amadeusFlightData.itineraries[0];
-    const firstSegment = itinerary.segments[0];
-    const lastSegment = itinerary.segments[itinerary.segments.length - 1];
+    const segments = itinerary.segments;
+    
+    // Validate segments
+    if (!segments || !segments.length) {
+      console.warn('No segments found in itinerary');
+      return null;
+    }
+    
+    const firstSegment = segments[0];
+    const lastSegment = segments[segments.length - 1];
+    
+    // Validate segment airports
+    if (!firstSegment.departure || !lastSegment.arrival) {
+      console.warn('Missing departure or arrival information', { 
+        firstSegment, 
+        lastSegment 
+      });
+      return null;
+    }
     
     const departure = findAirportByCode(firstSegment.departure.iataCode);
     const arrival = findAirportByCode(lastSegment.arrival.iataCode);
     
-    if (!departure || !arrival) return null;
+    if (!departure || !arrival) {
+      console.warn('Could not find departure or arrival airport', 
+        firstSegment.departure.iataCode, 
+        lastSegment.arrival.iataCode
+      );
+      return null;
+    }
     
-    // Parse departure and arrival times
+    // Ensure all required fields are present
+    const processedSegments = segments.map(segment => {
+      const departureAirport = findAirportByCode(segment.departure.iataCode);
+      const arrivalAirport = findAirportByCode(segment.arrival.iataCode);
+      
+      if (!departureAirport) {
+        console.warn('departure airport not found', {
+          departureCode: segment.departure.iataCode
+        });
+      }
+
+      if (!arrivalAirport) {
+        console.warn('arrival airport not found', {
+          arrivalCode: segment.arrival.iataCode
+        });
+      }
+      
+      return {
+        departureAirport: departureAirport || { code: segment.departure.iataCode, name: 'Unknown' },
+        arrivalAirport: arrivalAirport || { code: segment.arrival.iataCode, name: 'Unknown' },
+        departureTime: new Date(segment.departure.at).toISOString(),
+        arrivalTime: new Date(segment.arrival.at).toISOString(),
+        carrierCode: segment.carrierCode,
+        flightNumber: `${segment.carrierCode}${segment.number}`
+      };
+    });
+    
+    // Parse times
     const departureTime = new Date(firstSegment.departure.at);
     const arrivalTime = new Date(lastSegment.arrival.at);
     
-    // Calculate duration in minutes
+    // Calculate duration
     const durationMs = arrivalTime.getTime() - departureTime.getTime();
     const durationHours = Math.floor(durationMs / (1000 * 60 * 60));
     const durationMinutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
     
-    const flightId = `${firstSegment.departure.iataCode}-${lastSegment.arrival.iataCode}-${
-      firstSegment.carrierCode}${firstSegment.number}`;
-    
-    return {
-      id: flightId,
+    const flight: Flight = {
+      id: `${firstSegment.departure.iataCode}-${lastSegment.arrival.iataCode}-${
+        firstSegment.carrierCode}${firstSegment.number}`,
       departureAirport: departure,
       arrivalAirport: arrival,
       departureTime: departureTime.toISOString(),
@@ -152,270 +205,44 @@ const convertToFlightType = (amadeusFlightData: any, date: string): Flight | nul
       flightNumber: `${firstSegment.carrierCode}${firstSegment.number}`,
       airline: firstSegment.carrierCode,
       duration: `${durationHours}h ${durationMinutes}m`,
-      direct: itinerary.segments.length === 1
+      direct: segments.length === 1,
+      segments: processedSegments
     };
+
+    console.log(`Flight type: ${flight.direct ? 'Direct' : 'Connecting'}`, flight.id, flight.flightNumber);
+    
+    return flight;
   } catch (error) {
-    console.error("Error converting Amadeus flight data:", error);
+    console.error('Error converting Amadeus flight data', error);
     return null;
   }
 };
 
-// Find connecting flights (if direct flights aren't found)
-export const findConnectingFlights = (flights: Flight[]): ConnectionFlight[] => {
-  const connectingFlights: ConnectionFlight[] = [];
-  
-  for (let i = 0; i < flights.length; i++) {
-    for (let j = 0; j < flights.length; j++) {
-      if (i === j) continue;
-      
-      const flight1 = flights[i];
-      const flight2 = flights[j];
-      
-      if (flight1.arrivalAirport.code === flight2.departureAirport.code) {
-        const flight1Arrival = new Date(flight1.arrivalTime);
-        const flight2Departure = new Date(flight2.departureTime);
-        const layoverMs = flight2Departure.getTime() - flight1Arrival.getTime();
-        const layoverHours = layoverMs / (1000 * 60 * 60);
-        
-        if (layoverHours >= 1 && layoverHours <= 8) {
-          const layoverMinutes = Math.floor((layoverMs % (1000 * 60 * 60)) / (1000 * 60));
-          const stopoverDuration = `${Math.floor(layoverHours)}h ${layoverMinutes}m`;
-          
-          const totalDurationMs = new Date(flight2.arrivalTime).getTime() - new Date(flight1.departureTime).getTime();
-          const totalHours = Math.floor(totalDurationMs / (1000 * 60 * 60));
-          const totalMinutes = Math.floor((totalDurationMs % (1000 * 60 * 60)) / (1000 * 60));
-          const totalDuration = `${totalHours}h ${totalMinutes}m`;
-          
-          const price = Math.floor(Math.random() * 1500) + 500;
-          
-          connectingFlights.push({
-            id: `${flight1.departureAirport.code}-${flight1.arrivalAirport.code}-${flight2.arrivalAirport.code}-${flight1.flightNumber}-${flight2.flightNumber}`,
-            flights: [flight1, flight2],
-            totalDuration,
-            stopoverDuration,
-            price
-          });
-        }
-      }
-    }
-  }
-  
-  return connectingFlights;
-};
-
-// Fallback to mocked data in case API fails
-const fallbackToMockedData = async (
-  fromCode: string, 
-  toCode: string, 
-  existingWeeklyData: any = null
-): Promise<{
-  directFlights: Flight[];
-  connectingFlights: ConnectionFlight[];
-  weeklyData: any;
-}> => {
-  console.log("Falling back to mocked data due to API failure");
-  console.log(`Generating mock flights from ${fromCode} to ${toCode}`);
-  
-  const today = new Date();
-  const weeklyData: any = existingWeeklyData || {};
-  const directFlights: Flight[] = [];
-  
-  // Generate dates for the next 7 days if not already provided
-  for (let i = 0; i < 7; i++) {
-    const currentDate = new Date(today);
-    currentDate.setDate(today.getDate() + i);
-    const dateString = currentDate.toISOString().split('T')[0];
-    const dayOfWeek = currentDate.toLocaleDateString('en-US', { weekday: 'long' });
-    
-    if (!weeklyData[dateString] || weeklyData[dateString].flights.length === 0) {
-      const dayFlights: Flight[] = [];
-      
-      // Generate 1-2 direct flights for this day
-      const directFlightCount = Math.floor(Math.random() * 2) + 1;
-      
-      for (let j = 0; j < directFlightCount; j++) {
-        const departure = findAirportByCode(fromCode);
-        const arrival = findAirportByCode(toCode);
-        
-        if (!departure || !arrival) continue;
-        
-        const airline = ['BA', 'AA', 'UA', 'DL'][Math.floor(Math.random() * 4)];
-        const departureHour = Math.floor(Math.random() * 16) + 6;
-        const departureMinute = Math.floor(Math.random() * 60);
-        const departureTimeString = `${dateString}T${departureHour.toString().padStart(2, '0')}:${departureMinute.toString().padStart(2, '0')}:00`;
-        
-        const duration = calculateFlightDuration(departure.lat, departure.lng, arrival.lat, arrival.lng);
-        const [hours, minutes] = duration.split('h ');
-        const durationHours = parseInt(hours);
-        const durationMinutes = parseInt(minutes.replace('m', ''));
-        
-        const departureTime = new Date(departureTimeString);
-        const arrivalTime = new Date(departureTime.getTime() + (durationHours * 60 + durationMinutes) * 60000);
-        
-        const flight: Flight = {
-          id: `${fromCode}-${toCode}-${Math.random().toString(36).substring(2, 9)}`,
-          departureAirport: departure,
-          arrivalAirport: arrival,
-          departureTime: departureTime.toISOString(),
-          arrivalTime: arrivalTime.toISOString(),
-          flightNumber: `${airline}${Math.floor(Math.random() * 9000) + 1000}`,
-          airline,
-          duration,
-          direct: true
-        };
-        
-        dayFlights.push(flight);
-        
-        if (i === 0) { // Only use current day flights for map display
-          directFlights.push(flight);
-        }
-      }
-      
-      weeklyData[dateString] = {
-        dayOfWeek,
-        flights: dayFlights
-      };
-    } else if (i === 0 && weeklyData[dateString].flights.length > 0) {
-      // Add the first day's flights to directFlights for map display
-      directFlights.push(...weeklyData[dateString].flights);
-    }
-  }
-  
-  // Generate connecting flights - ALWAYS create at least 2 connecting flights
-  const connectingFlights: ConnectionFlight[] = [];
-  // Increase minimum number of connecting flights to ensure some are always visible
-  const connectingFlightCount = Math.floor(Math.random() * 3) + 3; // At least 3, up to 5
-  
-  console.log(`Generating ${connectingFlightCount} mock connecting flights`);
-  
-  // Define connecting airports
-  const connectingAirportCodes = ['MIA', 'LHR', 'YYZ', 'JFK', 'LAX', 'ORD', 'ATL', 'DFW', 'AMS', 'FRA'];
-  
-  for (let i = 0; i < connectingFlightCount; i++) {
-    const departure = findAirportByCode(fromCode);
-    const arrival = findAirportByCode(toCode);
-    
-    if (!departure || !arrival) {
-      console.error(`Could not find airport data for ${fromCode} or ${toCode}`);
-      continue;
-    }
-    
-    // Select a connecting airport from the list of potential hubs
-    const randomIndex = Math.floor(Math.random() * connectingAirportCodes.length);
-    const connectingAirportCode = connectingAirportCodes[randomIndex];
-    const connectingAirport = findAirportByCode(connectingAirportCode);
-    
-    if (!connectingAirport) {
-      console.error(`Could not find connecting airport data for ${connectingAirportCode}`);
-      continue;
-    }
-    
-    console.log(`Creating connecting flight through ${connectingAirport.code}`);
-    
-    // First flight
-    const airline1 = ['BA', 'AA', 'UA', 'DL'][Math.floor(Math.random() * 4)];
-    const departureHour = Math.floor(Math.random() * 16) + 6;
-    const departureMinute = Math.floor(Math.random() * 60);
-    const departureTimeString = `${today.toISOString().split('T')[0]}T${departureHour.toString().padStart(2, '0')}:${departureMinute.toString().padStart(2, '0')}:00`;
-    
-    const distance1 = calculateDistance(departure.lat, departure.lng, connectingAirport.lat, connectingAirport.lng);
-    const hours1 = Math.floor(distance1 / 800);
-    const minutes1 = Math.floor((distance1 % 800) / 800 * 60);
-    const duration1 = `${hours1}h ${minutes1}m`;
-    
-    const departureTime = new Date(departureTimeString);
-    const firstArrivalTime = new Date(departureTime.getTime() + (hours1 * 60 + minutes1) * 60000);
-    
-    const firstFlight: Flight = {
-      id: `${fromCode}-${connectingAirport.code}-${Math.random().toString(36).substring(2, 9)}`,
-      departureAirport: departure,
-      arrivalAirport: connectingAirport,
-      departureTime: departureTimeString,
-      arrivalTime: firstArrivalTime.toISOString(),
-      flightNumber: `${airline1}${Math.floor(Math.random() * 9000) + 1000}`,
-      airline: airline1,
-      duration: duration1,
-      direct: true
-    };
-    
-    // Layover
-    const layoverHours = Math.floor(Math.random() * 2) + 1;
-    const layoverMinutes = Math.floor(Math.random() * 60);
-    const stopoverDuration = `${layoverHours}h ${layoverMinutes}m`;
-    
-    // Second flight
-    const secondDepartureTime = new Date(firstArrivalTime.getTime() + (layoverHours * 60 + layoverMinutes) * 60000);
-    const airline2 = ['BA', 'AA', 'UA', 'DL'][Math.floor(Math.random() * 4)];
-    
-    const distance2 = calculateDistance(connectingAirport.lat, connectingAirport.lng, arrival.lat, arrival.lng);
-    const hours2 = Math.floor(distance2 / 800);
-    const minutes2 = Math.floor((distance2 % 800) / 800 * 60);
-    const duration2 = `${hours2}h ${minutes2}m`;
-    
-    const secondArrivalTime = new Date(secondDepartureTime.getTime() + (hours2 * 60 + minutes2) * 60000);
-    
-    const secondFlight: Flight = {
-      id: `${connectingAirport.code}-${toCode}-${Math.random().toString(36).substring(2, 9)}`,
-      departureAirport: connectingAirport,
-      arrivalAirport: arrival,
-      departureTime: secondDepartureTime.toISOString(),
-      arrivalTime: secondArrivalTime.toISOString(),
-      flightNumber: `${airline2}${Math.floor(Math.random() * 9000) + 1000}`,
-      airline: airline2,
-      duration: duration2,
-      direct: true
-    };
-    
-    // Total duration
-    const totalDurationMs = secondArrivalTime.getTime() - departureTime.getTime();
-    const totalHours = Math.floor(totalDurationMs / (1000 * 60 * 60));
-    const totalMinutes = Math.floor((totalDurationMs % (1000 * 60 * 60)) / (1000 * 60));
-    const totalDuration = `${totalHours}h ${totalMinutes}m`;
-    
-    // Price
-    const price = Math.floor(Math.random() * 1500) + 500;
-    
-    const connectionId = `${fromCode}-${connectingAirport.code}-${toCode}-${Math.random().toString(36).substring(2, 9)}`;
-    console.log(`Generated connecting flight ID: ${connectionId} (${fromCode} → ${connectingAirport.code} → ${toCode})`);
-    
-    connectingFlights.push({
-      id: connectionId,
-      flights: [firstFlight, secondFlight],
-      totalDuration,
-      stopoverDuration,
-      price
-    });
-  }
-  
-  console.log(`Successfully generated ${directFlights.length} direct flights and ${connectingFlights.length} connecting flights`);
-  console.log('Connecting flights details:', JSON.stringify(connectingFlights, null, 2));
-  
-  return { directFlights, connectingFlights, weeklyData };
-};
-
-// Search for weekly flights using the Amadeus API
+// Enhanced search for weekly flights
 export const searchWeeklyFlights = async (fromCode: string, toCode: string): Promise<{
   directFlights: Flight[];
   connectingFlights: ConnectionFlight[];
   weeklyData: any;
 }> => {
+  console.log('🗓️ Searching Weekly Flights', fromCode, toCode);
+  
   try {
-    console.log(`Searching weekly flights from ${fromCode} to ${toCode}`);
-    
     const today = new Date();
+    const startDate = new Date(today);
+    startDate.setDate(today.getDate() + 7);
+    
     const weeklyData: any = {};
     const directFlights: Flight[] = [];
+    const connectingFlights: Flight[] = [];
     const allFlights: Flight[] = [];
     
-    // Generate dates for the next 7 days
-    for (let i = 0; i < 7; i++) {
-      const currentDate = new Date(today);
-      currentDate.setDate(today.getDate() + i);
+    for (let i = 0; i < 1; i++) {
+      const currentDate = new Date(startDate);
+      currentDate.setDate(startDate.getDate() + i);
       const dateString = currentDate.toISOString().split('T')[0];
       const dayOfWeek = currentDate.toLocaleDateString('en-US', { weekday: 'long' });
       
       try {
-        // Attempt to fetch real flight data from Amadeus
         const flightData = await searchFlightOffers(fromCode, toCode, dateString);
         
         if (flightData && flightData.data && flightData.data.length > 0) {
@@ -423,13 +250,20 @@ export const searchWeeklyFlights = async (fromCode: string, toCode: string): Pro
           
           for (const offer of flightData.data) {
             const flight = convertToFlightType(offer, dateString);
+            console.log('Converted flight:', flight);
             if (flight) {
-              if (i === 0) { // Only use current day flights for the map
-                directFlights.push(flight);
-              }
-              dayFlights.push(flight);
+              console.log('inside flight:');
               allFlights.push(flight);
+              dayFlights.push(flight);
+              
+              // Categorize flights
+              if (flight.direct) {
+                directFlights.push(flight);
+              } else {
+                connectingFlights.push(flight);
+              }
             }
+            console.log('Flightsdeets:', allFlights);
           }
           
           weeklyData[dateString] = {
@@ -437,6 +271,7 @@ export const searchWeeklyFlights = async (fromCode: string, toCode: string): Pro
             flights: dayFlights
           };
         } else {
+          console.warn(`No flights found for ${dateString}`);
           weeklyData[dateString] = {
             dayOfWeek,
             flights: []
@@ -445,7 +280,6 @@ export const searchWeeklyFlights = async (fromCode: string, toCode: string): Pro
       } catch (error) {
         console.error(`Error fetching flights for ${dateString}:`, error);
         
-        // Fallback to generated data for this day
         weeklyData[dateString] = {
           dayOfWeek,
           flights: [],
@@ -454,44 +288,127 @@ export const searchWeeklyFlights = async (fromCode: string, toCode: string): Pro
       }
     }
     
-    // Find connecting flights
-    let connectingFlights = findConnectingFlights(allFlights).filter(
-      cf => cf.flights[0].departureAirport.code === fromCode && 
-           cf.flights[cf.flights.length - 1].arrivalAirport.code === toCode
-    );
+    const createConnectionFlights = (flights: Flight[]): ConnectionFlight[] => {
+      console.log('Creating Connection Flights');
+      console.log('Total Flights Input:', flights.length);
     
-    // Force generation of mock connecting flights regardless of API results
-    console.log("Generating mock connecting flights to ensure connectivity visualization");
-    const mockData = await fallbackToMockedData(fromCode, toCode);
+      const connectionFlights: ConnectionFlight[] = [];
     
-    if (connectingFlights.length === 0) {
-      console.log("No connecting flights found from API results, using all mock connecting flights");
-      connectingFlights = mockData.connectingFlights;
-    } else {
-      console.log(`Found ${connectingFlights.length} valid connecting flights from API, adding mock flights`);
-      // Add 2 mock connecting flights to ensure we always have some
-      connectingFlights = [...connectingFlights, ...mockData.connectingFlights.slice(0, 2)];
+      // Filter flights that are not direct (have multiple segments)
+      const multiSegmentFlights = flights.filter(flight => flight.segments.length > 1);
+    
+      console.log('Multi-segment Flights:', multiSegmentFlights.length);
+    
+      multiSegmentFlights.forEach(flight => {
+        // Process each multi-segment flight
+        const connectionDetails = extractConnectionDetails(flight);
+        
+        if (connectionDetails) {
+          const connectionFlight: ConnectionFlight = {
+            id: generateConnectionId(flight),
+            flights: [flight],
+            totalDuration: flight.duration,
+            stopoverDuration: connectionDetails.stopoverDuration,
+            price: calculateConnectionPrice(flight)
+          };
+    
+          connectionFlights.push(connectionFlight);
+        }
+      });
+    
+      console.log('Total Connection Flights Created:', connectionFlights.length);
+      return connectionFlights;
+    };
+    
+    const generateConnectionId = (flight: Flight): string => {
+      // Generate a unique ID for the connection flight
+      const segments = flight.segments;
+      if (segments.length < 2) return flight.id;
+    
+      const firstSegmentStart = segments[0].departureAirport.code;
+      const lastSegmentEnd = segments[segments.length - 1].arrivalAirport.code;
+      
+      return `${firstSegmentStart}-${lastSegmentEnd}-${flight.flightNumber}`;
+    };
+    
+    const calculateConnectionPrice = (flight: Flight): number => {
+      // Basic price calculation logic - you might want to replace this with more sophisticated pricing
+      const basePrice = 100; // Base connection price
+      const segmentMultiplier = flight.segments.length;
+      
+      return basePrice * segmentMultiplier;
+    };
+    
+    interface ConnectionDetails {
+      stopoverDuration: string;
     }
     
-    console.log(`Returning ${directFlights.length} direct flights and ${connectingFlights.length} connecting flights`);
-    console.log('Connecting flights details:', JSON.stringify(connectingFlights, null, 2));
+    const extractConnectionDetails = (flight: Flight): ConnectionDetails | null => {
+      // Ensure the flight has multiple segments
+      if (flight.segments.length <= 1) return null;
     
-    return { directFlights, connectingFlights, weeklyData };
+      let totalStopoverDuration = 0;
+    
+      // Iterate through segments to calculate stopover
+      for (let i = 0; i < flight.segments.length - 1; i++) {
+        const currentSegment = flight.segments[i];
+        const nextSegment = flight.segments[i + 1];
+    
+        // Calculate stopover duration
+        const currentArrival = new Date(currentSegment.arrivalTime);
+        const nextDeparture = new Date(nextSegment.departureTime);
+        
+        const stopoverMs = nextDeparture.getTime() - currentArrival.getTime();
+        totalStopoverDuration += stopoverMs;
+      }
+    
+      // Convert total stopover duration to readable format
+      const stopoverHours = Math.floor(totalStopoverDuration / (1000 * 60 * 60));
+      const stopoverMinutes = Math.floor((totalStopoverDuration % (1000 * 60 * 60)) / (1000 * 60));
+      const stopoverDuration = `${stopoverHours}h ${stopoverMinutes}m`;
+    
+      return { stopoverDuration };
+    };
+    // Filter connection flights to match from and to codes
+    const filteredConnectionFlights = createConnectionFlights(allFlights).filter(cf => {
+      console.log('Connection Flight Filtering:', cf.id);
+      console.log('Connection Flight Filtering Details:', {
+        connectionFlightId: cf.id,
+        firstFlightDetails: {
+          departureAirportCode: cf.flights[0].departureAirport.code,
+          arrivalAirportCode: cf.flights[0].arrivalAirport.code,
+          flightNumber: cf.flights[0].flightNumber
+        },
+        lastFlightDetails: {
+          departureAirportCode: cf.flights[cf.flights.length - 1].departureAirport.code,
+          arrivalAirportCode: cf.flights[cf.flights.length - 1].arrivalAirport.code,
+          flightNumber: cf.flights[cf.flights.length - 1].flightNumber
+        },
+        expectedFromCode: fromCode,
+        expectedToCode: toCode,
+        matchesFromCode: cf.flights[0].departureAirport.code === fromCode,
+        matchesToCode: cf.flights[cf.flights.length - 1].arrivalAirport.code === toCode
+      });
+    
+      return cf.flights[0].departureAirport.code === fromCode && 
+             cf.flights[cf.flights.length - 1].arrivalAirport.code === toCode;
+    });
+    console.log('TAll flgohts length:', allFlights);
+    console.log('Total Connection Flights before filtering:', createConnectionFlights(allFlights).length);
+    console.log('Filtered Connection Flights:', filteredConnectionFlights.length);
+    
+    console.log('Flight search results', 
+      directFlights.length + ' direct flights', 
+      filteredConnectionFlights.length + ' connecting flights'
+    );
+    
+    return { 
+      directFlights, 
+      connectingFlights: filteredConnectionFlights, 
+      weeklyData 
+    };
   } catch (error) {
-    console.error("Failed to search flights with Amadeus API:", error);
-    return fallbackToMockedData(fromCode, toCode);
+    console.error('Weekly Flight Search Error', error);
+    throw error;
   }
-};
-
-// Make sure the calculateDistance function is available in this module
-const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
-  const R = 6371; // Earth's radius in km
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = 
-    Math.sin(dLat/2) * Math.sin(dLat/2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-    Math.sin(dLon/2) * Math.sin(dLon/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  return R * c;
 };

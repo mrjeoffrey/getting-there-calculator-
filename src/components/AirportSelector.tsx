@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { airports } from '../utils/flightUtils';
+import { transformAirports } from '../utils/flightUtils';
 import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { airports } from "../utils/airports.json";;
 
 interface AirportSelectorProps {
   value: string;
@@ -32,35 +33,54 @@ const AirportSelector: React.FC<AirportSelectorProps> = ({
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   
-  // Safely filter airports
+  const transformedAirports = transformAirports(airports);
+
   const filteredAirports = useMemo(() => {
-    if (!Array.isArray(airports)) return [];
-    
-    return airports.filter(airport => {
-      // Ensure airport and code exist
-      if (!airport || !airport.code) return false;
-      
-      // Check if airport is excluded
-      if (Array.isArray(exclude) && exclude.includes(airport.code)) return false;
-      
-      // Filter by search query if present
+    // Add more detailed logging
+
+    console.log('Search Query:', searchQuery);
+    console.log('Exclude:', exclude);
+  
+    if (!Array.isArray(transformedAirports)) {
+      console.error('transformedAirports is not an array');
+      return [];
+    }
+  
+    const filtered = transformedAirports.filter(airport => {
+      if (!airport || !airport.code) {
+        console.log('Invalid airport:', airport);
+        return false;
+      }
+  
+      if (Array.isArray(exclude) && exclude.includes(airport.code)) {
+        console.log('Excluded airport:', airport.code);
+        return false;
+      }
+  
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
-        return (
+        const matches = 
           airport.code.toLowerCase().includes(query) ||
           airport.city.toLowerCase().includes(query) ||
-          airport.name.toLowerCase().includes(query)
-        );
+          airport.name.toLowerCase().includes(query);
+        
+        if (!matches) {
+          console.log('No match for:', airport, 'with query:', query);
+        }
+        return matches;
       }
-      
+  
       return true;
     });
-  }, [exclude, searchQuery]);
+  
+    console.log('Filtered airports count:', filtered.length);
+    return filtered;
+  }, [transformedAirports, exclude, searchQuery]);
   
   // Find selected airport
   const selectedAirport = useMemo(() => {
-    if (!value || !Array.isArray(airports)) return null;
-    return airports.find(airport => airport && airport.code === value) || null;
+    if (!value || !Array.isArray(transformedAirports)) return null;
+    return transformedAirports.find(airport => airport && airport.code === value) || null;
   }, [value]);
   
   return (

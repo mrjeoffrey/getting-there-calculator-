@@ -17,6 +17,17 @@ export interface Flight {
   airline: string;
   duration: string;
   direct: boolean;
+  segments: {
+    arrivalAirport: {
+      code: string;
+    };
+    arrivalTime: string;
+    departureAirport: {
+      code: string;
+    };
+    departureTime: string;
+  }[];
+
 }
 
 export interface ConnectionFlight {
