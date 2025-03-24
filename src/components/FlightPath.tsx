@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useRef } from 'react';
 import { Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -134,8 +135,6 @@ const FlightPath: React.FC<FlightPathProps> = ({
       return;
     }
     
-    setInitialMapView();
-    
     const arcHeight = type === 'direct' ? 0.2 : 0.15;
     
     try {
@@ -167,22 +166,6 @@ const FlightPath: React.FC<FlightPathProps> = ({
     } catch (error) {
       console.error(`[${pathId.current}] Error initializing flight path:`, error);
     }
-  };
-  
-  const setInitialMapView = () => {
-    if (!departure || !arrival || !departure.lat || !departure.lng || !arrival.lat || !arrival.lng) return;
-    
-    const bounds = L.latLngBounds(
-      [departure.lat, departure.lng],
-      [arrival.lat, arrival.lng]
-    );
-    
-    const paddedBounds = bounds.pad(0.3);
-    
-    map.fitBounds(paddedBounds, {
-      animate: false,
-      duration: 0
-    });
   };
   
   const calculateInitialRotation = (points: [number, number][]) => {
@@ -254,6 +237,20 @@ const FlightPath: React.FC<FlightPathProps> = ({
     
     marker.options.title = flight.flightNumber;
     marker.flightData = flight;
+
+    // Add click handler for the marker
+    marker.on('click', () => {
+      if (onFlightSelect) {
+        onFlightSelect({
+          id: pathId.current,
+          flightNumber: flight.flightNumber,
+          airline: flight.airline,
+          departureTime: flight.departureTime,
+          arrivalTime: flight.arrivalTime,
+          duration: flight.duration
+        });
+      }
+    });
     
     return marker;
   };
@@ -355,6 +352,20 @@ const FlightPath: React.FC<FlightPathProps> = ({
     animateNextStep();
   };
   
+  // Handle path click to select the flight
+  const handlePathClick = () => {
+    if (onFlightSelect) {
+      onFlightSelect({
+        id: pathId.current,
+        flightNumber,
+        airline,
+        departureTime,
+        arrivalTime,
+        duration
+      });
+    }
+  };
+  
   const color = type === 'direct' ? '#4CAF50' : '#FFC107';
   const weight = isActive ? 4 : 3;
   const opacity = isActive ? 0.8 : 0.6;
@@ -371,12 +382,16 @@ const FlightPath: React.FC<FlightPathProps> = ({
             dashArray: type === 'connecting' ? '5, 10' : '',
             className: `flight-path ${type} ${animationComplete ? 'animation-complete' : ''}`
           }}
+          eventHandlers={{
+            click: handlePathClick
+          }}
         />
       )}
       <style>
         {`
           .plane-icon-marker {
             z-index: 500;
+            cursor: pointer;
           }
           
           .plane-marker svg {
@@ -384,7 +399,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
           }
           
           .flight-path {
-            cursor: default;
+            cursor: pointer;
             z-index: 400;
           }
           

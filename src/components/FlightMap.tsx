@@ -181,7 +181,7 @@ const FlightMap: React.FC<FlightMapProps> = ({
 
           {/* Debug info for connecting flights */}
           {connectingFlights.length > 0 ? (
-            console.log(`Rendering ${connectingFlights.length} connecting flight paths`)
+            console.log(`Rendering ${connectingFlights.length} connecting flight paths with multiple segments`)
           ) : (
             console.warn("No connecting flights to render paths for")
           )}
@@ -189,37 +189,17 @@ const FlightMap: React.FC<FlightMapProps> = ({
           {connectingFlights.map((connection, connectionIndex) => {
             console.log(`Processing connection ${connectionIndex+1}: ${connection.id} with ${connection.flights.length} legs`);
             
-            // Create an array to hold each leg's rendered component
-            const legs: React.ReactNode[] = [];
-            
-            // Process each leg of the connection
-            connection.flights.forEach((flight, flightIndex) => {
-              // If this is not the last flight, we need to connect from this flight's arrival to the next flight's departure
-              const isLastFlight = flightIndex === connection.flights.length - 1;
+            // Render each leg of the connection as a separate path
+            return connection.flights.map((flight, flightIndex) => {
+              console.log(`  Rendering connection leg ${flightIndex+1}: ${flight.departureAirport.code} to ${flight.arrivalAirport.code}`);
               
-              // For each leg, we create a path from the current flight's departure to either:
-              // 1. The next flight's departure (if not the last flight)
-              // 2. The current flight's arrival (if it's the last flight)
-              const segmentDeparture = flight.departureAirport;
-              const nextFlight = !isLastFlight ? connection.flights[flightIndex + 1] : null;
-              const segmentArrival = nextFlight ? nextFlight.departureAirport : flight.arrivalAirport;
-              
-              // Skip if missing airport data
-              if (!segmentDeparture || !segmentArrival) {
-                console.error(`Missing airport data for connection segment in ${connection.id}, leg ${flightIndex+1}`);
-                return null;
-              }
-              
-              console.log(`  Rendering connection leg ${flightIndex+1}: ${segmentDeparture.code} to ${segmentArrival.code}`);
-              
-              // Create the flight path for this leg
-              legs.push(
+              return (
                 <FlightPath
                   key={`connection-leg-${connection.id}-${flightIndex}`}
-                  departure={segmentDeparture}
-                  arrival={segmentArrival}
+                  departure={flight.departureAirport}
+                  arrival={flight.arrivalAirport}
                   type="connecting"
-                  isActive={selectedFlightId === connection.id || selectedFlightId === flight.id}
+                  isActive={selectedFlightId === connection.id}
                   duration={flight.duration}
                   departureTime={flight.departureTime}
                   arrivalTime={flight.arrivalTime}
@@ -234,13 +214,10 @@ const FlightMap: React.FC<FlightMapProps> = ({
                     price: connection.price / connection.flights.length
                   }))}
                   onFlightSelect={() => onFlightSelect && onFlightSelect(connection)}
-                  autoAnimate={autoAnimateConnections} // Use the prop to determine animation
+                  autoAnimate={autoAnimateConnections && flightIndex === 0} // Only animate first leg
                 />
               );
             });
-            
-            // Return all legs for this connection
-            return legs;
           })}
 
           {Array.from(airports.values()).map(airport => (

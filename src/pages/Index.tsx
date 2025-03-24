@@ -47,11 +47,13 @@ const Index = () => {
     setConnectingFlights([]);
     
     try {
-      console.log(`Searching flights from ${params.from} to ${params.to || 'HND'}`);
+      // Ensure destination is set to Tokyo (HND) if not provided
+      const destination = params.to || 'HND';
+      console.log(`Searching flights from ${params.from} to ${destination} (Tokyo Haneda)`);
       
       const { directFlights, connectingFlights, weeklyData } = await searchWeeklyFlights(
         params.from,
-        params.to || 'HND' // Default to Tokyo Haneda
+        destination
       );
       
       console.log(`Search completed. Found ${directFlights.length} direct and ${connectingFlights.length} connecting flights`);
