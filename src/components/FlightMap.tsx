@@ -26,7 +26,17 @@ const FlightMap: React.FC<FlightMapProps> = ({
   autoAnimateConnections = false
 }) => {
   const [mapReady, setMapReady] = useState(false);
-  const allFlights = [...directFlights, ...connectingFlights.flatMap(cf => cf.flights)];
+  
+  // Collect all flights for airport markers
+  const allFlights = [...directFlights];
+  const allConnectionLegs: Flight[] = [];
+  
+  // Extract individual legs from connection flights for markers
+  connectingFlights.forEach(cf => {
+    cf.flights.forEach(flight => {
+      allConnectionLegs.push(flight);
+    });
+  });
 
   const showContent = !loading && mapReady;
 
@@ -35,7 +45,32 @@ const FlightMap: React.FC<FlightMapProps> = ({
   const airportArrivalFlights = new Map();
 
   if (showContent) {
-    allFlights.forEach(flight => {
+    // Process direct flights for airports
+    directFlights.forEach(flight => {
+      if (flight.departureAirport && !airports.has(flight.departureAirport.code)) {
+        airports.set(flight.departureAirport.code, flight.departureAirport);
+        airportDepartureFlights.set(flight.departureAirport.code, []);
+      }
+      if (flight.arrivalAirport && !airports.has(flight.arrivalAirport.code)) {
+        airports.set(flight.arrivalAirport.code, flight.arrivalAirport);
+        airportArrivalFlights.set(flight.arrivalAirport.code, []);
+      }
+      
+      if (flight.departureAirport) {
+        const departures = airportDepartureFlights.get(flight.departureAirport.code) || [];
+        departures.push(flight);
+        airportDepartureFlights.set(flight.departureAirport.code, departures);
+      }
+      
+      if (flight.arrivalAirport) {
+        const arrivals = airportArrivalFlights.get(flight.arrivalAirport.code) || [];
+        arrivals.push(flight);
+        airportArrivalFlights.set(flight.arrivalAirport.code, arrivals);
+      }
+    });
+    
+    // Process connection flights for airports
+    allConnectionLegs.forEach(flight => {
       if (flight.departureAirport && !airports.has(flight.departureAirport.code)) {
         airports.set(flight.departureAirport.code, flight.departureAirport);
         airportDepartureFlights.set(flight.departureAirport.code, []);
@@ -73,6 +108,16 @@ const FlightMap: React.FC<FlightMapProps> = ({
 
     return null;
   };
+
+  // Debug connecting flights
+  useEffect(() => {
+    if (connectingFlights && connectingFlights.length > 0) {
+      console.log(`Found ${connectingFlights.length} connecting flights to display`);
+      connectingFlights.forEach((connection, index) => {
+        console.log(`Connection ${index+1}: ID=${connection.id}, ${connection.flights.length} legs`);
+      });
+    }
+  }, [connectingFlights]);
 
   return (
     <MapContainer
@@ -116,39 +161,47 @@ const FlightMap: React.FC<FlightMapProps> = ({
             />
           ))}
 
-          {connectingFlights.map(connection => (
-            <div key={`connection-${connection.id}`} style={{ display: 'contents' }}>
-              {connection.flights.map((flight, index, flights) => {
-                const isLast = index === flights.length - 1;
-                const nextFlight = !isLast ? flights[index + 1] : null;
-
-                return (
-                  <FlightPath
-                    key={`connection-leg-${flight.id}-${index}`}
-                    departure={flight.departureAirport}
-                    arrival={nextFlight ? nextFlight.departureAirport : flight.arrivalAirport}
-                    type="connecting"
-                    isActive={selectedFlightId === connection.id || selectedFlightId === flight.id}
-                    duration={flight.duration}
-                    departureTime={flight.departureTime}
-                    arrivalTime={flight.arrivalTime}
-                    flightNumber={flight.flightNumber}
-                    airline={flight.airline}
-                    flightInfo={connection.flights.map(f => ({
-                      flightNumber: f.flightNumber,
-                      airline: f.airline,
-                      departureTime: f.departureTime,
-                      arrivalTime: f.arrivalTime,
-                      duration: f.duration,
-                      price: connection.price / connection.flights.length
-                    }))}
-                    onFlightSelect={onFlightSelect}
-                    autoAnimate={autoAnimateConnections}
-                  />
-                );
-              })}
-            </div>
-          ))}
+          {connectingFlights.map(connection => {
+            return connection.flights.map((flight, index, flights) => {
+              const isLast = index === flights.length - 1;
+              const nextFlight = !isLast ? flights[index + 1] : null;
+              
+              // Properly set departure and arrival for this segment
+              const segmentDeparture = flight.departureAirport;
+              const segmentArrival = nextFlight ? nextFlight.departureAirport : flight.arrivalAirport;
+              
+              // Skip if either airport is missing
+              if (!segmentDeparture || !segmentArrival) {
+                console.warn(`Missing airport data for connection segment: ${flight.id}`);
+                return null;
+              }
+              
+              return (
+                <FlightPath
+                  key={`connection-leg-${connection.id}-${index}`}
+                  departure={segmentDeparture}
+                  arrival={segmentArrival}
+                  type="connecting"
+                  isActive={selectedFlightId === connection.id || selectedFlightId === flight.id}
+                  duration={flight.duration}
+                  departureTime={flight.departureTime}
+                  arrivalTime={flight.arrivalTime}
+                  flightNumber={flight.flightNumber}
+                  airline={flight.airline}
+                  flightInfo={connection.flights.map(f => ({
+                    flightNumber: f.flightNumber,
+                    airline: f.airline,
+                    departureTime: f.departureTime,
+                    arrivalTime: f.arrivalTime,
+                    duration: f.duration,
+                    price: connection.price / connection.flights.length
+                  }))}
+                  onFlightSelect={() => onFlightSelect && onFlightSelect(connection)}
+                  autoAnimate={true} // Always animate connecting flights
+                />
+              );
+            });
+          })}
 
           {Array.from(airports.values()).map(airport => (
             <AirportMarker

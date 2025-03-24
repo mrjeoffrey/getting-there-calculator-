@@ -54,17 +54,23 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
                 </CollapsibleTrigger>
                 <CollapsibleContent>
                   {departureFlights.length > 0 && (
-                    <FlightScheduleTable 
-                      title="Departing Flights" 
-                      flights={departureFlights} 
-                    />
+                    <div className="mb-4">
+                      <h4 className="font-medium text-sm mb-2">Departing Flights</h4>
+                      <FlightScheduleTable 
+                        title="Departing Flights" 
+                        flights={departureFlights} 
+                      />
+                    </div>
                   )}
                   
                   {arrivalFlights.length > 0 && (
-                    <FlightScheduleTable 
-                      title="Arriving Flights" 
-                      flights={arrivalFlights} 
-                    />
+                    <div>
+                      <h4 className="font-medium text-sm mb-2">Arriving Flights</h4>
+                      <FlightScheduleTable 
+                        title="Arriving Flights" 
+                        flights={arrivalFlights} 
+                      />
+                    </div>
                   )}
                 </CollapsibleContent>
               </Collapsible>
