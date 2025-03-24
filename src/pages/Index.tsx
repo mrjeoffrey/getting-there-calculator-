@@ -24,6 +24,16 @@ const Index = () => {
     if (connectingFlights.length > 0) {
       console.log(`Index: Loaded ${connectingFlights.length} connecting flights`);
       console.log("Connecting flight details:", connectingFlights);
+      
+      // Log each connecting flight's structure for debugging
+      connectingFlights.forEach((cf, idx) => {
+        console.log(`Connection #${idx+1}: ${cf.id} with ${cf.flights.length} legs`);
+        cf.flights.forEach((leg, legIdx) => {
+          console.log(`  Leg ${legIdx+1}: ${leg.departureAirport?.code} to ${leg.arrivalAirport?.code} (${leg.id})`);
+        });
+      });
+    } else {
+      console.warn("Index: No connecting flights loaded");
     }
   }, [directFlights, connectingFlights]);
 
@@ -90,6 +100,16 @@ const Index = () => {
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
         <div className="w-full md:w-1/3 p-4 overflow-y-auto">
           <SearchPanel onSearch={handleSearch} loading={loading} />
+          {connectingFlights.length > 0 && (
+            <div className="mt-4 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+              <h3 className="text-lg font-medium text-yellow-800">
+                {connectingFlights.length} Connecting Flights Available
+              </h3>
+              <p className="text-sm text-yellow-600">
+                Connecting flights are shown on the map with yellow dashed lines.
+              </p>
+            </div>
+          )}
         </div>
         
         <div className="w-full md:w-2/3 h-[50vh] md:h-auto overflow-hidden">
