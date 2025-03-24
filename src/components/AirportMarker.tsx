@@ -35,7 +35,7 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
     <Marker 
       position={[airport.lat, airport.lng]} 
       icon={createAirportMarkerIcon(type)}
-      zIndexOffset={1000} // Ensure markers are above flight paths
+      zIndexOffset={1000} // Ensure airport markers are always on top
     >
       <Popup className="flight-popup" minWidth={320} maxWidth={500}>
         <div className="p-2">
@@ -66,3 +66,4 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
 };
 
 export default AirportMarker;
+

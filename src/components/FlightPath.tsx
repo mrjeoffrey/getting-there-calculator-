@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import { Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -231,7 +230,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
     
     const marker = L.marker(positionWithOffset, {
       icon: planeIcon,
-      zIndexOffset: 1000 + index
+      zIndexOffset: 500 + index
     }).addTo(map);
     
     marker.options.title = flight.flightNumber;
@@ -329,9 +328,6 @@ const FlightPath: React.FC<FlightPathProps> = ({
     animateNextStep();
   };
   
-  // Note: Removed the createFlightListPopup and handlePathClick functions that
-  // were previously responsible for showing popups when clicking on flight paths
-  
   const color = type === 'direct' ? '#4CAF50' : '#FFC107';
   const weight = isActive ? 4 : 3;
   const opacity = isActive ? 0.8 : 0.6;
@@ -346,15 +342,15 @@ const FlightPath: React.FC<FlightPathProps> = ({
             weight,
             opacity,
             dashArray: type === 'connecting' ? '5, 10' : '',
-            className: `flight-path ${type} ${animationComplete ? 'animation-complete' : ''}`
+            className: `flight-path ${type} ${animationComplete ? 'animation-complete' : ''}`,
+            zIndexOffset: 400
           }}
-          // Removed the click handler to disable popup on flight path click
         />
       )}
       <style>
         {`
           .plane-icon-marker {
-            z-index: 1500;
+            z-index: 500;
           }
           
           .plane-marker svg {
@@ -363,6 +359,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
           
           .flight-path {
             cursor: default;
+            z-index: 400;
           }
           
           .leaflet-marker-icon {
@@ -375,4 +372,3 @@ const FlightPath: React.FC<FlightPathProps> = ({
 };
 
 export default FlightPath;
-
