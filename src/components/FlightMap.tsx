@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, useMap, ZoomControl } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -27,14 +28,36 @@ const FlightMap: React.FC<FlightMapProps> = ({
 
   const showContent = !loading && mapReady;
 
+  // Create a map of airports
   const airports = new Map();
+  // Create maps to track departure and arrival flights for each airport
+  const airportDepartureFlights = new Map();
+  const airportArrivalFlights = new Map();
+
   if (showContent) {
+    // Populate the airports and flight maps
     allFlights.forEach(flight => {
       if (flight.departureAirport && !airports.has(flight.departureAirport.code)) {
         airports.set(flight.departureAirport.code, flight.departureAirport);
+        airportDepartureFlights.set(flight.departureAirport.code, []);
       }
       if (flight.arrivalAirport && !airports.has(flight.arrivalAirport.code)) {
         airports.set(flight.arrivalAirport.code, flight.arrivalAirport);
+        airportArrivalFlights.set(flight.arrivalAirport.code, []);
+      }
+      
+      // Add flight to departure airport's list
+      if (flight.departureAirport) {
+        const departures = airportDepartureFlights.get(flight.departureAirport.code) || [];
+        departures.push(flight);
+        airportDepartureFlights.set(flight.departureAirport.code, departures);
+      }
+      
+      // Add flight to arrival airport's list
+      if (flight.arrivalAirport) {
+        const arrivals = airportArrivalFlights.get(flight.arrivalAirport.code) || [];
+        arrivals.push(flight);
+        airportArrivalFlights.set(flight.arrivalAirport.code, arrivals);
       }
     });
   }
@@ -76,6 +99,13 @@ const FlightMap: React.FC<FlightMapProps> = ({
             <AirportMarker
               key={`airport-${airport.code}`}
               airport={airport}
+              departureFlights={airportDepartureFlights.get(airport.code) || []}
+              arrivalFlights={airportArrivalFlights.get(airport.code) || []}
+              type={airport.code === (directFlights[0]?.departureAirport?.code || connectingFlights[0]?.flights[0]?.departureAirport?.code) 
+                ? 'origin' 
+                : airport.code === (directFlights[0]?.arrivalAirport?.code || connectingFlights[0]?.flights[connectingFlights[0]?.flights.length - 1]?.arrivalAirport?.code) 
+                  ? 'destination' 
+                  : 'connection'}
             />
           ))}
 

@@ -2,7 +2,7 @@
 import React from 'react';
 import { Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
-import { Airport } from '../types/flightTypes';
+import { Airport, Flight, ConnectionFlight } from '../types/flightTypes';
 
 interface AirportMarkerProps {
   airport: Airport;
@@ -10,6 +10,8 @@ interface AirportMarkerProps {
   isHighlighted?: boolean;
   type?: 'origin' | 'destination' | 'connection';
   isDarkMode?: boolean;
+  departureFlights?: Flight[];
+  arrivalFlights?: Flight[];
 }
 
 const AirportMarker: React.FC<AirportMarkerProps> = ({ 
@@ -17,7 +19,9 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
   isPulsing = false,
   isHighlighted = false,
   type = 'origin',
-  isDarkMode = false
+  isDarkMode = false,
+  departureFlights = [],
+  arrivalFlights = []
 }) => {
   // Create custom markers for different types of airports
   const createCustomIcon = (type: string) => {
@@ -77,15 +81,91 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
     return customIcon;
   };
 
+  // Format day of week from date string
+  const getDayOfWeek = (dateString: string) => {
+    const date = new Date(dateString);
+    return ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][date.getDay()];
+  };
+
+  const hasFlights = departureFlights.length > 0 || arrivalFlights.length > 0;
+
   return (
     <Marker 
       position={[airport.lat, airport.lng]} 
       icon={createCustomIcon(type)}
     >
-      <Popup>
+      <Popup className="flight-popup" minWidth={320} maxWidth={500}>
         <div className="p-2">
-          <h3 className="font-semibold text-primary">{airport.name} ({airport.code})</h3>
-          <p className="text-sm text-muted-foreground">{airport.city}, {airport.country}</p>
+          <h3 className="font-semibold text-primary text-lg mb-2">{airport.name} ({airport.code})</h3>
+          <p className="text-sm text-muted-foreground mb-3">{airport.city}, {airport.country}</p>
+          
+          {hasFlights && (
+            <div className="mt-3">
+              {departureFlights.length > 0 && (
+                <div className="mb-4">
+                  <h4 className="font-medium text-sm text-primary mb-2 border-b pb-1">Departing Flights</h4>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs">
+                      <thead>
+                        <tr className="bg-muted/50">
+                          <th className="py-1 px-2 text-left">Airline</th>
+                          <th className="py-1 px-2 text-left">Duration</th>
+                          <th className="py-1 px-2 text-left">Day</th>
+                          <th className="py-1 px-2 text-left">Departure</th>
+                          <th className="py-1 px-2 text-left">Arrival</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {departureFlights.map((flight, index) => (
+                          <tr key={`dep-${flight.id}-${index}`} className={index % 2 === 0 ? 'bg-background' : 'bg-muted/20'}>
+                            <td className="py-1 px-2">{flight.airline}</td>
+                            <td className="py-1 px-2">{flight.duration}</td>
+                            <td className="py-1 px-2">{getDayOfWeek(flight.departureTime)}</td>
+                            <td className="py-1 px-2">{flight.departureTime.split('T')[1]?.substring(0, 5)}</td>
+                            <td className="py-1 px-2">{flight.arrivalTime.split('T')[1]?.substring(0, 5)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+              
+              {arrivalFlights.length > 0 && (
+                <div>
+                  <h4 className="font-medium text-sm text-primary mb-2 border-b pb-1">Arriving Flights</h4>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs">
+                      <thead>
+                        <tr className="bg-muted/50">
+                          <th className="py-1 px-2 text-left">Airline</th>
+                          <th className="py-1 px-2 text-left">Duration</th>
+                          <th className="py-1 px-2 text-left">Day</th>
+                          <th className="py-1 px-2 text-left">Departure</th>
+                          <th className="py-1 px-2 text-left">Arrival</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {arrivalFlights.map((flight, index) => (
+                          <tr key={`arr-${flight.id}-${index}`} className={index % 2 === 0 ? 'bg-background' : 'bg-muted/20'}>
+                            <td className="py-1 px-2">{flight.airline}</td>
+                            <td className="py-1 px-2">{flight.duration}</td>
+                            <td className="py-1 px-2">{getDayOfWeek(flight.departureTime)}</td>
+                            <td className="py-1 px-2">{flight.departureTime.split('T')[1]?.substring(0, 5)}</td>
+                            <td className="py-1 px-2">{flight.arrivalTime.split('T')[1]?.substring(0, 5)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          
+          {!hasFlights && (
+            <p className="text-sm text-muted-foreground italic">No flight information available for this airport.</p>
+          )}
         </div>
       </Popup>
     </Marker>
