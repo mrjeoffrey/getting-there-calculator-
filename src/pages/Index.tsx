@@ -61,8 +61,6 @@ const Index = () => {
                 weeklyData={weeklyData} 
                 onSelectFlight={(flight) => setSelectedFlightId(flight.id)} 
               />
-              
-              {/* Flight schedule table removed from here - will only show in map popups */}
             </div>
           )}
         </div>
@@ -74,6 +72,7 @@ const Index = () => {
             selectedFlightId={selectedFlightId}
             loading={loading}
             onFlightSelect={handleFlightSelect}
+            autoAnimateConnections={true}
           />
         </div>
       </div>

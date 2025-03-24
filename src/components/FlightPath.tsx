@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useRef } from 'react';
 import { Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -33,6 +34,7 @@ interface FlightPathProps {
     price: number;
   }>;
   onFlightSelect?: (flight: any) => void;
+  autoAnimate?: boolean;
 }
 
 const FlightPath: React.FC<FlightPathProps> = ({ 
@@ -48,7 +50,8 @@ const FlightPath: React.FC<FlightPathProps> = ({
   airline = '',
   price = 0,
   flightInfo = [],
-  onFlightSelect
+  onFlightSelect,
+  autoAnimate = false
 }) => {
   const arcPointsRef = useRef<[number, number][]>([]);
   const [arcPoints, setArcPoints] = useState<[number, number][]>([]);
@@ -96,6 +99,16 @@ const FlightPath: React.FC<FlightPathProps> = ({
       cleanup();
     };
   }, [departure, arrival, type, isActive]); // Add additional dependencies
+  
+  // Auto-animate connecting flights if flag is set
+  useEffect(() => {
+    if (autoAnimate && type === 'connecting' && !animationComplete && arcPointsRef.current.length > 0) {
+      setTimeout(() => {
+        createPlaneMarkers();
+        startFlightAnimation();
+      }, 1000);
+    }
+  }, [autoAnimate, type, animationComplete, arcPoints]);
   
   const cleanup = () => {
     if (drawingTimerRef.current) {
@@ -283,10 +296,13 @@ const FlightPath: React.FC<FlightPathProps> = ({
         
         drawingTimerRef.current = setTimeout(drawNextSegment, pointDelay);
       } else {
-        setTimeout(() => {
-          createPlaneMarkers();
-          startFlightAnimation();
-        }, 500);
+        // If autoAnimating, createPlaneMarkers and startFlightAnimation are called separately by useEffect
+        if (!autoAnimate) {
+          setTimeout(() => {
+            createPlaneMarkers();
+            startFlightAnimation();
+          }, 500);
+        }
       }
     };
     

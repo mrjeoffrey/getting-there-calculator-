@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, useMap, ZoomControl } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -13,6 +14,7 @@ interface FlightMapProps {
   selectedFlightId?: string | null;
   loading?: boolean;
   onFlightSelect?: (flight: any) => void;
+  autoAnimateConnections?: boolean;
 }
 
 const FlightMap: React.FC<FlightMapProps> = ({
@@ -20,7 +22,8 @@ const FlightMap: React.FC<FlightMapProps> = ({
   connectingFlights,
   selectedFlightId,
   loading = false,
-  onFlightSelect
+  onFlightSelect,
+  autoAnimateConnections = false
 }) => {
   const [mapReady, setMapReady] = useState(false);
   const allFlights = [...directFlights, ...connectingFlights.flatMap(cf => cf.flights)];
@@ -140,6 +143,7 @@ const FlightMap: React.FC<FlightMapProps> = ({
                       price: connection.price / connection.flights.length
                     }))}
                     onFlightSelect={onFlightSelect}
+                    autoAnimate={autoAnimateConnections}
                   />
                 );
               })}
