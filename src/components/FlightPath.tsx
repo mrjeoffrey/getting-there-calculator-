@@ -342,8 +342,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
             weight,
             opacity,
             dashArray: type === 'connecting' ? '5, 10' : '',
-            className: `flight-path ${type} ${animationComplete ? 'animation-complete' : ''}`,
-            zIndexOffset: 400
+            className: `flight-path ${type} ${animationComplete ? 'animation-complete' : ''}`
           }}
         />
       )}
