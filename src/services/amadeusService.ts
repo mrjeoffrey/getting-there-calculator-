@@ -214,9 +214,8 @@ const fallbackToMockedData = async (
   weeklyData: any;
 }> => {
   console.log("Falling back to mocked data due to API failure");
-  console.log(`Generating mock flights from ${fromCode} to ${toCode || 'GND'}`);
+  console.log(`Generating mock flights from ${fromCode} to ${toCode}`);
   
-  const destinationCode = 'GND';
   const today = new Date();
   const weeklyData: any = existingWeeklyData || {};
   const directFlights: Flight[] = [];
@@ -236,7 +235,7 @@ const fallbackToMockedData = async (
       
       for (let j = 0; j < directFlightCount; j++) {
         const departure = findAirportByCode(fromCode);
-        const arrival = findAirportByCode(destinationCode);
+        const arrival = findAirportByCode(toCode);
         
         if (!departure || !arrival) continue;
         
@@ -254,7 +253,7 @@ const fallbackToMockedData = async (
         const arrivalTime = new Date(departureTime.getTime() + (durationHours * 60 + durationMinutes) * 60000);
         
         const flight: Flight = {
-          id: `${fromCode}-${destinationCode}-${Math.random().toString(36).substring(2, 9)}`,
+          id: `${fromCode}-${toCode}-${Math.random().toString(36).substring(2, 9)}`,
           departureAirport: departure,
           arrivalAirport: arrival,
           departureTime: departureTime.toISOString(),
@@ -285,36 +284,30 @@ const fallbackToMockedData = async (
   // Generate connecting flights - ALWAYS create at least 2 connecting flights
   const connectingFlights: ConnectionFlight[] = [];
   // Increase minimum number of connecting flights to ensure some are always visible
-  const connectingFlightCount = Math.floor(Math.random() * 3) + 2; // At least 2, up to 4
+  const connectingFlightCount = Math.floor(Math.random() * 3) + 3; // At least 3, up to 5
   
   console.log(`Generating ${connectingFlightCount} mock connecting flights`);
   
+  // Define connecting airports
+  const connectingAirportCodes = ['MIA', 'LHR', 'YYZ', 'JFK', 'LAX', 'ORD', 'ATL', 'DFW', 'AMS', 'FRA'];
+  
   for (let i = 0; i < connectingFlightCount; i++) {
     const departure = findAirportByCode(fromCode);
-    const arrival = findAirportByCode(destinationCode);
+    const arrival = findAirportByCode(toCode);
     
     if (!departure || !arrival) {
-      console.error(`Could not find airport data for ${fromCode} or ${destinationCode}`);
+      console.error(`Could not find airport data for ${fromCode} or ${toCode}`);
       continue;
     }
     
-    // Select a connecting airport - prioritize more visible connections
-    const popularConnections = ['MIA', 'LHR', 'YYZ', 'JFK'];
-    const potentialConnections = airports.filter(a => a.code !== fromCode && a.code !== destinationCode);
+    // Select a connecting airport from the list of potential hubs
+    const randomIndex = Math.floor(Math.random() * connectingAirportCodes.length);
+    const connectingAirportCode = connectingAirportCodes[randomIndex];
+    const connectingAirport = findAirportByCode(connectingAirportCode);
     
-    if (potentialConnections.length === 0) {
-      console.error('No potential connecting airports found');
+    if (!connectingAirport) {
+      console.error(`Could not find connecting airport data for ${connectingAirportCode}`);
       continue;
-    }
-    
-    // Try to use a popular connection first, then fall back to random
-    let connectingAirport;
-    const popularAvailable = potentialConnections.filter(a => popularConnections.includes(a.code));
-    
-    if (popularAvailable.length > 0) {
-      connectingAirport = popularAvailable[Math.floor(Math.random() * popularAvailable.length)];
-    } else {
-      connectingAirport = potentialConnections[Math.floor(Math.random() * potentialConnections.length)];
     }
     
     console.log(`Creating connecting flight through ${connectingAirport.code}`);
@@ -362,7 +355,7 @@ const fallbackToMockedData = async (
     const secondArrivalTime = new Date(secondDepartureTime.getTime() + (hours2 * 60 + minutes2) * 60000);
     
     const secondFlight: Flight = {
-      id: `${connectingAirport.code}-${destinationCode}-${Math.random().toString(36).substring(2, 9)}`,
+      id: `${connectingAirport.code}-${toCode}-${Math.random().toString(36).substring(2, 9)}`,
       departureAirport: connectingAirport,
       arrivalAirport: arrival,
       departureTime: secondDepartureTime.toISOString(),
@@ -382,8 +375,8 @@ const fallbackToMockedData = async (
     // Price
     const price = Math.floor(Math.random() * 1500) + 500;
     
-    const connectionId = `${fromCode}-${connectingAirport.code}-${destinationCode}-${Math.random().toString(36).substring(2, 9)}`;
-    console.log(`Generated connecting flight ID: ${connectionId} (${fromCode} → ${connectingAirport.code} → ${destinationCode})`);
+    const connectionId = `${fromCode}-${connectingAirport.code}-${toCode}-${Math.random().toString(36).substring(2, 9)}`;
+    console.log(`Generated connecting flight ID: ${connectionId} (${fromCode} → ${connectingAirport.code} → ${toCode})`);
     
     connectingFlights.push({
       id: connectionId,
@@ -395,6 +388,7 @@ const fallbackToMockedData = async (
   }
   
   console.log(`Successfully generated ${directFlights.length} direct flights and ${connectingFlights.length} connecting flights`);
+  console.log('Connecting flights details:', JSON.stringify(connectingFlights, null, 2));
   
   return { directFlights, connectingFlights, weeklyData };
 };
@@ -406,7 +400,8 @@ export const searchWeeklyFlights = async (fromCode: string, toCode: string): Pro
   weeklyData: any;
 }> => {
   try {
-    const destinationCode = 'GND'; // Always Grenada
+    console.log(`Searching weekly flights from ${fromCode} to ${toCode}`);
+    
     const today = new Date();
     const weeklyData: any = {};
     const directFlights: Flight[] = [];
@@ -421,7 +416,7 @@ export const searchWeeklyFlights = async (fromCode: string, toCode: string): Pro
       
       try {
         // Attempt to fetch real flight data from Amadeus
-        const flightData = await searchFlightOffers(fromCode, destinationCode, dateString);
+        const flightData = await searchFlightOffers(fromCode, toCode, dateString);
         
         if (flightData && flightData.data && flightData.data.length > 0) {
           const dayFlights: Flight[] = [];
@@ -462,19 +457,25 @@ export const searchWeeklyFlights = async (fromCode: string, toCode: string): Pro
     // Find connecting flights
     let connectingFlights = findConnectingFlights(allFlights).filter(
       cf => cf.flights[0].departureAirport.code === fromCode && 
-           cf.flights[cf.flights.length - 1].arrivalAirport.code === destinationCode
+           cf.flights[cf.flights.length - 1].arrivalAirport.code === toCode
     );
     
-    // If no connecting flights were found, force generation of connecting flights
+    // Force generation of mock connecting flights regardless of API results
+    console.log("Generating mock connecting flights to ensure connectivity visualization");
+    const mockData = await fallbackToMockedData(fromCode, toCode);
+    
     if (connectingFlights.length === 0) {
-      console.log("No connecting flights found from API results, forcing generation of mock connecting flights");
-      const mockData = await fallbackToMockedData(fromCode, toCode);
+      console.log("No connecting flights found from API results, using all mock connecting flights");
       connectingFlights = mockData.connectingFlights;
     } else {
-      console.log(`Found ${connectingFlights.length} valid connecting flights from API results`);
+      console.log(`Found ${connectingFlights.length} valid connecting flights from API, adding mock flights`);
+      // Add 2 mock connecting flights to ensure we always have some
+      connectingFlights = [...connectingFlights, ...mockData.connectingFlights.slice(0, 2)];
     }
     
     console.log(`Returning ${directFlights.length} direct flights and ${connectingFlights.length} connecting flights`);
+    console.log('Connecting flights details:', JSON.stringify(connectingFlights, null, 2));
+    
     return { directFlights, connectingFlights, weeklyData };
   } catch (error) {
     console.error("Failed to search flights with Amadeus API:", error);

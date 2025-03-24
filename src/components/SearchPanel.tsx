@@ -13,7 +13,7 @@ interface SearchPanelProps {
 
 const SearchPanel: React.FC<SearchPanelProps> = ({ onSearch, loading }) => {
   const [from, setFrom] = useState('');
-  const [to] = useState('GND'); // Default to Grenada, fixed value
+  const [to] = useState('HND'); // Changed to Tokyo Haneda Airport
 
   const handleSearch = () => {
     if (!from) {
@@ -30,7 +30,7 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ onSearch, loading }) => {
 
   return (
     <div className="search-panel animate-scale-in">
-      <h2 className="text-2xl font-semibold text-foreground mb-4">Find Your Flight to Grenada</h2>
+      <h2 className="text-2xl font-semibold text-foreground mb-4">Find Your Flight to Tokyo</h2>
       
       <div className="space-y-4">
         <div>
@@ -47,10 +47,10 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ onSearch, loading }) => {
           <label className="text-sm font-medium text-muted-foreground mb-1 block">Flying To</label>
           <div className="flex h-14 px-4 py-3 bg-white/50 hover:bg-white/60 border border-white/20 rounded-md items-center justify-between">
             <div className="flex items-center">
-              <span className="text-sm font-medium">Maurice Bishop International Airport (GND)</span>
+              <span className="text-sm font-medium">Tokyo Haneda International Airport (HND)</span>
             </div>
             <div className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">
-              Grenada
+              Japan
             </div>
           </div>
         </div>

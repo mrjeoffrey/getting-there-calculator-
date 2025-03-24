@@ -23,13 +23,16 @@ const Index = () => {
     
     if (connectingFlights.length > 0) {
       console.log(`Index: Loaded ${connectingFlights.length} connecting flights`);
-      console.log("Connecting flight details:", connectingFlights);
+      console.log("Connecting flight details:", JSON.stringify(connectingFlights, null, 2));
       
       // Log each connecting flight's structure for debugging
       connectingFlights.forEach((cf, idx) => {
         console.log(`Connection #${idx+1}: ${cf.id} with ${cf.flights.length} legs`);
         cf.flights.forEach((leg, legIdx) => {
           console.log(`  Leg ${legIdx+1}: ${leg.departureAirport?.code} to ${leg.arrivalAirport?.code} (${leg.id})`);
+          if (!leg.departureAirport || !leg.arrivalAirport) {
+            console.error(`Missing airport data in leg ${legIdx+1} of connection ${idx+1}`);
+          }
         });
       });
     } else {
@@ -44,11 +47,11 @@ const Index = () => {
     setConnectingFlights([]);
     
     try {
-      console.log(`Searching flights from ${params.from} to ${params.to || 'GND'}`);
+      console.log(`Searching flights from ${params.from} to ${params.to || 'HND'}`);
       
       const { directFlights, connectingFlights, weeklyData } = await searchWeeklyFlights(
         params.from,
-        params.to || 'GND'
+        params.to || 'HND' // Default to Tokyo Haneda
       );
       
       console.log(`Search completed. Found ${directFlights.length} direct and ${connectingFlights.length} connecting flights`);
@@ -74,12 +77,13 @@ const Index = () => {
         });
       } else {
         console.warn("No connecting flights found in search results");
+        toast.warning("No connecting flights found. This is unusual - please try a different departure airport.");
       }
       
       if (directFlights.length === 0 && connectingFlights.length === 0) {
         toast.warning("No flights found. Try another departure airport or check back later.");
       } else {
-        toast.success(`Found ${directFlights.length + connectingFlights.length} flights to Grenada!`);
+        toast.success(`Found ${directFlights.length} direct and ${connectingFlights.length} connecting flights to Tokyo!`);
       }
     } catch (error) {
       console.error("Error searching flights:", error);
