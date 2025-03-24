@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import Header from '../components/Header';
 import SearchPanel from '../components/SearchPanel';
 import FlightMap from '../components/FlightMap';
-import FlightScheduleTable from '../components/FlightScheduleTable';
 import WeeklyFlightSchedule from '../components/WeeklyFlightSchedule';
 import { Flight, ConnectionFlight, SearchParams, WeeklyFlightData } from '../types/flightTypes';
 import { searchWeeklyFlights } from '../services/amadeusService';
@@ -63,12 +62,7 @@ const Index = () => {
                 onSelectFlight={(flight) => setSelectedFlightId(flight.id)} 
               />
               
-              <FlightScheduleTable 
-                flights={directFlights}
-                connectionFlights={connectingFlights}
-                selectedFlightId={selectedFlightId}
-                onFlightSelect={handleFlightSelect}
-              />
+              {/* Flight schedule table removed from here - will only show in map popups */}
             </div>
           )}
         </div>

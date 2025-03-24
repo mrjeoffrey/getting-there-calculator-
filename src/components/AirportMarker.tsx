@@ -2,7 +2,6 @@
 import React from 'react';
 import { Marker, Popup } from 'react-leaflet';
 import { Airport, Flight } from '../types/flightTypes';
-import { groupFlightsByDay } from '../utils/dateFormatUtils';
 import { createAirportMarkerIcon } from './map/MarkerIconFactory';
 import FlightScheduleTable from './FlightScheduleTable';
 
@@ -25,10 +24,6 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
   departureFlights = [],
   arrivalFlights = []
 }) => {
-  // Group flights by unique combinations with days combined
-  const groupedDepartureFlights = groupFlightsByDay(departureFlights);
-  const groupedArrivalFlights = groupFlightsByDay(arrivalFlights);
-  
   const hasFlights = departureFlights.length > 0 || arrivalFlights.length > 0;
 
   return (
@@ -44,15 +39,19 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
           
           {hasFlights && (
             <div className="mt-3">
-              <FlightScheduleTable 
-                title="Departing Flights" 
-                flights={groupedDepartureFlights} 
-              />
+              {departureFlights.length > 0 && (
+                <FlightScheduleTable 
+                  title="Departing Flights" 
+                  flights={departureFlights} 
+                />
+              )}
               
-              <FlightScheduleTable 
-                title="Arriving Flights" 
-                flights={groupedArrivalFlights} 
-              />
+              {arrivalFlights.length > 0 && (
+                <FlightScheduleTable 
+                  title="Arriving Flights" 
+                  flights={arrivalFlights} 
+                />
+              )}
             </div>
           )}
           
@@ -66,4 +65,3 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
 };
 
 export default AirportMarker;
-
