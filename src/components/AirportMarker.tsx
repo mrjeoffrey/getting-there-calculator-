@@ -26,7 +26,9 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
   arrivalFlights = [],
   connectingFlights = []
 }) => {
-  const hasFlights = departureFlights.length > 0 || arrivalFlights.length > 0 || connectingFlights.length > 0;
+  // Only show direct departure flights on origin marker
+  // Don't show connecting flight details on origin marker
+  const hasFlights = departureFlights.length > 0 || arrivalFlights.length > 0 || (type !== 'origin' && connectingFlights.length > 0);
 
   return (
     <Marker 
@@ -58,7 +60,8 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
                 </div>
               )}
               
-              {connectingFlights.length > 0 && (
+              {/* Only show connecting flights on connection markers, not origin */}
+              {connectingFlights.length > 0 && type !== 'origin' && (
                 <div className="mb-4">
                   <FlightScheduleTable 
                     title="Connecting Flights" 

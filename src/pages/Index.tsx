@@ -59,20 +59,20 @@ const Index = () => {
       console.log(`Search completed. Found ${directFlights.length} direct and ${connectingFlights.length} connecting flights`);
       
       // IMPORTANT: We need to select exactly 10 flights in total across both direct and connecting
-      // with a max of 5 per airline
+      // with a max of 5 per airline - but LIMIT AT QUERY LEVEL, not after fetching everything
       const airlineCount: {[key: string]: number} = {};
       const selectedFlights: (Flight | ConnectionFlight)[] = [];
       
-      // Process all flights to get a fair distribution
       // Combine all flights (direct + connecting) into a single array for processing
       const allFlights: {type: 'direct' | 'connecting', flight: Flight | ConnectionFlight}[] = [
         ...directFlights.map(f => ({type: 'direct' as const, flight: f})),
         ...connectingFlights.map(f => ({type: 'connecting' as const, flight: f}))
       ];
       
-      // Randomize the order to get a mix of direct and connecting flights
+      // Sort randomly to get a fair mix of direct and connecting flights
       allFlights.sort(() => Math.random() - 0.5);
       
+      // Select only the first 10 flights with airline limit
       for (const item of allFlights) {
         if (selectedFlights.length >= 10) break; // Hard limit of 10 flights total
         

@@ -77,39 +77,45 @@ const FlightMap: React.FC<FlightMapProps> = ({
     connectingFlights.forEach(connection => {
       // Get the origin airport for this connection
       const originAirport = connection.flights[0].departureAirport;
-      if (originAirport) {
-        if (!airports.has(originAirport.code)) {
-          airports.set(originAirport.code, originAirport);
-          airportConnectionFlights.set(originAirport.code, []);
-        }
-        
-        // Add this connection to the origin airport's connecting flights
-        const connections = airportConnectionFlights.get(originAirport.code) || [];
-        connections.push(connection);
-        airportConnectionFlights.set(originAirport.code, connections);
-      }
       
       // Process each leg of the connection for airport markers and flight lists
-      connection.flights.forEach(flight => {
+      connection.flights.forEach((flight, index) => {
+        // For departure airport
         if (flight.departureAirport && !airports.has(flight.departureAirport.code)) {
           airports.set(flight.departureAirport.code, flight.departureAirport);
           airportDepartureFlights.set(flight.departureAirport.code, []);
+          airportConnectionFlights.set(flight.departureAirport.code, []);
         }
+        
+        // For arrival airport
         if (flight.arrivalAirport && !airports.has(flight.arrivalAirport.code)) {
           airports.set(flight.arrivalAirport.code, flight.arrivalAirport);
           airportArrivalFlights.set(flight.arrivalAirport.code, []);
+          airportConnectionFlights.set(flight.arrivalAirport.code, []);
         }
         
+        // Add to departure flights list for this airport
         if (flight.departureAirport) {
           const departures = airportDepartureFlights.get(flight.departureAirport.code) || [];
-          departures.push(flight);
-          airportDepartureFlights.set(flight.departureAirport.code, departures);
+          // Only add first leg to origin's departure list
+          if (index === 0) {
+            departures.push(flight);
+            airportDepartureFlights.set(flight.departureAirport.code, departures);
+          }
         }
         
+        // Add to arrival flights list for this airport
         if (flight.arrivalAirport) {
           const arrivals = airportArrivalFlights.get(flight.arrivalAirport.code) || [];
           arrivals.push(flight);
           airportArrivalFlights.set(flight.arrivalAirport.code, arrivals);
+        }
+        
+        // Add connection to connecting airports (not the origin)
+        if (index === 0 && flight.arrivalAirport) {
+          const connections = airportConnectionFlights.get(flight.arrivalAirport.code) || [];
+          connections.push(connection);
+          airportConnectionFlights.set(flight.arrivalAirport.code, connections);
         }
       });
     });
