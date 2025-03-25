@@ -219,7 +219,7 @@ const convertToFlightType = (amadeusFlightData: any, date: string): Flight | nul
 };
 
 // Function to calculate duration between two dates
-const calculateFlightDuration = (start: Date, end: Date): string => {
+const formatFlightDuration = (start: Date, end: Date): string => {
   const durationMs = end.getTime() - start.getTime();
   const hours = Math.floor(durationMs / (1000 * 60 * 60));
   const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
@@ -347,7 +347,7 @@ export const searchWeeklyFlights = async (fromCode: string, toCode: string): Pro
               arrivalTime: segment.arrivalTime,
               flightNumber: `${flight.flightNumber}-${i+1}`,
               airline: flight.airline,
-              duration: calculateFlightDuration(new Date(segment.departureTime), new Date(segment.arrivalTime)),
+              duration: formatFlightDuration(new Date(segment.departureTime), new Date(segment.arrivalTime)),
               direct: true,
               segments: [segment]
             };
@@ -786,3 +786,4 @@ const createSpecificConnectionFlights = (originCode: string, destinationCode: st
   
   return connectionFlights;
 };
+
