@@ -7,6 +7,11 @@ import 'leaflet-defaulticon-compatibility';
 import { Flight, ConnectionFlight } from '../types/flightTypes';
 import AirportMarker from './AirportMarker';
 import FlightPath from './FlightPath';
+import { GeoJSON } from 'react-leaflet';
+import countriesGeoJson from "./map/custom.geo.json"
+import L from 'leaflet';
+import { CircleMarker, Tooltip } from 'react-leaflet';
+
 
 interface FlightMapProps {
   directFlights: Flight[];
@@ -16,6 +21,21 @@ interface FlightMapProps {
   onFlightSelect?: (flight: any) => void;
   autoAnimateConnections?: boolean;
 }
+
+const getRandomColor = () => {
+  const colors = ['#FFCDD2', '#C8E6C9', '#BBDEFB', '#FFF9C4', '#D1C4E9', '#B2DFDB'];
+  return colors[Math.floor(Math.random() * colors.length)];
+};
+
+const countryStyle = (feature: any) => ({
+  fillColor: getRandomColor(),
+  weight: 1,
+  opacity: 1,
+  color: 'gray',
+  fillOpacity: 0.2
+});
+
+
 
 const FlightMap: React.FC<FlightMapProps> = ({
   directFlights,
@@ -121,20 +141,46 @@ const FlightMap: React.FC<FlightMapProps> = ({
     });
   }
 
-  const ResetMapView = () => {
+  const ResetMapView: React.FC<{ 
+    directFlights: Flight[], 
+    connectingFlights: ConnectionFlight[], 
+    onMapReady: () => void 
+  }> = ({ directFlights, connectingFlights, onMapReady }) => {
     const map = useMap();
-
+  
     useEffect(() => {
-      setMapReady(true);
-      map.setView([20, 0], 2);
-
+      const bounds = L.latLngBounds([]);
+  
+      // Add direct flights' airports
+      directFlights.forEach(f => {
+        if (f.departureAirport) bounds.extend([f.departureAirport.lat, f.departureAirport.lng]);
+        if (f.arrivalAirport) bounds.extend([f.arrivalAirport.lat, f.arrivalAirport.lng]);
+      });
+  
+      // Add connecting flights' legs
+      connectingFlights.forEach(c => {
+        c.flights.forEach(f => {
+          if (f.departureAirport) bounds.extend([f.departureAirport.lat, f.departureAirport.lng]);
+          if (f.arrivalAirport) bounds.extend([f.arrivalAirport.lat, f.arrivalAirport.lng]);
+        });
+      });
+  
+      if (bounds.isValid()) {
+        map.fitBounds(bounds, { padding: [60, 60] });
+      } else {
+        map.setView([20, 0], 2); // fallback
+      }
+  
+      onMapReady();
+  
       const handleResize = () => map.invalidateSize();
       window.addEventListener('resize', handleResize);
       return () => window.removeEventListener('resize', handleResize);
-    }, [map]);
-
+    }, [map, directFlights, connectingFlights, onMapReady]);
+  
     return null;
   };
+  
 
   // Enhanced debugging for connecting flights
   useEffect(() => {
@@ -163,12 +209,18 @@ const FlightMap: React.FC<FlightMapProps> = ({
       worldCopyJump={true}
       className="colorful-flight-map google-like-map"
     >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-        url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-      />
+     <TileLayer
+  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+/>
+      <GeoJSON data={countriesGeoJson as any} style={countryStyle} />
+
       <ZoomControl position="bottomright" />
-      <ResetMapView />
+      <ResetMapView 
+  directFlights={directFlights} 
+  connectingFlights={connectingFlights}
+  onMapReady={() => setMapReady(true)}
+/>
 
       {showContent && (
         <>

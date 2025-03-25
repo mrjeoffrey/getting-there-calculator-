@@ -581,3 +581,63 @@ svg.leaflet-zoom-animated {
   opacity: 1 !important;
   animation-play-state: running !important;
 }
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.4);
+    opacity: 0.3;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+}
+
+.leaflet-popup-content-wrapper.flight-popup {
+  background-color: #1e1e1e !important;
+  opacity: 1 !important;
+  backdrop-filter: none !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.8);
+  border-radius: 8px;
+}
+
+.leaflet-popup-tip {
+  background: #1e1e1e !important;
+}
+
+/* Make sure popup tip matches */
+.leaflet-popup-tip-container {
+  filter: none !important;
+}
+
+
+/* Force all text inside popup to be visible */
+.leaflet-popup-content-wrapper.flight-popup * {
+  color: #f1f1f1 !important;
+  opacity: 1 !important;
+}
+
+/* SVG flight paths behind everything */
+.leaflet-overlay-pane svg {
+  z-index: 100 !important;
+  pointer-events: none; /* allow interactions to pass through */
+}
+
+/* Marker icons above paths */
+.leaflet-marker-pane {
+  z-index: 500 !important;
+}
+
+/* Popups always on top */
+.leaflet-popup-pane {
+  z-index: 1000 !important;
+}
+
+/* Optional: Fix z-index stacking for tooltips if needed */
+.leaflet-tooltip-pane {
+  z-index: 1500 !important;
+}

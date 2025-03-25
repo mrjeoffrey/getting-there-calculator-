@@ -4,6 +4,7 @@ import { Marker, Popup } from 'react-leaflet';
 import { Airport, Flight, ConnectionFlight } from '../types/flightTypes';
 import { createAirportMarkerIcon } from './map/MarkerIconFactory';
 import FlightScheduleTable from './FlightScheduleTable';
+import { Tooltip } from 'react-leaflet';
 
 interface AirportMarkerProps {
   airport: Airport;
@@ -36,10 +37,13 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
     <Marker 
       position={[airport.lat, airport.lng]} 
       icon={createAirportMarkerIcon(type)}
-      zIndexOffset={1000} // Ensure airport markers are always on top
+      zIndexOffset={2000} 
+      
     >
+
+
       <Popup 
-        className="flight-popup" 
+        className="flight-popup"
         minWidth={320} 
         maxWidth={500}
         autoPan={true}  // Ensure map pans to fit popup
@@ -62,15 +66,6 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
                 </div>
               )}
               
-              {/* Only show connecting flights on connection markers, not origin */}
-              {/* {connectingFlights.length > 0 && type !== 'origin' && (
-                <div className="mb-4">
-                  <FlightScheduleTable 
-                    title="Connecting Flights" 
-                    connectionFlights={connectingFlights} 
-                  />
-                </div>
-              )} */}
               
               {arrivalFlights.length > 0 && (
                 <div>

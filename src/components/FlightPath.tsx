@@ -379,6 +379,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
       {displayedPoints.length >= 2 && (
         <Polyline
           positions={displayedPoints}
+          interactive={false} 
           pathOptions={{
             color,
             weight,

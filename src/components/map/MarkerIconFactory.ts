@@ -1,62 +1,57 @@
-
 import L from 'leaflet';
 
 type MarkerType = 'origin' | 'destination' | 'connection';
 
-/**
- * Create custom icons for different types of airport markers
- */
 export const createAirportMarkerIcon = (type: MarkerType): L.DivIcon => {
-  let className = 'flex items-center justify-center ';
-  let size = type === 'origin' || type === 'destination' ? 32 : 24;
+  let size = type === 'origin' || type === 'destination' ? 36 : 28; // Slightly larger for visibility
   let color = '';
-  
+  let darkerColor = '';
+
   switch (type) {
     case 'origin':
-      color = '#E91E63'; // Pink for origin like in reference
-      className += 'origin-marker';
+      color = '#E91E63'; // Pink
+      darkerColor = '#AD1457'; // Darker pink
       break;
     case 'destination':
-      color = '#4CAF50'; // Green for destination like in reference
-      className += 'destination-marker';
+      color = '#4CAF50'; // Green
+      darkerColor = '#2E7D32'; // Darker green
       break;
     case 'connection':
-      color = '#FFC107'; // Amber for connection
-      className += 'connection-marker';
+      color = '#FFC107'; // Amber
+      darkerColor = '#FFA000'; // Darker amber
       break;
     default:
       color = '#E91E63';
-      className += 'origin-marker';
+      darkerColor = '#AD1457';
   }
-  
-  // Create HTML for the marker with a shadow effect and inner dot
+
   const html = `
-    <div class="${className}" style="width: ${size}px; height: ${size}px;">
-      <div class="marker-outer" style="
-        background-color: white;
+    <div style="width: ${size}px; height: ${size}px;">
+      <div style="
+        background-color: ${darkerColor};
         border-radius: 50%;
         width: ${size}px;
         height: ${size}px;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 0 0 2px white, 0 0 8px rgba(0,0,0,0.5);
+        box-shadow: 0 0 0 2px ${darkerColor}, 0 0 10px rgba(0,0,0,0.6);
       ">
-        <div class="marker-inner" style="
+        <div style="
           background-color: ${color};
           border-radius: 50%;
-          width: ${size * 0.7}px;
-          height: ${size * 0.7}px;
+          width: ${size * 0.6}px;
+          height: ${size * 0.6}px;
           ${type === 'origin' ? 'animation: pulse 2s infinite;' : ''}
         "></div>
       </div>
     </div>
   `;
-  
+
   return L.divIcon({
     className: 'custom-div-icon',
     html: html,
     iconSize: [size, size],
-    iconAnchor: [size/2, size/2]
+    iconAnchor: [size / 2, size / 2]
   });
 };
