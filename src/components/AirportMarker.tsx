@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Marker, Popup } from 'react-leaflet';
-import { Airport, Flight } from '../types/flightTypes';
+import { Airport, Flight, ConnectionFlight } from '../types/flightTypes';
 import { createAirportMarkerIcon } from './map/MarkerIconFactory';
 import FlightScheduleTable from './FlightScheduleTable';
 
@@ -13,6 +13,7 @@ interface AirportMarkerProps {
   isDarkMode?: boolean;
   departureFlights?: Flight[];
   arrivalFlights?: Flight[];
+  connectingFlights?: ConnectionFlight[];
 }
 
 const AirportMarker: React.FC<AirportMarkerProps> = ({ 
@@ -22,9 +23,10 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
   type = 'origin',
   isDarkMode = false,
   departureFlights = [],
-  arrivalFlights = []
+  arrivalFlights = [],
+  connectingFlights = []
 }) => {
-  const hasFlights = departureFlights.length > 0 || arrivalFlights.length > 0;
+  const hasFlights = departureFlights.length > 0 || arrivalFlights.length > 0 || connectingFlights.length > 0;
 
   return (
     <Marker 
@@ -39,6 +41,7 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
         autoPan={true}  // Ensure map pans to fit popup
         autoPanPaddingTopLeft={[50, 50]}  // Add padding to avoid edge of screen
         autoPanPaddingBottomRight={[50, 50]}  // Add padding to avoid edge of screen
+        keepInView={true} // Important: Keep popup in view at all times
       >
         <div className="p-2">
           <h3 className="font-semibold text-primary text-lg mb-2">{airport.name} ({airport.code})</h3>
@@ -50,7 +53,16 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
                 <div className="mb-4">
                   <FlightScheduleTable 
                     title="Departing Flights" 
-                    flights={departureFlights.slice(0, 5)} // Limit to 5 flights 
+                    flights={departureFlights} 
+                  />
+                </div>
+              )}
+              
+              {connectingFlights.length > 0 && (
+                <div className="mb-4">
+                  <FlightScheduleTable 
+                    title="Connecting Flights" 
+                    connectionFlights={connectingFlights} 
                   />
                 </div>
               )}
@@ -59,7 +71,7 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
                 <div>
                   <FlightScheduleTable 
                     title="Arriving Flights" 
-                    flights={arrivalFlights.slice(0, 5)} // Limit to 5 flights
+                    flights={arrivalFlights} 
                   />
                 </div>
               )}

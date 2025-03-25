@@ -58,55 +58,53 @@ const Index = () => {
       
       console.log(`Search completed. Found ${directFlights.length} direct and ${connectingFlights.length} connecting flights`);
       
-      // Apply the max 5 planes per airline, total 10 planes limit
-      // Make sure we respect the global limit of 10 planes in total across both direct and connecting flights
-      const combinedFlights = [...directFlights, ...connectingFlights.map(cf => cf.flights[0])]; // Use first leg of each connection for airline counting
+      // IMPORTANT: We need to select exactly 10 flights in total across both direct and connecting
+      // with a max of 5 per airline
       const airlineCount: {[key: string]: number} = {};
-      const selectedAirlineFlights: {[key: string]: Flight[]} = {};
-      const selectedConnectionFlights: {[key: string]: ConnectionFlight[]} = {};
+      const selectedFlights: (Flight | ConnectionFlight)[] = [];
       
-      // Count flights per airline from both direct and connecting flights
-      let totalSelectedFlights = 0;
+      // Process all flights to get a fair distribution
+      // Combine all flights (direct + connecting) into a single array for processing
+      const allFlights: {type: 'direct' | 'connecting', flight: Flight | ConnectionFlight}[] = [
+        ...directFlights.map(f => ({type: 'direct' as const, flight: f})),
+        ...connectingFlights.map(f => ({type: 'connecting' as const, flight: f}))
+      ];
       
-      // First pass: Count and group direct flights by airline
-      for (const flight of directFlights) {
-        const airline = flight.airline;
-        if (!airlineCount[airline]) {
-          airlineCount[airline] = 0;
-          selectedAirlineFlights[airline] = [];
-        }
+      // Randomize the order to get a mix of direct and connecting flights
+      allFlights.sort(() => Math.random() - 0.5);
+      
+      for (const item of allFlights) {
+        if (selectedFlights.length >= 10) break; // Hard limit of 10 flights total
         
-        // Add direct flight if under the airline limit
-        if (airlineCount[airline] < 5 && totalSelectedFlights < 10) {
-          selectedAirlineFlights[airline].push(flight);
-          airlineCount[airline]++;
-          totalSelectedFlights++;
-        }
-      }
-      
-      // Second pass: Count and group connecting flights by airline (using first leg)
-      for (const connection of connectingFlights) {
-        const firstLeg = connection.flights[0];
-        const airline = firstLeg.airline;
+        const airline = item.type === 'direct' 
+          ? (item.flight as Flight).airline 
+          : (item.flight as ConnectionFlight).flights[0].airline;
         
         if (!airlineCount[airline]) {
           airlineCount[airline] = 0;
-          selectedConnectionFlights[airline] = [];
         }
         
-        // Add connecting flight if under the airline limit
-        if (airlineCount[airline] < 5 && totalSelectedFlights < 10) {
-          selectedConnectionFlights[airline].push(connection);
+        // Add flight if under the airline limit (5 per airline)
+        if (airlineCount[airline] < 5) {
+          selectedFlights.push(item.flight);
           airlineCount[airline]++;
-          totalSelectedFlights++;
         }
       }
       
-      // Flatten the selected flights
-      const limitedDirectFlights = Object.values(selectedAirlineFlights).flat();
-      const limitedConnectingFlights = Object.values(selectedConnectionFlights).flat();
+      // Split the selected flights back into direct and connecting arrays
+      const limitedDirectFlights: Flight[] = [];
+      const limitedConnectingFlights: ConnectionFlight[] = [];
+      
+      selectedFlights.forEach(flight => {
+        if ('flights' in flight) {
+          limitedConnectingFlights.push(flight as ConnectionFlight);
+        } else {
+          limitedDirectFlights.push(flight as Flight);
+        }
+      });
       
       console.log(`Limited to ${limitedDirectFlights.length} direct and ${limitedConnectingFlights.length} connecting flights`);
+      console.log(`Total selected flights: ${limitedDirectFlights.length + limitedConnectingFlights.length} out of 10 maximum`);
       console.log(`Airlines count:`, airlineCount);
       
       setDirectFlights(limitedDirectFlights);

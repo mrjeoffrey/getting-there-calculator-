@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, useMap, ZoomControl } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -43,6 +44,7 @@ const FlightMap: React.FC<FlightMapProps> = ({
   const airports = new Map();
   const airportDepartureFlights = new Map();
   const airportArrivalFlights = new Map();
+  const airportConnectionFlights = new Map();
 
   if (showContent) {
     // Process direct flights for airports
@@ -50,10 +52,12 @@ const FlightMap: React.FC<FlightMapProps> = ({
       if (flight.departureAirport && !airports.has(flight.departureAirport.code)) {
         airports.set(flight.departureAirport.code, flight.departureAirport);
         airportDepartureFlights.set(flight.departureAirport.code, []);
+        airportConnectionFlights.set(flight.departureAirport.code, []);
       }
       if (flight.arrivalAirport && !airports.has(flight.arrivalAirport.code)) {
         airports.set(flight.arrivalAirport.code, flight.arrivalAirport);
         airportArrivalFlights.set(flight.arrivalAirport.code, []);
+        airportConnectionFlights.set(flight.arrivalAirport.code, []);
       }
       
       if (flight.departureAirport) {
@@ -70,27 +74,44 @@ const FlightMap: React.FC<FlightMapProps> = ({
     });
     
     // Process connection flights for airports
-    allConnectionLegs.forEach(flight => {
-      if (flight.departureAirport && !airports.has(flight.departureAirport.code)) {
-        airports.set(flight.departureAirport.code, flight.departureAirport);
-        airportDepartureFlights.set(flight.departureAirport.code, []);
-      }
-      if (flight.arrivalAirport && !airports.has(flight.arrivalAirport.code)) {
-        airports.set(flight.arrivalAirport.code, flight.arrivalAirport);
-        airportArrivalFlights.set(flight.arrivalAirport.code, []);
+    connectingFlights.forEach(connection => {
+      // Get the origin airport for this connection
+      const originAirport = connection.flights[0].departureAirport;
+      if (originAirport) {
+        if (!airports.has(originAirport.code)) {
+          airports.set(originAirport.code, originAirport);
+          airportConnectionFlights.set(originAirport.code, []);
+        }
+        
+        // Add this connection to the origin airport's connecting flights
+        const connections = airportConnectionFlights.get(originAirport.code) || [];
+        connections.push(connection);
+        airportConnectionFlights.set(originAirport.code, connections);
       }
       
-      if (flight.departureAirport) {
-        const departures = airportDepartureFlights.get(flight.departureAirport.code) || [];
-        departures.push(flight);
-        airportDepartureFlights.set(flight.departureAirport.code, departures);
-      }
-      
-      if (flight.arrivalAirport) {
-        const arrivals = airportArrivalFlights.get(flight.arrivalAirport.code) || [];
-        arrivals.push(flight);
-        airportArrivalFlights.set(flight.arrivalAirport.code, arrivals);
-      }
+      // Process each leg of the connection for airport markers and flight lists
+      connection.flights.forEach(flight => {
+        if (flight.departureAirport && !airports.has(flight.departureAirport.code)) {
+          airports.set(flight.departureAirport.code, flight.departureAirport);
+          airportDepartureFlights.set(flight.departureAirport.code, []);
+        }
+        if (flight.arrivalAirport && !airports.has(flight.arrivalAirport.code)) {
+          airports.set(flight.arrivalAirport.code, flight.arrivalAirport);
+          airportArrivalFlights.set(flight.arrivalAirport.code, []);
+        }
+        
+        if (flight.departureAirport) {
+          const departures = airportDepartureFlights.get(flight.departureAirport.code) || [];
+          departures.push(flight);
+          airportDepartureFlights.set(flight.departureAirport.code, departures);
+        }
+        
+        if (flight.arrivalAirport) {
+          const arrivals = airportArrivalFlights.get(flight.arrivalAirport.code) || [];
+          arrivals.push(flight);
+          airportArrivalFlights.set(flight.arrivalAirport.code, arrivals);
+        }
+      });
     });
   }
 
@@ -174,7 +195,7 @@ const FlightMap: React.FC<FlightMapProps> = ({
                   duration: flight.duration,
                   price: 250
                 }]}
-                onFlightSelect={onFlightSelect}
+                onFlightSelect={() => onFlightSelect && onFlightSelect(flight)}
               />
             );
           })}
@@ -226,6 +247,7 @@ const FlightMap: React.FC<FlightMapProps> = ({
               airport={airport}
               departureFlights={airportDepartureFlights.get(airport.code) || []}
               arrivalFlights={airportArrivalFlights.get(airport.code) || []}
+              connectingFlights={airportConnectionFlights.get(airport.code) || []}
               type={airport.code === (directFlights[0]?.departureAirport?.code || connectingFlights[0]?.flights[0]?.departureAirport?.code) 
                 ? 'origin' 
                 : airport.code === (directFlights[0]?.arrivalAirport?.code || connectingFlights[0]?.flights[connectingFlights[0]?.flights.length - 1]?.arrivalAirport?.code) 
