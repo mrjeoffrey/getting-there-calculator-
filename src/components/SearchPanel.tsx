@@ -21,6 +21,8 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ onSearch, loading }) => {
       return;
     }
     
+    console.log(`Searching for flights from ${from} to ${to}`);
+    
     onSearch({
       from,
       to,
@@ -29,12 +31,9 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ onSearch, loading }) => {
   };
 
   return (
-    <div className="search-panel animate-scale-in">
-      <h2 className="text-2xl font-semibold text-foreground mb-4">Find Your Flight to Tokyo</h2>
-      
-      <div className="space-y-4">
-        <div>
-          <label className="text-sm font-medium text-muted-foreground mb-1 block">Flying From</label>
+    <div className="animate-scale-in w-full">
+      <div className="flex items-center gap-2">
+        <div className="flex-1">
           <AirportSelector 
             value={from} 
             onChange={setFrom} 
@@ -43,41 +42,23 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ onSearch, loading }) => {
           />
         </div>
         
-        <div>
-          <label className="text-sm font-medium text-muted-foreground mb-1 block">Flying To</label>
-          <div className="flex h-14 px-4 py-3 bg-white/50 hover:bg-white/60 border border-white/20 rounded-md items-center justify-between">
+        <Button 
+          className="bg-primary hover:bg-primary/90 text-primary-foreground"
+          onClick={handleSearch}
+          disabled={!from || loading}
+        >
+          {loading ? (
             <div className="flex items-center">
-              <span className="text-sm font-medium">Tokyo Haneda International Airport (HND)</span>
+              <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+              <span className="sr-only md:not-sr-only">Searching...</span>
             </div>
-            <div className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full">
-              Japan
+          ) : (
+            <div className="flex items-center">
+              <Search className="h-4 w-4" />
+              <span className="sr-only md:not-sr-only ml-1">Search</span>
             </div>
-          </div>
-        </div>
-        
-        <div className="mt-4 flex justify-between items-center flex-wrap gap-2">
-          <p className="text-sm text-muted-foreground">
-            We'll show you flights for the next 7 days
-          </p>
-          
-          <Button 
-            className="bg-primary hover:bg-primary/90 text-primary-foreground"
-            onClick={handleSearch}
-            disabled={!from || loading}
-          >
-            {loading ? (
-              <div className="flex items-center">
-                <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-                Searching...
-              </div>
-            ) : (
-              <div className="flex items-center">
-                <Search className="mr-1 h-4 w-4" />
-                Search
-              </div>
-            )}
-          </Button>
-        </div>
+          )}
+        </Button>
       </div>
     </div>
   );

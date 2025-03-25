@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
 import Header from '../components/Header';
-import SearchPanel from '../components/SearchPanel';
 import FlightMap from '../components/FlightMap';
 import { Flight, ConnectionFlight, SearchParams, WeeklyFlightData } from '../types/flightTypes';
 import { searchWeeklyFlights } from '../services/amadeusService';
@@ -23,20 +22,13 @@ const Index = () => {
     
     if (connectingFlights.length > 0) {
       console.log(`Index: Loaded ${connectingFlights.length} connecting flights`);
-      console.log("Connecting flight details:", JSON.stringify(connectingFlights, null, 2));
-      
-      // Log each connecting flight's structure for debugging
+      // Additional detailed logging for connecting flights
       connectingFlights.forEach((cf, idx) => {
         console.log(`Connection #${idx+1}: ${cf.id} with ${cf.flights.length} legs`);
         cf.flights.forEach((leg, legIdx) => {
           console.log(`  Leg ${legIdx+1}: ${leg.departureAirport?.code} to ${leg.arrivalAirport?.code} (${leg.id})`);
-          if (!leg.departureAirport || !leg.arrivalAirport) {
-            console.error(`Missing airport data in leg ${legIdx+1} of connection ${idx+1}`);
-          }
         });
       });
-    } else {
-      console.warn("Index: No connecting flights loaded");
     }
   }, [directFlights, connectingFlights]);
 
@@ -58,83 +50,15 @@ const Index = () => {
       
       console.log(`Search completed. Found ${directFlights.length} direct and ${connectingFlights.length} connecting flights`);
       
-      // IMPORTANT: We need to select exactly 10 flights in total across both direct and connecting
-      // with a max of 5 per airline - but LIMIT AT QUERY LEVEL, not after fetching everything
-      const airlineCount: {[key: string]: number} = {};
-      const selectedFlights: (Flight | ConnectionFlight)[] = [];
-      
-      // Combine all flights (direct + connecting) into a single array for processing
-      const allFlights: {type: 'direct' | 'connecting', flight: Flight | ConnectionFlight}[] = [
-        ...directFlights.map(f => ({type: 'direct' as const, flight: f})),
-        ...connectingFlights.map(f => ({type: 'connecting' as const, flight: f}))
-      ];
-      
-      // Sort randomly to get a fair mix of direct and connecting flights
-      allFlights.sort(() => Math.random() - 0.5);
-      
-      // Select only the first 10 flights with airline limit
-      for (const item of allFlights) {
-        if (selectedFlights.length >= 10) break; // Hard limit of 10 flights total
-        
-        const airline = item.type === 'direct' 
-          ? (item.flight as Flight).airline 
-          : (item.flight as ConnectionFlight).flights[0].airline;
-        
-        if (!airlineCount[airline]) {
-          airlineCount[airline] = 0;
-        }
-        
-        // Add flight if under the airline limit (5 per airline)
-        if (airlineCount[airline] < 5) {
-          selectedFlights.push(item.flight);
-          airlineCount[airline]++;
-        }
-      }
-      
-      // Split the selected flights back into direct and connecting arrays
-      const limitedDirectFlights: Flight[] = [];
-      const limitedConnectingFlights: ConnectionFlight[] = [];
-      
-      selectedFlights.forEach(flight => {
-        if ('flights' in flight) {
-          limitedConnectingFlights.push(flight as ConnectionFlight);
-        } else {
-          limitedDirectFlights.push(flight as Flight);
-        }
-      });
-      
-      console.log(`Limited to ${limitedDirectFlights.length} direct and ${limitedConnectingFlights.length} connecting flights`);
-      console.log(`Total selected flights: ${limitedDirectFlights.length + limitedConnectingFlights.length} out of 10 maximum`);
-      console.log(`Airlines count:`, airlineCount);
-      
-      setDirectFlights(limitedDirectFlights);
-      setConnectingFlights(limitedConnectingFlights);
+      setDirectFlights(directFlights);
+      setConnectingFlights(connectingFlights);
       setWeeklyData(weeklyData);
       setSearched(true);
       
-      // Debug connection flights
-      if (limitedConnectingFlights.length > 0) {
-        console.log(`Found ${limitedConnectingFlights.length} connecting flights:`);
-        limitedConnectingFlights.forEach((cf, idx) => {
-          console.log(`Connection #${idx+1}: ${cf.id} with ${cf.flights.length} legs`);
-          cf.flights.forEach((leg, legIdx) => {
-            console.log(`  Leg ${legIdx+1}: ${leg.departureAirport?.code} to ${leg.arrivalAirport?.code}`);
-            
-            // Additional validation of flight data
-            if (!leg.departureAirport || !leg.arrivalAirport) {
-              console.error(`  Missing airport data in leg ${legIdx+1} of connection ${idx+1}`);
-            }
-          });
-        });
-      } else {
-        console.warn("No connecting flights found in search results");
-        toast.warning("No connecting flights found. This is unusual - please try a different departure airport.");
-      }
-      
-      if (limitedDirectFlights.length === 0 && limitedConnectingFlights.length === 0) {
+      if (directFlights.length === 0 && connectingFlights.length === 0) {
         toast.warning("No flights found. Try another departure airport or check back later.");
       } else {
-        toast.success(`Found ${limitedDirectFlights.length} direct and ${limitedConnectingFlights.length} connecting flights to Tokyo!`);
+        toast.success(`Found ${directFlights.length} direct and ${connectingFlights.length} connecting flights to Tokyo!`);
       }
     } catch (error) {
       console.error("Error searching flights:", error);
@@ -167,10 +91,18 @@ const Index = () => {
 
   return (
     <div className="flex flex-col h-screen">
-      <Header />
+      <Header onSearch={handleSearch} loading={loading} />
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
         <div className="w-full md:w-1/3 p-4 overflow-y-auto">
-          <SearchPanel onSearch={handleSearch} loading={loading} />
+          {!searched && !loading && (
+            <div className="p-4 bg-muted/50 rounded-lg border border-border">
+              <h3 className="text-lg font-medium mb-2">Find Flights to Tokyo</h3>
+              <p className="text-sm text-muted-foreground">
+                Select your departure airport and search for flights to Tokyo Haneda Airport (HND).
+              </p>
+            </div>
+          )}
+          
           {connectingFlights.length > 0 && (
             <div className="mt-4 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
               <h3 className="text-lg font-medium text-yellow-800">
@@ -178,6 +110,17 @@ const Index = () => {
               </h3>
               <p className="text-sm text-yellow-600">
                 Connecting flights are shown on the map with yellow dashed lines.
+              </p>
+            </div>
+          )}
+          
+          {directFlights.length > 0 && (
+            <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <h3 className="text-lg font-medium text-blue-800">
+                {directFlights.length} Direct Flights Available
+              </h3>
+              <p className="text-sm text-blue-600">
+                Direct flights are shown on the map with blue solid lines.
               </p>
             </div>
           )}

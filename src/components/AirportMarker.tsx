@@ -26,9 +26,11 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
   arrivalFlights = [],
   connectingFlights = []
 }) => {
-  // Only show direct departure flights on origin marker
-  // Don't show connecting flight details on origin marker
+  // Check if we have any flights to display
   const hasFlights = departureFlights.length > 0 || arrivalFlights.length > 0 || (type !== 'origin' && connectingFlights.length > 0);
+  
+  const airportCode = airport.code || 'N/A';
+  const airportName = airport.name || `Airport ${airportCode}`;
 
   return (
     <Marker 
@@ -46,7 +48,7 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
         keepInView={true} // Important: Keep popup in view at all times
       >
         <div className="p-2">
-          <h3 className="font-semibold text-primary text-lg mb-2">{airport.name} ({airport.code})</h3>
+          <h3 className="font-semibold text-primary text-lg mb-2">{airportName} ({airportCode})</h3>
           <p className="text-sm text-muted-foreground mb-3">{airport.city}, {airport.country}</p>
           
           {hasFlights ? (
