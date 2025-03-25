@@ -41,7 +41,6 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
             <div className="mt-3">
               {departureFlights.length > 0 && (
                 <div className="mb-4">
-                  <h4 className="font-medium text-sm mb-2">Departing Flights</h4>
                   <FlightScheduleTable 
                     title="Departing Flights" 
                     flights={departureFlights} 
@@ -51,7 +50,6 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
               
               {arrivalFlights.length > 0 && (
                 <div>
-                  <h4 className="font-medium text-sm mb-2">Arriving Flights</h4>
                   <FlightScheduleTable 
                     title="Arriving Flights" 
                     flights={arrivalFlights} 
