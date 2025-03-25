@@ -72,21 +72,6 @@ const Index = () => {
     console.log("Selected flight:", flight);
     setSelectedFlightId(flight.id);
     
-    // Show flight details in a toast notification when a flight is selected
-    // if (flight.flights) {
-    //   // For connecting flights
-    //   const stops = flight.flights.map((f: Flight) => f.arrivalAirport.code).join(' → ');
-    //   toast(`Selected connecting flight via ${stops}`, {
-    //     description: `Total duration: ${flight.totalDuration} with ${flight.flights.length - 1} stop(s)`,
-    //     duration: 5000,
-    //   });
-    // } else {
-    //   // For direct flights
-    //   toast(`Direct flight: ${flight.departureAirport.code} to ${flight.arrivalAirport.code}`, {
-    //     description: `${flight.airline} ${flight.flightNumber} - Duration: ${flight.duration}`,
-    //     duration: 5000,
-    //   });
-    // }
   };
 
   return (

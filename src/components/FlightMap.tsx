@@ -23,7 +23,18 @@ interface FlightMapProps {
 }
 
 const getRandomColor = () => {
-  const colors = ['#FFCDD2', '#C8E6C9', '#BBDEFB', '#FFF9C4', '#D1C4E9', '#B2DFDB'];
+  const colors = [
+    '#c62828', // Rich Red
+    '#2e7d32', // Deep Green
+    '#1565c0', // Strong Blue
+    '#6a1b9a', // Royal Purple
+    '#37474f', // Slate Blue-Gray
+    '#ff6f00', // Burnt Orange
+    '#3e2723', // Dark Cocoa
+    '#283593', // Indigo Blue
+    '#004d40', // Teal Dark
+    '#212121'  // Almost Black
+  ];
   return colors[Math.floor(Math.random() * colors.length)];
 };
 
@@ -31,7 +42,7 @@ const countryStyle = (feature: any) => ({
   fillColor: getRandomColor(),
   weight: 1,
   opacity: 1,
-  color: 'gray',
+  color: 'black',
   fillOpacity: 0.2
 });
 
@@ -47,12 +58,9 @@ const FlightMap: React.FC<FlightMapProps> = ({
 }) => {
   const [mapReady, setMapReady] = useState(false);
   
-  // We'll work with the limited flights already provided by Index.tsx
-  // Collect all flights for airport markers
   const allFlights = [...directFlights];
   const allConnectionLegs: Flight[] = [];
   
-  // Extract individual legs from connection flights for markers
   connectingFlights.forEach(cf => {
     cf.flights.forEach(flight => {
       allConnectionLegs.push(flight);
@@ -210,9 +218,10 @@ const FlightMap: React.FC<FlightMapProps> = ({
       className="colorful-flight-map google-like-map"
     >
      <TileLayer
-  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+  attribution='&copy; OpenStreetMap contributors'
+  url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
 />
+
       <GeoJSON data={countriesGeoJson as any} style={countryStyle} />
 
       <ZoomControl position="bottomright" />
