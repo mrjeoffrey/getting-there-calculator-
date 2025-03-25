@@ -58,6 +58,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
   const [planeRotation, setPlaneRotation] = useState(0);
   const [displayedPoints, setDisplayedPoints] = useState<[number, number][]>([]);
   const [animationComplete, setAnimationComplete] = useState(false);
+  const [lineDrawingComplete, setLineDrawingComplete] = useState(false);
   const drawingTimerRef = useRef<NodeJS.Timeout | null>(null);
   const popupRef = useRef<L.Popup | null>(null);
   const planeMarkersRef = useRef<L.Marker[]>([]);
@@ -101,14 +102,15 @@ const FlightPath: React.FC<FlightPathProps> = ({
   }, [departure, arrival, type, isActive]);
   
   useEffect(() => {
-    if (autoAnimate && type === 'connecting' && !animationComplete && arcPointsRef.current.length > 0) {
-      console.log(`[${pathId.current}] Auto-animating connecting flight from ${departure?.code} to ${arrival?.code}`);
+    // Only start the animation when line drawing is complete and autoAnimate is true
+    if (autoAnimate && type === 'connecting' && !animationComplete && lineDrawingComplete && arcPointsRef.current.length > 0) {
+      console.log(`[${pathId.current}] Auto-animating connecting flight from ${departure?.code} to ${arrival?.code} after line drawing complete`);
       setTimeout(() => {
         createPlaneMarkers();
         startFlightAnimation();
-      }, 1000);
+      }, 500); // Short delay after line completes
     }
-  }, [autoAnimate, type, animationComplete, arcPoints]);
+  }, [autoAnimate, type, animationComplete, lineDrawingComplete]);
   
   const cleanup = () => {
     if (drawingTimerRef.current) {
@@ -127,6 +129,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
     planeMarkersRef.current = [];
     
     currentIndexRef.current = 1;
+    setLineDrawingComplete(false);
   };
   
   const initializeFlightPath = () => {
@@ -302,6 +305,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
         drawingTimerRef.current = setTimeout(drawNextSegment, pointDelay);
       } else {
         console.log(`[${pathId.current}] Path drawing complete for ${type} flight`);
+        setLineDrawingComplete(true);
         
         if (!autoAnimate) {
           setTimeout(() => {
