@@ -59,8 +59,55 @@ const Index = () => {
       console.log(`Search completed. Found ${directFlights.length} direct and ${connectingFlights.length} connecting flights`);
       
       // Apply the max 5 planes per airline, total 10 planes limit
-      const limitedDirectFlights = limitFlightsByAirline(directFlights, 5, 10);
-      const limitedConnectingFlights = limitConnectionFlightsByAirline(connectingFlights, 5, 10 - limitedDirectFlights.length);
+      // Make sure we respect the global limit of 10 planes in total across both direct and connecting flights
+      const combinedFlights = [...directFlights, ...connectingFlights.map(cf => cf.flights[0])]; // Use first leg of each connection for airline counting
+      const airlineCount: {[key: string]: number} = {};
+      const selectedAirlineFlights: {[key: string]: Flight[]} = {};
+      const selectedConnectionFlights: {[key: string]: ConnectionFlight[]} = {};
+      
+      // Count flights per airline from both direct and connecting flights
+      let totalSelectedFlights = 0;
+      
+      // First pass: Count and group direct flights by airline
+      for (const flight of directFlights) {
+        const airline = flight.airline;
+        if (!airlineCount[airline]) {
+          airlineCount[airline] = 0;
+          selectedAirlineFlights[airline] = [];
+        }
+        
+        // Add direct flight if under the airline limit
+        if (airlineCount[airline] < 5 && totalSelectedFlights < 10) {
+          selectedAirlineFlights[airline].push(flight);
+          airlineCount[airline]++;
+          totalSelectedFlights++;
+        }
+      }
+      
+      // Second pass: Count and group connecting flights by airline (using first leg)
+      for (const connection of connectingFlights) {
+        const firstLeg = connection.flights[0];
+        const airline = firstLeg.airline;
+        
+        if (!airlineCount[airline]) {
+          airlineCount[airline] = 0;
+          selectedConnectionFlights[airline] = [];
+        }
+        
+        // Add connecting flight if under the airline limit
+        if (airlineCount[airline] < 5 && totalSelectedFlights < 10) {
+          selectedConnectionFlights[airline].push(connection);
+          airlineCount[airline]++;
+          totalSelectedFlights++;
+        }
+      }
+      
+      // Flatten the selected flights
+      const limitedDirectFlights = Object.values(selectedAirlineFlights).flat();
+      const limitedConnectingFlights = Object.values(selectedConnectionFlights).flat();
+      
+      console.log(`Limited to ${limitedDirectFlights.length} direct and ${limitedConnectingFlights.length} connecting flights`);
+      console.log(`Airlines count:`, airlineCount);
       
       setDirectFlights(limitedDirectFlights);
       setConnectingFlights(limitedConnectingFlights);
@@ -97,63 +144,6 @@ const Index = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  // Helper function to limit flights by airline and total count
-  const limitFlightsByAirline = (flights: Flight[], maxPerAirline: number, maxTotal: number): Flight[] => {
-    const airlineCount: {[key: string]: number} = {};
-    const result: Flight[] = [];
-    
-    for (const flight of flights) {
-      // Skip if we've reached the maximum total
-      if (result.length >= maxTotal) break;
-      
-      const airline = flight.airline;
-      
-      // Initialize counter for this airline if not exists
-      if (!airlineCount[airline]) {
-        airlineCount[airline] = 0;
-      }
-      
-      // Add flight if we haven't reached the limit for this airline
-      if (airlineCount[airline] < maxPerAirline) {
-        result.push(flight);
-        airlineCount[airline]++;
-      }
-    }
-    
-    return result;
-  };
-  
-  // Helper function to limit connecting flights by airline and total count
-  const limitConnectionFlightsByAirline = (
-    connections: ConnectionFlight[], 
-    maxPerAirline: number, 
-    maxTotal: number
-  ): ConnectionFlight[] => {
-    const airlineCount: {[key: string]: number} = {};
-    const result: ConnectionFlight[] = [];
-    
-    for (const connection of connections) {
-      // Skip if we've reached the maximum total
-      if (result.length >= maxTotal) break;
-      
-      // For connecting flights, we'll count by the first leg's airline
-      const airline = connection.flights[0].airline;
-      
-      // Initialize counter for this airline if not exists
-      if (!airlineCount[airline]) {
-        airlineCount[airline] = 0;
-      }
-      
-      // Add connection if we haven't reached the limit for this airline
-      if (airlineCount[airline] < maxPerAirline) {
-        result.push(connection);
-        airlineCount[airline]++;
-      }
-    }
-    
-    return result;
   };
 
   const handleFlightSelect = (flight: any) => {
