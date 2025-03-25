@@ -93,17 +93,10 @@ const Index = () => {
     <div className="flex flex-col h-screen">
       <Header onSearch={handleSearch} loading={loading} />
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
-        <div className="w-full md:w-1/3 p-4 overflow-y-auto">
-          {!searched && !loading && (
-            <div className="p-4 bg-muted/50 rounded-lg border border-border">
-              <h3 className="text-lg font-medium mb-2">Find Flights to Tokyo</h3>
-              <p className="text-sm text-muted-foreground">
-                Select your departure airport and search for flights to Tokyo Haneda Airport (HND).
-              </p>
-            </div>
-          )}
+        {/* <div className="w-full md:w-1/3 p-4 overflow-y-auto"> */}
+         
           
-          {connectingFlights.length > 0 && (
+          {/* {connectingFlights.length > 0 && (
             <div className="mt-4 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
               <h3 className="text-lg font-medium text-yellow-800">
                 {connectingFlights.length} Connecting Flights Available
@@ -124,9 +117,9 @@ const Index = () => {
               </p>
             </div>
           )}
-        </div>
+        </div> */}
         
-        <div className="w-full md:w-2/3 h-[50vh] md:h-auto overflow-hidden">
+        {/* <div className="w-full md:w-2/3 h-[50vh] md:h-auto overflow-hidden"> */}
           <FlightMap
             directFlights={directFlights}
             connectingFlights={connectingFlights}
@@ -135,7 +128,7 @@ const Index = () => {
             onFlightSelect={handleFlightSelect}
             autoAnimateConnections={true}
           />
-        </div>
+        {/* </div> */}
       </div>
     </div>
   );
