@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, useMap, ZoomControl } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -27,6 +26,7 @@ const FlightMap: React.FC<FlightMapProps> = ({
 }) => {
   const [mapReady, setMapReady] = useState(false);
   
+  // We'll work with the limited flights already provided by Index.tsx
   // Collect all flights for airport markers
   const allFlights = [...directFlights];
   const allConnectionLegs: Flight[] = [];

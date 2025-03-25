@@ -32,7 +32,14 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
       icon={createAirportMarkerIcon(type)}
       zIndexOffset={1000} // Ensure airport markers are always on top
     >
-      <Popup className="flight-popup" minWidth={320} maxWidth={500}>
+      <Popup 
+        className="flight-popup" 
+        minWidth={320} 
+        maxWidth={500}
+        autoPan={true}  // Ensure map pans to fit popup
+        autoPanPaddingTopLeft={[50, 50]}  // Add padding to avoid edge of screen
+        autoPanPaddingBottomRight={[50, 50]}  // Add padding to avoid edge of screen
+      >
         <div className="p-2">
           <h3 className="font-semibold text-primary text-lg mb-2">{airport.name} ({airport.code})</h3>
           <p className="text-sm text-muted-foreground mb-3">{airport.city}, {airport.country}</p>
@@ -43,7 +50,7 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
                 <div className="mb-4">
                   <FlightScheduleTable 
                     title="Departing Flights" 
-                    flights={departureFlights} 
+                    flights={departureFlights.slice(0, 5)} // Limit to 5 flights 
                   />
                 </div>
               )}
@@ -52,7 +59,7 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
                 <div>
                   <FlightScheduleTable 
                     title="Arriving Flights" 
-                    flights={arrivalFlights} 
+                    flights={arrivalFlights.slice(0, 5)} // Limit to 5 flights
                   />
                 </div>
               )}

@@ -58,15 +58,19 @@ const Index = () => {
       
       console.log(`Search completed. Found ${directFlights.length} direct and ${connectingFlights.length} connecting flights`);
       
-      setDirectFlights(directFlights);
-      setConnectingFlights(connectingFlights);
+      // Apply the max 5 planes per airline, total 10 planes limit
+      const limitedDirectFlights = limitFlightsByAirline(directFlights, 5, 10);
+      const limitedConnectingFlights = limitConnectionFlightsByAirline(connectingFlights, 5, 10 - limitedDirectFlights.length);
+      
+      setDirectFlights(limitedDirectFlights);
+      setConnectingFlights(limitedConnectingFlights);
       setWeeklyData(weeklyData);
       setSearched(true);
       
       // Debug connection flights
-      if (connectingFlights.length > 0) {
-        console.log(`Found ${connectingFlights.length} connecting flights:`);
-        connectingFlights.forEach((cf, idx) => {
+      if (limitedConnectingFlights.length > 0) {
+        console.log(`Found ${limitedConnectingFlights.length} connecting flights:`);
+        limitedConnectingFlights.forEach((cf, idx) => {
           console.log(`Connection #${idx+1}: ${cf.id} with ${cf.flights.length} legs`);
           cf.flights.forEach((leg, legIdx) => {
             console.log(`  Leg ${legIdx+1}: ${leg.departureAirport?.code} to ${leg.arrivalAirport?.code}`);
@@ -82,10 +86,10 @@ const Index = () => {
         toast.warning("No connecting flights found. This is unusual - please try a different departure airport.");
       }
       
-      if (directFlights.length === 0 && connectingFlights.length === 0) {
+      if (limitedDirectFlights.length === 0 && limitedConnectingFlights.length === 0) {
         toast.warning("No flights found. Try another departure airport or check back later.");
       } else {
-        toast.success(`Found ${directFlights.length} direct and ${connectingFlights.length} connecting flights to Tokyo!`);
+        toast.success(`Found ${limitedDirectFlights.length} direct and ${limitedConnectingFlights.length} connecting flights to Tokyo!`);
       }
     } catch (error) {
       console.error("Error searching flights:", error);
@@ -93,6 +97,63 @@ const Index = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Helper function to limit flights by airline and total count
+  const limitFlightsByAirline = (flights: Flight[], maxPerAirline: number, maxTotal: number): Flight[] => {
+    const airlineCount: {[key: string]: number} = {};
+    const result: Flight[] = [];
+    
+    for (const flight of flights) {
+      // Skip if we've reached the maximum total
+      if (result.length >= maxTotal) break;
+      
+      const airline = flight.airline;
+      
+      // Initialize counter for this airline if not exists
+      if (!airlineCount[airline]) {
+        airlineCount[airline] = 0;
+      }
+      
+      // Add flight if we haven't reached the limit for this airline
+      if (airlineCount[airline] < maxPerAirline) {
+        result.push(flight);
+        airlineCount[airline]++;
+      }
+    }
+    
+    return result;
+  };
+  
+  // Helper function to limit connecting flights by airline and total count
+  const limitConnectionFlightsByAirline = (
+    connections: ConnectionFlight[], 
+    maxPerAirline: number, 
+    maxTotal: number
+  ): ConnectionFlight[] => {
+    const airlineCount: {[key: string]: number} = {};
+    const result: ConnectionFlight[] = [];
+    
+    for (const connection of connections) {
+      // Skip if we've reached the maximum total
+      if (result.length >= maxTotal) break;
+      
+      // For connecting flights, we'll count by the first leg's airline
+      const airline = connection.flights[0].airline;
+      
+      // Initialize counter for this airline if not exists
+      if (!airlineCount[airline]) {
+        airlineCount[airline] = 0;
+      }
+      
+      // Add connection if we haven't reached the limit for this airline
+      if (airlineCount[airline] < maxPerAirline) {
+        result.push(connection);
+        airlineCount[airline]++;
+      }
+    }
+    
+    return result;
   };
 
   const handleFlightSelect = (flight: any) => {
