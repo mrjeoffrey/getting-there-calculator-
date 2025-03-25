@@ -13,7 +13,7 @@ interface SearchPanelProps {
 
 const SearchPanel: React.FC<SearchPanelProps> = ({ onSearch, loading }) => {
   const [from, setFrom] = useState('');
-  const [to] = useState('HND'); // Changed to Tokyo Haneda Airport
+  const [to] = useState('HND'); // Fixed to Tokyo Haneda Airport
 
   const handleSearch = () => {
     if (!from) {
@@ -55,29 +55,29 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ onSearch, loading }) => {
           </div>
         </div>
         
-        <div className="mt-4">
-          <p className="text-sm text-muted-foreground mb-2">
-            We'll show you flights for the next 7 days to help you find the best options.
+        <div className="mt-4 flex justify-between items-center flex-wrap gap-2">
+          <p className="text-sm text-muted-foreground">
+            We'll show you flights for the next 7 days
           </p>
+          
+          <Button 
+            className="bg-primary hover:bg-primary/90 text-primary-foreground"
+            onClick={handleSearch}
+            disabled={!from || loading}
+          >
+            {loading ? (
+              <div className="flex items-center">
+                <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                Searching...
+              </div>
+            ) : (
+              <div className="flex items-center">
+                <Search className="mr-1 h-4 w-4" />
+                Search
+              </div>
+            )}
+          </Button>
         </div>
-        
-        <Button 
-          className="w-full h-14 bg-primary hover:bg-primary/90 text-primary-foreground"
-          onClick={handleSearch}
-          disabled={!from || loading}
-        >
-          {loading ? (
-            <div className="flex items-center">
-              <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-              Searching...
-            </div>
-          ) : (
-            <div className="flex items-center">
-              <Search className="mr-2 h-4 w-4" />
-              Search Flights
-            </div>
-          )}
-        </Button>
       </div>
     </div>
   );

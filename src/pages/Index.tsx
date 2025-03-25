@@ -98,6 +98,21 @@ const Index = () => {
   const handleFlightSelect = (flight: any) => {
     console.log("Selected flight:", flight);
     setSelectedFlightId(flight.id);
+    
+    // Show flight details in a toast notification when a flight is selected
+    if (flight.flights) {
+      // For connecting flights
+      toast(`Selected flight with ${flight.flights.length} segments via ${flight.flights.map((f: Flight) => f.arrivalAirport.code).join(', ')}`, {
+        description: `Total duration: ${flight.totalDuration}`,
+        duration: 5000,
+      });
+    } else {
+      // For direct flights
+      toast(`Selected direct flight: ${flight.departureAirport.code} to ${flight.arrivalAirport.code}`, {
+        description: `${flight.airline} ${flight.flightNumber} - Duration: ${flight.duration}`,
+        duration: 5000,
+      });
+    }
   };
 
   return (
