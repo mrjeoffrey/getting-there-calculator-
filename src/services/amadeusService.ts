@@ -3,9 +3,9 @@ import { Airport, Flight, ConnectionFlight } from '../types/flightTypes';
 import { findAirportByCode, generateFlightNumber, calculateFlightDuration } from '../utils/flightUtils';
 
 // Amadeus API configuration
-const AMADEUS_API_BASE_URL = "https://test.api.amadeus.com/v1";
-const AMADEUS_CLIENT_ID = "A2uHmEKgwLJKqRFDauAUBAphHI1ysFJ7";
-const AMADEUS_CLIENT_SECRET = "xO6cJ4jBO61Gfpnv";
+const AMADEUS_API_BASE_URL = "https://api.amadeus.com/v1";
+const AMADEUS_CLIENT_ID = "2ywCnhjr76YQdTgGADwPLOAW0AGm4f5F";
+const AMADEUS_CLIENT_SECRET = "DGkFO4qqo4Z8FmAr";
 
 interface AmadeusToken {
   access_token: string;

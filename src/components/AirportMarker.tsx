@@ -63,14 +63,14 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
               )}
               
               {/* Only show connecting flights on connection markers, not origin */}
-              {connectingFlights.length > 0 && type !== 'origin' && (
+              {/* {connectingFlights.length > 0 && type !== 'origin' && (
                 <div className="mb-4">
                   <FlightScheduleTable 
                     title="Connecting Flights" 
                     connectionFlights={connectingFlights} 
                   />
                 </div>
-              )}
+              )} */}
               
               {arrivalFlights.length > 0 && (
                 <div>

@@ -64,9 +64,7 @@ const AirportSelector: React.FC<AirportSelectorProps> = ({
           airport.city.toLowerCase().includes(query) ||
           airport.name.toLowerCase().includes(query);
         
-        if (!matches) {
-          console.log('No match for:', airport, 'with query:', query);
-        }
+      
         return matches;
       }
   

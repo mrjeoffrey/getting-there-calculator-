@@ -73,53 +73,26 @@ const Index = () => {
     setSelectedFlightId(flight.id);
     
     // Show flight details in a toast notification when a flight is selected
-    if (flight.flights) {
-      // For connecting flights
-      const stops = flight.flights.map((f: Flight) => f.arrivalAirport.code).join(' → ');
-      toast(`Selected connecting flight via ${stops}`, {
-        description: `Total duration: ${flight.totalDuration} with ${flight.flights.length - 1} stop(s)`,
-        duration: 5000,
-      });
-    } else {
-      // For direct flights
-      toast(`Direct flight: ${flight.departureAirport.code} to ${flight.arrivalAirport.code}`, {
-        description: `${flight.airline} ${flight.flightNumber} - Duration: ${flight.duration}`,
-        duration: 5000,
-      });
-    }
+    // if (flight.flights) {
+    //   // For connecting flights
+    //   const stops = flight.flights.map((f: Flight) => f.arrivalAirport.code).join(' → ');
+    //   toast(`Selected connecting flight via ${stops}`, {
+    //     description: `Total duration: ${flight.totalDuration} with ${flight.flights.length - 1} stop(s)`,
+    //     duration: 5000,
+    //   });
+    // } else {
+    //   // For direct flights
+    //   toast(`Direct flight: ${flight.departureAirport.code} to ${flight.arrivalAirport.code}`, {
+    //     description: `${flight.airline} ${flight.flightNumber} - Duration: ${flight.duration}`,
+    //     duration: 5000,
+    //   });
+    // }
   };
 
   return (
     <div className="flex flex-col h-screen">
       <Header onSearch={handleSearch} loading={loading} />
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
-        {/* <div className="w-full md:w-1/3 p-4 overflow-y-auto"> */}
-         
-          
-          {/* {connectingFlights.length > 0 && (
-            <div className="mt-4 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-              <h3 className="text-lg font-medium text-yellow-800">
-                {connectingFlights.length} Connecting Flights Available
-              </h3>
-              <p className="text-sm text-yellow-600">
-                Connecting flights are shown on the map with yellow dashed lines.
-              </p>
-            </div>
-          )}
-          
-          {directFlights.length > 0 && (
-            <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-              <h3 className="text-lg font-medium text-blue-800">
-                {directFlights.length} Direct Flights Available
-              </h3>
-              <p className="text-sm text-blue-600">
-                Direct flights are shown on the map with blue solid lines.
-              </p>
-            </div>
-          )}
-        </div> */}
-        
-        {/* <div className="w-full md:w-2/3 h-[50vh] md:h-auto overflow-hidden"> */}
           <FlightMap
             directFlights={directFlights}
             connectingFlights={connectingFlights}
@@ -128,7 +101,6 @@ const Index = () => {
             onFlightSelect={handleFlightSelect}
             autoAnimateConnections={true}
           />
-        {/* </div> */}
       </div>
     </div>
   );
