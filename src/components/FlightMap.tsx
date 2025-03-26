@@ -303,10 +303,10 @@ const FlightMap: React.FC<FlightMapProps> = ({
       worldCopyJump={true}
       className="colorful-flight-map google-like-map"
     >
-      <TileLayer
-        attribution='&copy; OpenStreetMap contributors'
-        url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-      />
+<TileLayer
+  attribution='&copy; <a href="https://carto.com/">CARTO</a>'
+  url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+/>
 
       <GeoJSON data={countriesGeoJson as any} style={countryStyle} />
 
