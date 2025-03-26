@@ -3,7 +3,7 @@ import { MapContainer, TileLayer, useMap, ZoomControl } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
 import 'leaflet-defaulticon-compatibility';
-import { Flight, ConnectionFlight } from '../types/flightTypes';
+import { Flight, ConnectionFlight, ConnectionLegStatus } from '../types/flightTypes';
 import AirportMarker from './AirportMarker';
 import FlightPath from './FlightPath';
 import { GeoJSON } from 'react-leaflet';
@@ -49,10 +49,31 @@ const FlightMap: React.FC<FlightMapProps> = ({
   selectedFlightId,
   loading = false,
   onFlightSelect,
-  autoAnimateConnections = false
+  autoAnimateConnections = true
 }) => {
   const [mapReady, setMapReady] = useState(false);
   const flightPathRefs = useRef<Map<string, React.RefObject<any>>>(new Map());
+  const [connectionLegsStatus, setConnectionLegsStatus] = useState<ConnectionLegStatus[]>([]);
+  
+  useEffect(() => {
+    if (connectingFlights.length > 0) {
+      const initialLegsStatus: ConnectionLegStatus[] = [];
+      
+      connectingFlights.forEach(connection => {
+        connection.flights.forEach((flight, index) => {
+          initialLegsStatus.push({
+            connectionId: connection.id,
+            legIndex: index,
+            isComplete: false,
+            nextLegStarted: false
+          });
+        });
+      });
+      
+      setConnectionLegsStatus(initialLegsStatus);
+      console.log(`Initialized ${initialLegsStatus.length} connection leg statuses`);
+    }
+  }, [connectingFlights]);
   
   const allFlights = [...directFlights];
   const allConnectionLegs: Flight[] = [];
@@ -70,28 +91,96 @@ const FlightMap: React.FC<FlightMapProps> = ({
   const airportArrivalFlights = new Map();
   const airportConnectionFlights = new Map();
   
-  // Track unique routes to avoid duplicate planes
   const uniqueRoutes = new Map<string, boolean>();
+  
+  const handleLegComplete = (connectionId: string, legIndex: number) => {
+    console.log(`Leg ${legIndex} of connection ${connectionId} completed`);
+    
+    setConnectionLegsStatus(prevStatus => {
+      const newStatus = [...prevStatus];
+      
+      const completedLegIndex = newStatus.findIndex(
+        status => status.connectionId === connectionId && status.legIndex === legIndex
+      );
+      
+      if (completedLegIndex >= 0) {
+        newStatus[completedLegIndex] = {
+          ...newStatus[completedLegIndex],
+          isComplete: true
+        };
+        
+        const nextLegIndex = newStatus.findIndex(
+          status => status.connectionId === connectionId && status.legIndex === legIndex + 1
+        );
+        
+        if (nextLegIndex >= 0) {
+          newStatus[nextLegIndex] = {
+            ...newStatus[nextLegIndex],
+            nextLegStarted: true
+          };
+        }
+      }
+      
+      return newStatus;
+    });
+  };
+
+  const shouldShowConnectionLegPlane = (connectionId: string, legIndex: number): boolean => {
+    if (legIndex === 0) {
+      const connection = connectingFlights.find(c => c.id === connectionId);
+      if (!connection) return false;
+      
+      const flight = connection.flights[0];
+      const routeKey = `${flight.departureAirport.code}-${flight.arrivalAirport.code}`;
+      
+      if (uniqueRoutes.has(routeKey)) {
+        return false;
+      }
+      
+      uniqueRoutes.set(routeKey, true);
+      return true;
+    }
+    
+    const legStatus = connectionLegsStatus.find(
+      status => status.connectionId === connectionId && status.legIndex === legIndex
+    );
+    
+    const prevLegStatus = connectionLegsStatus.find(
+      status => status.connectionId === connectionId && status.legIndex === legIndex - 1
+    );
+    
+    if (prevLegStatus?.isComplete && legStatus?.nextLegStarted) {
+      const connection = connectingFlights.find(c => c.id === connectionId);
+      if (!connection) return false;
+      
+      const flight = connection.flights[legIndex];
+      const routeKey = `${flight.departureAirport.code}-${flight.arrivalAirport.code}`;
+      
+      if (uniqueRoutes.has(routeKey)) {
+        return false;
+      }
+      
+      uniqueRoutes.set(routeKey, true);
+      return true;
+    }
+    
+    return false;
+  };
 
   useEffect(() => {
-    // Event listener for showing all planes for an airport
     const handleShowAirportPlanes = (event: any) => {
       const { airportCode } = event.detail;
       console.log(`Handling showAirportPlanes event for airport ${airportCode}`);
       
-      // Call method to show all planes for related flight paths
-      // This will be implemented in a future update to directly communicate with FlightPath components
-    };
-    
-    document.addEventListener('showAirportPlanes', handleShowAirportPlanes);
-    
-    return () => {
-      document.removeEventListener('showAirportPlanes', handleShowAirportPlanes);
+      document.addEventListener('showAirportPlanes', handleShowAirportPlanes);
+      
+      return () => {
+        document.removeEventListener('showAirportPlanes', handleShowAirportPlanes);
+      };
     };
   }, []);
 
   if (showContent) {
-    // Process direct flights for airports
     directFlights.forEach(flight => {
       if (flight.departureAirport && !airports.has(flight.departureAirport.code)) {
         airports.set(flight.departureAirport.code, flight.departureAirport);
@@ -117,45 +206,36 @@ const FlightMap: React.FC<FlightMapProps> = ({
       }
     });
     
-    // Process connection flights for airports
     connectingFlights.forEach(connection => {
-      // Get the origin airport for this connection
       const originAirport = connection.flights[0].departureAirport;
       
-      // Process each leg of the connection for airport markers and flight lists
       connection.flights.forEach((flight, index) => {
-        // For departure airport
         if (flight.departureAirport && !airports.has(flight.departureAirport.code)) {
           airports.set(flight.departureAirport.code, flight.departureAirport);
           airportDepartureFlights.set(flight.departureAirport.code, []);
           airportConnectionFlights.set(flight.departureAirport.code, []);
         }
         
-        // For arrival airport
         if (flight.arrivalAirport && !airports.has(flight.arrivalAirport.code)) {
           airports.set(flight.arrivalAirport.code, flight.arrivalAirport);
           airportArrivalFlights.set(flight.arrivalAirport.code, []);
           airportConnectionFlights.set(flight.arrivalAirport.code, []);
         }
         
-        // Add to departure flights list for this airport
         if (flight.departureAirport) {
           const departures = airportDepartureFlights.get(flight.departureAirport.code) || [];
-          // Only add first leg to origin's departure list
           if (index === 0) {
             departures.push(flight);
             airportDepartureFlights.set(flight.departureAirport.code, departures);
           }
         }
         
-        // Add to arrival flights list for this airport
         if (flight.arrivalAirport) {
           const arrivals = airportArrivalFlights.get(flight.arrivalAirport.code) || [];
           arrivals.push(flight);
           airportArrivalFlights.set(flight.arrivalAirport.code, arrivals);
         }
         
-        // Add connection to connecting airports (not the origin)
         if (index === 0 && flight.arrivalAirport) {
           const connections = airportConnectionFlights.get(flight.arrivalAirport.code) || [];
           connections.push(connection);
@@ -175,13 +255,11 @@ const FlightMap: React.FC<FlightMapProps> = ({
     useEffect(() => {
       const bounds = L.latLngBounds([]);
   
-      // Add direct flights' airports
       directFlights.forEach(f => {
         if (f.departureAirport) bounds.extend([f.departureAirport.lat, f.departureAirport.lng]);
         if (f.arrivalAirport) bounds.extend([f.arrivalAirport.lat, f.arrivalAirport.lng]);
       });
   
-      // Add connecting flights' legs
       connectingFlights.forEach(c => {
         c.flights.forEach(f => {
           if (f.departureAirport) bounds.extend([f.departureAirport.lat, f.departureAirport.lng]);
@@ -205,23 +283,15 @@ const FlightMap: React.FC<FlightMapProps> = ({
     return null;
   };
 
-  // Improved shouldShowPlane function to properly handle connection legs
-  const shouldShowPlane = (departure: string, arrival: string, isFirstInGroup: boolean = true, connectionLegIndex: number = 0) => {
-    // For direct flights or the first leg of connections
-    if (connectionLegIndex === 0) {
-      const routeKey = `${departure}-${arrival}`;
-      
-      if (uniqueRoutes.has(routeKey)) {
-        return false;
-      }
-      
-      if (isFirstInGroup) {
-        uniqueRoutes.set(routeKey, true);
-        return true;
-      }
+  const shouldShowPlane = (departure: string, arrival: string): boolean => {
+    const routeKey = `${departure}-${arrival}`;
+    
+    if (uniqueRoutes.has(routeKey)) {
+      return false;
     }
     
-    return false;
+    uniqueRoutes.set(routeKey, true);
+    return true;
   };
 
   return (
@@ -281,30 +351,22 @@ const FlightMap: React.FC<FlightMapProps> = ({
             );
           })}
 
-          {/* Improved rendering of connecting flights with proper leg tracking */}
-          {connectingFlights.map((connection, connectionIndex) => {
-            // For connecting flights, we create an object to track connections
-            const connectionRoutes = new Map<string, boolean>();
-            
-            return connection.flights.map((flight, flightIndex) => {
-              // For connection legs, we only show plane on first leg by default
-              const routeKey = `${flight.departureAirport?.code || 'unknown'}-${flight.arrivalAirport?.code || 'unknown'}`;
-              let showPlane = false;
+          {connectingFlights.map((connection) => (
+            connection.flights.map((flight, legIndex) => {
+              const showPlane = shouldShowConnectionLegPlane(connection.id, legIndex);
               
-              // If this is first leg OR previous leg has already completed, show the plane
-              if (flightIndex === 0 || connectionRoutes.get(`leg-${flightIndex-1}-complete`)) {
-                if (!uniqueRoutes.has(routeKey)) {
-                  showPlane = true;
-                  uniqueRoutes.set(routeKey, true);
-                }
-              }
+              const legDelay = legIndex * 500;
               
-              // Delay each leg to start only after previous completes
-              const legDelay = flightIndex * 3000; // 3 seconds delay between leg starts
+              const shouldStartAnimating = legIndex === 0 || 
+                connectionLegsStatus.find(
+                  status => status.connectionId === connection.id && 
+                           status.legIndex === legIndex &&
+                           status.nextLegStarted
+                ) !== undefined;
               
               return (
                 <FlightPath
-                  key={`connection-leg-${connection.id}-${flightIndex}`}
+                  key={`connection-leg-${connection.id}-${legIndex}`}
                   departure={flight.departureAirport}
                   arrival={flight.arrivalAirport}
                   type="connecting"
@@ -324,19 +386,16 @@ const FlightMap: React.FC<FlightMapProps> = ({
                   }))}
                   onFlightSelect={() => onFlightSelect && onFlightSelect(connection)}
                   showPlane={showPlane}
-                  autoAnimate={true}
-                  legIndex={flightIndex}
+                  autoAnimate={shouldStartAnimating}
+                  legIndex={legIndex}
                   totalLegs={connection.flights.length}
                   legDelay={legDelay}
                   connectionId={connection.id}
-                  onLegComplete={() => {
-                    // Mark this leg as complete so next leg can start
-                    connectionRoutes.set(`leg-${flightIndex}-complete`, true);
-                  }}
+                  onLegComplete={() => handleLegComplete(connection.id, legIndex)}
                 />
               );
-            });
-          })}
+            })
+          ))}
 
           {Array.from(airports.values()).map(airport => (
             <AirportMarker

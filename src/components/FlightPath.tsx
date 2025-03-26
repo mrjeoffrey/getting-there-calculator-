@@ -36,7 +36,7 @@ interface FlightPathProps {
   onFlightSelect?: (flight: any) => void;
   autoAnimate?: boolean;
   showPlane?: boolean;
-  // New props for connection sequence
+  // Connection sequence props
   legIndex?: number;
   totalLegs?: number;
   legDelay?: number;
@@ -72,6 +72,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
   const [displayedPoints, setDisplayedPoints] = useState<[number, number][]>([]);
   const [animationComplete, setAnimationComplete] = useState(false);
   const [lineDrawingComplete, setLineDrawingComplete] = useState(false);
+  const [animationStarted, setAnimationStarted] = useState(false);
   const drawingTimerRef = useRef<NodeJS.Timeout | null>(null);
   const popupRef = useRef<L.Popup | null>(null);
   const planeMarkerRef = useRef<L.Marker | null>(null);
@@ -107,7 +108,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
     // For connecting flights, apply the delay for subsequent legs
     const initTimer = setTimeout(() => {
       initializeFlightPath();
-    }, type === 'connecting' ? legDelay : 600);
+    }, type === 'connecting' ? legDelay : 0);
     
     return () => {
       clearTimeout(initTimer);
@@ -115,16 +116,19 @@ const FlightPath: React.FC<FlightPathProps> = ({
     };
   }, [departure, arrival, type, isActive, legDelay]);
   
+  // Separate effect for animation based on autoAnimate flag
   useEffect(() => {
-    // Only start the animation when line drawing is complete and showPlane is true
-    if (showPlane && !animationComplete && lineDrawingComplete && arcPointsRef.current.length > 0) {
+    // Only start the animation when line drawing is complete, showPlane is true, and autoAnimate is true
+    if (showPlane && !animationComplete && lineDrawingComplete && arcPointsRef.current.length > 0 && autoAnimate && !animationStarted) {
       console.log(`[${pathId.current}] Animating flight from ${departure?.code} to ${arrival?.code} after line drawing complete (leg ${legIndex}/${totalLegs})`);
+      setAnimationStarted(true);
+      
       setTimeout(() => {
         createPlaneMarker();
         startFlightAnimation();
       }, 500); // Short delay after line completes
     }
-  }, [showPlane, autoAnimate, type, animationComplete, lineDrawingComplete]);
+  }, [showPlane, autoAnimate, lineDrawingComplete, animationComplete, animationStarted]);
   
   const cleanup = () => {
     if (drawingTimerRef.current) {
@@ -144,6 +148,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
     
     currentIndexRef.current = 1;
     setLineDrawingComplete(false);
+    setAnimationStarted(false);
   };
   
   const initializeFlightPath = () => {
@@ -179,7 +184,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
       
       setTimeout(() => {
         startPathDrawing();
-      }, 800);
+      }, 300);
     } catch (error) {
       console.error(`[${pathId.current}] Error initializing flight path:`, error);
     }
@@ -303,7 +308,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
     const totalPoints = points.length;
     
     const durationInMinutes = getDurationInMinutes();
-    const drawAnimationDuration = Math.min(3000, Math.max(2000, durationInMinutes * 10));
+    const drawAnimationDuration = Math.min(3000, Math.max(1000, durationInMinutes * 5)); // Quicker line drawing
     const pointDelay = drawAnimationDuration / totalPoints;
     
     const drawNextSegment = () => {
@@ -332,7 +337,8 @@ const FlightPath: React.FC<FlightPathProps> = ({
     const totalPoints = points.length;
     
     const durationInMinutes = getDurationInMinutes();
-    const totalAnimationTime = Math.min(30000, Math.max(10000, durationInMinutes * 50));
+    // Shorten animation time for better visual flow
+    const totalAnimationTime = Math.min(20000, Math.max(10000, durationInMinutes * 40));
     const pointDelay = totalAnimationTime / totalPoints;
     
     const animateNextStep = () => {
