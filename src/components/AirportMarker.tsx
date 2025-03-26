@@ -5,7 +5,6 @@ import { Airport, Flight, ConnectionFlight } from '../types/flightTypes';
 import { createAirportMarkerIcon } from './map/MarkerIconFactory';
 import FlightScheduleTable from './FlightScheduleTable';
 import { useMap } from 'react-leaflet';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 interface AirportMarkerProps {
   airport: Airport;

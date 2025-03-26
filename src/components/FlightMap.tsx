@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import { MapContainer, TileLayer, useMap, ZoomControl } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -70,6 +69,8 @@ const FlightMap: React.FC<FlightMapProps> = ({
   const airportDepartureFlights = new Map();
   const airportArrivalFlights = new Map();
   const airportConnectionFlights = new Map();
+
+  const uniqueRoutes = new Map<string, boolean>();
 
   useEffect(() => {
     // Event listener for showing all planes for an airport
@@ -202,24 +203,21 @@ const FlightMap: React.FC<FlightMapProps> = ({
   
     return null;
   };
-  
-  // Enhanced debugging for connecting flights
-  useEffect(() => {
-    if (connectingFlights && connectingFlights.length > 0) {
-      console.log(`Found ${connectingFlights.length} connecting flights to display`);
-      connectingFlights.forEach((connection, index) => {
-        console.log(`Connection ${index+1}: ID=${connection.id}, ${connection.flights.length} legs`);
-        connection.flights.forEach((flight, legIndex) => {
-          console.log(`  Leg ${legIndex+1}: ${flight.departureAirport?.code || 'UNKNOWN'} to ${flight.arrivalAirport?.code || 'UNKNOWN'} (${flight.id})`);
-          if (!flight.departureAirport || !flight.arrivalAirport) {
-            console.error(`  Missing airport data for leg ${legIndex+1} of connection ${index+1}`);
-          }
-        });
-      });
-    } else {
-      console.warn("No connecting flights available to display");
+
+  const shouldShowPlane = (departure: string, arrival: string, isFirstInGroup: boolean = true) => {
+    const routeKey = `${departure}-${arrival}`;
+    
+    if (uniqueRoutes.has(routeKey)) {
+      return false;
     }
-  }, [connectingFlights]);
+    
+    if (isFirstInGroup) {
+      uniqueRoutes.set(routeKey, true);
+      return true;
+    }
+    
+    return false;
+  };
 
   return (
     <MapContainer
@@ -246,15 +244,12 @@ const FlightMap: React.FC<FlightMapProps> = ({
 
       {showContent && (
         <>
-          {/* Debug info for direct flights */}
-          {directFlights.length > 0 ? (
-            console.log(`Rendering ${directFlights.length} direct flight paths`)
-          ) : (
-            console.warn("No direct flights to render")
-          )}
-          
           {directFlights.map((flight, index) => {
-            console.log(`Rendering direct flight ${index+1}: ${flight.id} (${flight.departureAirport?.code} to ${flight.arrivalAirport?.code})`);
+            const showPlane = shouldShowPlane(
+              flight.departureAirport?.code || 'unknown', 
+              flight.arrivalAirport?.code || 'unknown'
+            );
+            
             return (
               <FlightPath
                 key={`direct-${flight.id}-${index}`}
@@ -276,23 +271,18 @@ const FlightMap: React.FC<FlightMapProps> = ({
                   price: 250
                 }]}
                 onFlightSelect={() => onFlightSelect && onFlightSelect(flight)}
+                showPlane={showPlane}
               />
             );
           })}
 
-          {/* Debug info for connecting flights */}
-          {connectingFlights.length > 0 ? (
-            console.log(`Rendering ${connectingFlights.length} connecting flight paths with multiple segments`)
-          ) : (
-            console.warn("No connecting flights to render paths for")
-          )}
-          
           {connectingFlights.map((connection, connectionIndex) => {
-            console.log(`Processing connection ${connectionIndex+1}: ${connection.id} with ${connection.flights.length} legs`);
-            
-            // Render each leg of the connection as a separate path
             return connection.flights.map((flight, flightIndex) => {
-              console.log(`  Rendering connection leg ${flightIndex+1}: ${flight.departureAirport.code} to ${flight.arrivalAirport.code}`);
+              const showPlane = shouldShowPlane(
+                flight.departureAirport?.code || 'unknown', 
+                flight.arrivalAirport?.code || 'unknown',
+                flightIndex === 0
+              );
               
               return (
                 <FlightPath
@@ -315,7 +305,7 @@ const FlightMap: React.FC<FlightMapProps> = ({
                     price: connection.price / connection.flights.length
                   }))}
                   onFlightSelect={() => onFlightSelect && onFlightSelect(connection)}
-                  autoAnimate={autoAnimateConnections && flightIndex === 0} // Only animate first leg
+                  showPlane={showPlane}
                 />
               );
             });

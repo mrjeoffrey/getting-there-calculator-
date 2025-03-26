@@ -35,6 +35,7 @@ interface FlightPathProps {
   }>;
   onFlightSelect?: (flight: any) => void;
   autoAnimate?: boolean;
+  showPlane?: boolean;
 }
 
 const FlightPath: React.FC<FlightPathProps> = ({ 
@@ -51,7 +52,8 @@ const FlightPath: React.FC<FlightPathProps> = ({
   price = 0,
   flightInfo = [],
   onFlightSelect,
-  autoAnimate = false
+  autoAnimate = false,
+  showPlane = true // Add a prop to control plane visibility
 }) => {
   const arcPointsRef = useRef<[number, number][]>([]);
   const [arcPoints, setArcPoints] = useState<[number, number][]>([]);
@@ -102,15 +104,15 @@ const FlightPath: React.FC<FlightPathProps> = ({
   }, [departure, arrival, type, isActive]);
   
   useEffect(() => {
-    // Only start the animation when line drawing is complete and autoAnimate is true
-    if (autoAnimate && type === 'connecting' && !animationComplete && lineDrawingComplete && arcPointsRef.current.length > 0) {
-      console.log(`[${pathId.current}] Auto-animating connecting flight from ${departure?.code} to ${arrival?.code} after line drawing complete`);
+    // Only start the animation when line drawing is complete and showPlane is true
+    if (showPlane && !animationComplete && lineDrawingComplete && arcPointsRef.current.length > 0) {
+      console.log(`[${pathId.current}] Animating flight from ${departure?.code} to ${arrival?.code} after line drawing complete`);
       setTimeout(() => {
         createPlaneMarker();
         startFlightAnimation();
       }, 500); // Short delay after line completes
     }
-  }, [autoAnimate, type, animationComplete, lineDrawingComplete]);
+  }, [showPlane, autoAnimate, type, animationComplete, lineDrawingComplete]);
   
   const cleanup = () => {
     if (drawingTimerRef.current) {
@@ -186,6 +188,9 @@ const FlightPath: React.FC<FlightPathProps> = ({
       planeMarkerRef.current.remove();
       planeMarkerRef.current = null;
     }
+    
+    // Only create plane if showPlane is true
+    if (!showPlane) return;
     
     console.log(`[${pathId.current}] Creating plane marker for ${type} flight`);
     
@@ -298,13 +303,6 @@ const FlightPath: React.FC<FlightPathProps> = ({
       } else {
         console.log(`[${pathId.current}] Path drawing complete for ${type} flight`);
         setLineDrawingComplete(true);
-        
-        if (!autoAnimate) {
-          setTimeout(() => {
-            createPlaneMarker();
-            startFlightAnimation();
-          }, 500);
-        }
       }
     };
     
