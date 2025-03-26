@@ -263,7 +263,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
     if (!planeMarkerRef.current) return;
     
     planeMarkerRef.current.setLatLng(position);
-    
+    const leftTiltAngle = -40;
     // Calculate and update plane rotation to align with flight path
     if (nextPosition) {
       // Get bearing between current and next position
@@ -273,7 +273,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
       if (planeDiv) {
         const svgElement = planeDiv.querySelector('svg');
         if (svgElement) {
-          svgElement.style.transform = `rotate(${newBearing}deg)`;
+          svgElement.style.transform = `rotate(${newBearing + leftTiltAngle}deg)`;
           svgElement.style.transformOrigin = 'center';
         }
       }
