@@ -69,7 +69,8 @@ const FlightMap: React.FC<FlightMapProps> = ({
   const airportDepartureFlights = new Map();
   const airportArrivalFlights = new Map();
   const airportConnectionFlights = new Map();
-
+  
+  // Track unique routes to avoid duplicate planes
   const uniqueRoutes = new Map<string, boolean>();
 
   useEffect(() => {
@@ -204,16 +205,20 @@ const FlightMap: React.FC<FlightMapProps> = ({
     return null;
   };
 
-  const shouldShowPlane = (departure: string, arrival: string, isFirstInGroup: boolean = true) => {
-    const routeKey = `${departure}-${arrival}`;
-    
-    if (uniqueRoutes.has(routeKey)) {
-      return false;
-    }
-    
-    if (isFirstInGroup) {
-      uniqueRoutes.set(routeKey, true);
-      return true;
+  // Improved shouldShowPlane function to properly handle connection legs
+  const shouldShowPlane = (departure: string, arrival: string, isFirstInGroup: boolean = true, connectionLegIndex: number = 0) => {
+    // For direct flights or the first leg of connections
+    if (connectionLegIndex === 0) {
+      const routeKey = `${departure}-${arrival}`;
+      
+      if (uniqueRoutes.has(routeKey)) {
+        return false;
+      }
+      
+      if (isFirstInGroup) {
+        uniqueRoutes.set(routeKey, true);
+        return true;
+      }
     }
     
     return false;
@@ -276,13 +281,26 @@ const FlightMap: React.FC<FlightMapProps> = ({
             );
           })}
 
+          {/* Improved rendering of connecting flights with proper leg tracking */}
           {connectingFlights.map((connection, connectionIndex) => {
+            // For connecting flights, we create an object to track connections
+            const connectionRoutes = new Map<string, boolean>();
+            
             return connection.flights.map((flight, flightIndex) => {
-              const showPlane = shouldShowPlane(
-                flight.departureAirport?.code || 'unknown', 
-                flight.arrivalAirport?.code || 'unknown',
-                flightIndex === 0
-              );
+              // For connection legs, we only show plane on first leg by default
+              const routeKey = `${flight.departureAirport?.code || 'unknown'}-${flight.arrivalAirport?.code || 'unknown'}`;
+              let showPlane = false;
+              
+              // If this is first leg OR previous leg has already completed, show the plane
+              if (flightIndex === 0 || connectionRoutes.get(`leg-${flightIndex-1}-complete`)) {
+                if (!uniqueRoutes.has(routeKey)) {
+                  showPlane = true;
+                  uniqueRoutes.set(routeKey, true);
+                }
+              }
+              
+              // Delay each leg to start only after previous completes
+              const legDelay = flightIndex * 3000; // 3 seconds delay between leg starts
               
               return (
                 <FlightPath
@@ -306,6 +324,15 @@ const FlightMap: React.FC<FlightMapProps> = ({
                   }))}
                   onFlightSelect={() => onFlightSelect && onFlightSelect(connection)}
                   showPlane={showPlane}
+                  autoAnimate={true}
+                  legIndex={flightIndex}
+                  totalLegs={connection.flights.length}
+                  legDelay={legDelay}
+                  connectionId={connection.id}
+                  onLegComplete={() => {
+                    // Mark this leg as complete so next leg can start
+                    connectionRoutes.set(`leg-${flightIndex}-complete`, true);
+                  }}
                 />
               );
             });

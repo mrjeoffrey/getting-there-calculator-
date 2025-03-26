@@ -1,3 +1,4 @@
+
 export interface Airport {
   code: string;
   name: string;
@@ -27,7 +28,6 @@ export interface Flight {
     };
     departureTime: string;
   }[];
-
 }
 
 export interface ConnectionFlight {
@@ -57,4 +57,11 @@ export interface WeeklyFlightData {
     flights: Flight[];
     error?: string;
   };
+}
+
+// New interface for connection leg tracking
+export interface ConnectionLegStatus {
+  connectionId: string;
+  legIndex: number;
+  isComplete: boolean;
 }
