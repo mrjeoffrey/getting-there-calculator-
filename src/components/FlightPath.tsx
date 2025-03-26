@@ -269,13 +269,17 @@ const FlightPath: React.FC<FlightPathProps> = ({
       
       marker.setLatLng(positionWithOffset);
       
+      // Calculate and update plane rotation to align with flight path
       if (nextPosition) {
+        // Get bearing between current and next position
         const newBearing = getBearing(position[0], position[1], nextPosition[0], nextPosition[1]);
         
+        // Update the plane's rotation to match the bearing
         const planeDiv = marker.getElement();
         if (planeDiv) {
           const svgElement = planeDiv.querySelector('svg');
           if (svgElement) {
+            // Directly apply rotation based on the path bearing
             svgElement.style.transform = `rotate(${newBearing}deg)`;
           }
         }
@@ -400,7 +404,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
           }
           
           .plane-marker svg {
-            transition: all 0.5s ease-in-out;
+            transition: all 0.3s ease-in-out;
           }
           
           .flight-path {
@@ -409,7 +413,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
           }
           
           .leaflet-marker-icon {
-            transition: transform 0.5s cubic-bezier(0.45, 0, 0.55, 1);
+            transition: transform 0.3s cubic-bezier(0.45, 0, 0.55, 1);
           }
         `}
       </style>
