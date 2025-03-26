@@ -48,6 +48,22 @@ export const createAirportMarkerIcon = (type: MarkerType): L.DivIcon => {
         "></div>
       </div>
     </div>
+    <style>
+      @keyframes pulse {
+        0% {
+          transform: scale(0.8);
+          opacity: 0.7;
+        }
+        70% {
+          transform: scale(1.1);
+          opacity: 1;
+        }
+        100% {
+          transform: scale(0.8);
+          opacity: 0.7;
+        }
+      }
+    </style>
   `;
 
   return L.divIcon({
