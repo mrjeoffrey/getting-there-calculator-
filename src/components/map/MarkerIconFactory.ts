@@ -3,7 +3,7 @@ import L from 'leaflet';
 type MarkerType = 'origin' | 'destination' | 'connection';
 
 export const createAirportMarkerIcon = (type: MarkerType): L.DivIcon => {
-  let size = type === 'origin' || type === 'destination' ? 36 : 28; // Slightly larger for visibility
+  let size = type === 'origin' || type === 'destination' ? 28 : 18; // Slightly larger for visibility
   let color = '';
   let darkerColor = '';
 

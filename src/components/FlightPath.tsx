@@ -409,8 +409,9 @@ const FlightPath: React.FC<FlightPathProps> = ({
           }
           
           .plane-marker svg {
-            transition: all 0.3s ease-in-out;
-          }
+  transition: transform 0.3s ease-in-out;
+  transform-origin: center;
+}
           
           .flight-path {
             cursor: pointer;
