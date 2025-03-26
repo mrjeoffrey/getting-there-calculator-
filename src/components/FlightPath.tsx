@@ -106,7 +106,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
     if (autoAnimate && type === 'connecting' && !animationComplete && lineDrawingComplete && arcPointsRef.current.length > 0) {
       console.log(`[${pathId.current}] Auto-animating connecting flight from ${departure?.code} to ${arrival?.code} after line drawing complete`);
       setTimeout(() => {
-        createPlaneMarkers();
+        createPlaneMarkers(false); // Just create one marker for auto-animation
         startFlightAnimation();
       }, 500); // Short delay after line completes
     }
@@ -180,10 +180,14 @@ const FlightPath: React.FC<FlightPathProps> = ({
     setPlaneRotation(initialBearing);
   };
   
-  const createPlaneMarkers = () => {
-    if (planeMarkersRef.current.length > 0) return;
+  const createPlaneMarkers = (showAllPlanes: boolean = false) => {
+    // Clear existing markers first
+    planeMarkersRef.current.forEach(marker => {
+      marker.remove();
+    });
+    planeMarkersRef.current = [];
     
-    console.log(`[${pathId.current}] Creating plane markers for ${type} flight`);
+    console.log(`[${pathId.current}] Creating plane markers for ${type} flight, showAllPlanes: ${showAllPlanes}`);
     
     const flights = flightInfo && flightInfo.length > 0 
       ? flightInfo 
@@ -196,10 +200,19 @@ const FlightPath: React.FC<FlightPathProps> = ({
           price: price || Math.floor(Math.random() * 500) + 200
         }];
     
+    // If we're not showing all planes, just create one marker for the first flight
+    if (!showAllPlanes) {
+      const startPoint = arcPointsRef.current[0];
+      const planeMarker = createSinglePlaneMarker(startPoint, planeRotation, flights[0], 0);
+      if (planeMarker) planeMarkersRef.current.push(planeMarker);
+      return;
+    }
+    
+    // Create a marker for each flight when showing all
     flights.forEach((flight, index) => {
       const startPoint = arcPointsRef.current[0];
       const planeMarker = createSinglePlaneMarker(startPoint, planeRotation, flight, index);
-      planeMarkersRef.current.push(planeMarker);
+      if (planeMarker) planeMarkersRef.current.push(planeMarker);
     });
   };
   
@@ -274,20 +287,14 @@ const FlightPath: React.FC<FlightPathProps> = ({
         // Get bearing between current and next position
         const newBearing = getBearing(position[0], position[1], nextPosition[0], nextPosition[1]);
 
-// Add a negative rotation to tilt the plane left
-      const leftTiltAngle = -40; // Adjust this value to control the tilt degree
-
-      const planeDiv = marker.getElement();
-      if (planeDiv) {
-        const svgElement = planeDiv.querySelector('svg');
-        if (svgElement) {
-          // Combine bearing rotation with left tilt
-          svgElement.style.transform = `rotate(${newBearing + leftTiltAngle}deg)`;
-          
-          // Optional: Add additional CSS for smooth transition
-          svgElement.style.transformOrigin = 'center';
+        const planeDiv = marker.getElement();
+        if (planeDiv) {
+          const svgElement = planeDiv.querySelector('svg');
+          if (svgElement) {
+            svgElement.style.transform = `rotate(${newBearing}deg)`;
+            svgElement.style.transformOrigin = 'center';
+          }
         }
-      }
       }
     });
   };
@@ -318,7 +325,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
         
         if (!autoAnimate) {
           setTimeout(() => {
-            createPlaneMarkers();
+            createPlaneMarkers(false); // Create just one plane
             startFlightAnimation();
           }, 500);
         }
@@ -409,9 +416,9 @@ const FlightPath: React.FC<FlightPathProps> = ({
           }
           
           .plane-marker svg {
-  transition: transform 0.3s ease-in-out;
-  transform-origin: center;
-}
+            transition: transform 0.3s ease-in-out;
+            transform-origin: center;
+          }
           
           .flight-path {
             cursor: pointer;

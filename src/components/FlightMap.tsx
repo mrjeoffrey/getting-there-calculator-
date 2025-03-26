@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { MapContainer, TileLayer, useMap, ZoomControl } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
@@ -10,8 +10,6 @@ import FlightPath from './FlightPath';
 import { GeoJSON } from 'react-leaflet';
 import countriesGeoJson from "./map/custom.geo.json"
 import L from 'leaflet';
-import { CircleMarker, Tooltip } from 'react-leaflet';
-
 
 interface FlightMapProps {
   directFlights: Flight[];
@@ -46,8 +44,6 @@ const countryStyle = (feature: any) => ({
   fillOpacity: 0.2
 });
 
-
-
 const FlightMap: React.FC<FlightMapProps> = ({
   directFlights,
   connectingFlights,
@@ -57,6 +53,7 @@ const FlightMap: React.FC<FlightMapProps> = ({
   autoAnimateConnections = false
 }) => {
   const [mapReady, setMapReady] = useState(false);
+  const flightPathRefs = useRef<Map<string, React.RefObject<any>>>(new Map());
   
   const allFlights = [...directFlights];
   const allConnectionLegs: Flight[] = [];
@@ -73,6 +70,23 @@ const FlightMap: React.FC<FlightMapProps> = ({
   const airportDepartureFlights = new Map();
   const airportArrivalFlights = new Map();
   const airportConnectionFlights = new Map();
+
+  useEffect(() => {
+    // Event listener for showing all planes for an airport
+    const handleShowAirportPlanes = (event: any) => {
+      const { airportCode } = event.detail;
+      console.log(`Handling showAirportPlanes event for airport ${airportCode}`);
+      
+      // Call method to show all planes for related flight paths
+      // This will be implemented in a future update to directly communicate with FlightPath components
+    };
+    
+    document.addEventListener('showAirportPlanes', handleShowAirportPlanes);
+    
+    return () => {
+      document.removeEventListener('showAirportPlanes', handleShowAirportPlanes);
+    };
+  }, []);
 
   if (showContent) {
     // Process direct flights for airports
@@ -189,7 +203,6 @@ const FlightMap: React.FC<FlightMapProps> = ({
     return null;
   };
   
-
   // Enhanced debugging for connecting flights
   useEffect(() => {
     if (connectingFlights && connectingFlights.length > 0) {
@@ -217,19 +230,19 @@ const FlightMap: React.FC<FlightMapProps> = ({
       worldCopyJump={true}
       className="colorful-flight-map google-like-map"
     >
-     <TileLayer
-  attribution='&copy; OpenStreetMap contributors'
-  url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
-/>
+      <TileLayer
+        attribution='&copy; OpenStreetMap contributors'
+        url='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+      />
 
       <GeoJSON data={countriesGeoJson as any} style={countryStyle} />
 
       <ZoomControl position="bottomright" />
       <ResetMapView 
-  directFlights={directFlights} 
-  connectingFlights={connectingFlights}
-  onMapReady={() => setMapReady(true)}
-/>
+        directFlights={directFlights} 
+        connectingFlights={connectingFlights}
+        onMapReady={() => setMapReady(true)}
+      />
 
       {showContent && (
         <>

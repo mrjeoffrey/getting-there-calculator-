@@ -1,3 +1,4 @@
+
 import L from 'leaflet';
 
 type MarkerType = 'origin' | 'destination' | 'connection';
@@ -36,6 +37,7 @@ export const createAirportMarkerIcon = (type: MarkerType): L.DivIcon => {
         align-items: center;
         justify-content: center;
         box-shadow: 0 0 0 2px ${darkerColor}, 0 0 10px rgba(0,0,0,0.6);
+        cursor: pointer;
       ">
         <div style="
           background-color: ${color};
