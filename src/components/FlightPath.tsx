@@ -273,16 +273,21 @@ const FlightPath: React.FC<FlightPathProps> = ({
       if (nextPosition) {
         // Get bearing between current and next position
         const newBearing = getBearing(position[0], position[1], nextPosition[0], nextPosition[1]);
-        
-        // Update the plane's rotation to match the bearing
-        const planeDiv = marker.getElement();
-        if (planeDiv) {
-          const svgElement = planeDiv.querySelector('svg');
-          if (svgElement) {
-            // Directly apply rotation based on the path bearing
-            svgElement.style.transform = `rotate(${newBearing}deg)`;
-          }
+
+// Add a negative rotation to tilt the plane left
+      const leftTiltAngle = -40; // Adjust this value to control the tilt degree
+
+      const planeDiv = marker.getElement();
+      if (planeDiv) {
+        const svgElement = planeDiv.querySelector('svg');
+        if (svgElement) {
+          // Combine bearing rotation with left tilt
+          svgElement.style.transform = `rotate(${newBearing + leftTiltAngle}deg)`;
+          
+          // Optional: Add additional CSS for smooth transition
+          svgElement.style.transformOrigin = 'center';
         }
+      }
       }
     });
   };
