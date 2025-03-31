@@ -19,29 +19,29 @@ interface FlightMapProps {
   autoAnimateConnections?: boolean;
 }
 
-const getRandomColor = () => {
-  const colors = [
-    '#c62828', // Rich Red
-    '#2e7d32', // Deep Green
-    '#1565c0', // Strong Blue
-    '#6a1b9a', // Royal Purple
-    '#37474f', // Slate Blue-Gray
-    '#ff6f00', // Burnt Orange
-    '#3e2723', // Dark Cocoa
-    '#283593', // Indigo Blue
-    '#004d40', // Teal Dark
-    '#212121'  // Almost Black
-  ];
-  return colors[Math.floor(Math.random() * colors.length)];
-};
+// const getRandomColor = () => {
+//   const colors = [
+// '#ef5350', // Lighter Rich Red
+// '#66bb6a', // Lighter Deep Green
+// '#42a5f5', // Lighter Strong Blue
+// '#ab47bc', // Lighter Royal Purple
+// '#78909c', // Lighter Slate Blue-Gray
+// '#ffa726', // Lighter Burnt Orange
+// '#8d6e63', // Lighter Dark Cocoa
+// '#5c6bc0', // Lighter Indigo Blue
+// '#26a69a', // Lighter Teal Dark
+// '#9e9e9e'  // Lighter Almost Black (mid gray)
+//   ];
+//   return colors[Math.floor(Math.random() * colors.length)];
+// };
 
-const countryStyle = (feature: any) => ({
-  fillColor: getRandomColor(),
-  weight: 1,
-  opacity: 1,
-  color: 'black',
-  fillOpacity: 0.2
-});
+// const countryStyle = (feature: any) => ({
+//   // fillColor: getRandomColor(),
+//   weight: 1,
+//   opacity: 1,
+//   color: 'black',
+//   fillOpacity: 0.2
+// });
 
 // Create custom divIcon for city labels
 const createCityIcon = (cityName, type) => {
@@ -54,21 +54,39 @@ const createCityIcon = (cityName, type) => {
                 type === 'arrival' ? 'To: ' : '';
                 
   return L.divIcon({
-    className: `city-label-icon ${type}`,
-    html: `<div style="
-      background: rgba(255, 255, 255, 0.8); 
-      padding: 4px 8px; 
-      border-radius: 4px; 
-      color: ${color}; 
-      font-weight: bold;
-      border: 2px solid ${color};
-      box-shadow: 0 1px 5px rgba(0,0,0,0.2);
-      white-space: nowrap;
-    ">${prefix}${cityName}</div>`,
-    iconSize: [100, 20],
-    iconAnchor: [50, 0]
-  });
-};
+      className: `city-label-icon ${type}`,
+      html: `
+        <div style="
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          pointer-events: none;
+          font-family: sans-serif;
+        ">
+          <div style="
+            width: 10px;
+            height: 10px;
+            background-color: black;
+            border-radius: 50%;
+            margin-bottom: 4px;
+          "></div>
+          <div style="
+            font-weight: bold;
+            font-size: 13px;
+            color: black;
+            margin-top: 8px;
+            pointer-events: none;
+            user-select: none;
+          ">
+            ${cityName}
+          </div>
+        </div>
+      `,
+      iconSize: [100, 30],
+      iconAnchor: [50, 10] // anchors the icon dot, not the text
+    });
+  };
+
 
 const FlightMap: React.FC<FlightMapProps> = ({
   directFlights,
@@ -362,7 +380,7 @@ const FlightMap: React.FC<FlightMapProps> = ({
   url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}"
 />
 
-      <GeoJSON data={countriesGeoJson as any} style={countryStyle} />
+      {/* <GeoJSON data={countriesGeoJson as any}  /> */}
 
       <ZoomControl position="bottomright" />
       <ResetMapView 
@@ -402,6 +420,7 @@ const FlightMap: React.FC<FlightMapProps> = ({
                 }]}
                 onFlightSelect={() => onFlightSelect && onFlightSelect(flight)}
                 showPlane={showPlane}
+                autoAnimate={true}
               />
             );
           })}
@@ -458,7 +477,9 @@ const FlightMap: React.FC<FlightMapProps> = ({
               position={[originAirport.lat, originAirport.lng]} 
               icon={createCityIcon(originAirport.city || originAirport.name, 'departure')}
               zIndexOffset={1000}
-            />
+            >
+            </Marker>
+            
           )}
           
           {destinationAirport && (
@@ -470,14 +491,14 @@ const FlightMap: React.FC<FlightMapProps> = ({
           )}
           
           {/* Connection city labels */}
-          {connectionAirports.map((airport, index) => (
+          {/* {connectionAirports.map((airport, index) => (
             <Marker 
               key={`connection-label-${airport.code}-${index}`}
               position={[airport.lat, airport.lng]} 
               icon={createCityIcon(airport.city || airport.name, 'connection')}
               zIndexOffset={900}
             />
-          ))}
+          ))} */}
 
           {/* Airport Markers */}
           {Array.from(airports.values()).map(airport => (
@@ -496,7 +517,69 @@ const FlightMap: React.FC<FlightMapProps> = ({
           ))}
         </>
       )}
+<div
+  style={{
+    position: 'absolute',
+    bottom: 12,
+    right: 16,
+    background: 'rgba(255, 255, 255, 0.9)',
+    padding: '6px 12px',
+    borderRadius: '9999px',
+    boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    backdropFilter: 'blur(4px)',
+    zIndex: 1000,
+    fontFamily: 'system-ui, sans-serif',
+  }}
+>
+  <span
+    style={{
+      fontSize: '12.5px',
+      color: '#1a1a1a',
+      fontWeight: 500,
+      whiteSpace: 'nowrap',
+    }}
+  >
+    Powered by
+  </span>
+
+  <a
+    href="https://bohamo.com"
+    target="_blank"
+    rel="noopener noreferrer"
+    style={{
+      display: 'flex',
+      alignItems: 'center',
+      height: '16px',
+    }}
+  >
+    <svg
+      viewBox="0 0 75 15"
+      xmlns="http://www.w3.org/2000/svg"
+      style={{
+        height: '16px',
+        width: 'auto',
+        display: 'block',
+      }}
+      fill="none"
+    >
+      <path d="M8.44038 7.07983C9.6642..." fill="#363A3F" />
+      <path d="M20.6177 13.4034C19.5934..." fill="#363A3F" />
+      <path d="M29.512 3.90756C30.6028..." fill="#363A3F" />
+      <path d="M43.0635 4.20168H45.6375..." fill="#363A3F" />
+      <path d="M59.0059 3.90756C60.1499..." fill="#363A3F" />
+      <path d="M73.4636 13.4034C72.4393..." fill="#363A3F" />
+    </svg>
+  </a>
+</div>
+
+
+
+
     </MapContainer>
+    
   );
 };
 

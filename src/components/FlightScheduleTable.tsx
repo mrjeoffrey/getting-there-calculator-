@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Flight, ConnectionFlight } from '../types/flightTypes';
 import { groupFlightsByDay } from '../utils/dateFormatUtils';
@@ -19,9 +18,8 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
   onFlightSelect,
   title
 }) => {
-  // Group direct flights by day for display
   const groupedDirectFlights = flights && flights.length > 0 ? groupFlightsByDay(flights) : [];
-  
+
   if ((flights?.length === 0 || !flights) && (connectionFlights?.length === 0 || !connectionFlights)) {
     return null;
   }
@@ -31,11 +29,14 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
       onFlightSelect(flight);
     }
   };
-  
+
+  const maxHeightStyle: React.CSSProperties = { maxHeight: '100px', overflowY: 'auto' }; // Fits approx 5 rows
+
   return (
     <div className="space-y-4 mt-4">
       {title && <h4 className="font-medium text-sm text-primary mb-2">{title}</h4>}
-      
+
+      {/* Direct Flights */}
       {groupedDirectFlights.length > 0 && (
         <div className="mb-4">
           {!title && <h4 className="font-medium text-sm text-primary mb-2 border-b pb-1">Direct Flights</h4>}
@@ -50,36 +51,40 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
                   <TableHead className="py-1 px-2 text-left">Arrival</TableHead>
                 </TableRow>
               </TableHeader>
-              <TableBody>
-                {groupedDirectFlights.map((flight, index) => (
-                  <TableRow 
-                    key={`direct-flight-${index}`} 
-                    className={index % 2 === 0 ? 'bg-background' : 'bg-muted/20'}
-                    onClick={() => {
-                      // Find the corresponding original flight object to select
-                      if (flights) {
+            </Table>
+
+            {/* Scrollable body */}
+            <div style={maxHeightStyle}>
+              <Table>
+                <TableBody>
+                  {groupedDirectFlights.map((flight, index) => (
+                    <TableRow 
+                      key={`direct-flight-${index}`} 
+                      className={index % 2 === 0 ? 'bg-background' : 'bg-muted/20'}
+                      onClick={() => {
                         const originalFlight = flights.find(f => 
-                          f.airline === flight.airline && 
-                          f.departureTime.includes(flight.departureTime) && 
+                          f.airline === flight.airline &&
+                          f.departureTime.includes(flight.departureTime) &&
                           f.arrivalTime.includes(flight.arrivalTime)
                         );
-                        if (originalFlight && onFlightSelect) handleFlightSelect(originalFlight);
-                      }
-                    }}
-                  >
-                    <TableCell className="py-1 px-2">{flight.airline}</TableCell>
-                    <TableCell className="py-1 px-2">{flight.duration}</TableCell>
-                    <TableCell className="py-1 px-2">{flight.days}</TableCell>
-                    <TableCell className="py-1 px-2">{flight.departureTime}</TableCell>
-                    <TableCell className="py-1 px-2">{flight.arrivalTime}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                        if (originalFlight) handleFlightSelect(originalFlight);
+                      }}
+                    >
+                      <TableCell className="py-1 px-2">{flight.airline}</TableCell>
+                      <TableCell className="py-1 px-2">{flight.duration}</TableCell>
+                      <TableCell className="py-1 px-2">{flight.days}</TableCell>
+                      <TableCell className="py-1 px-2">{flight.departureTime}</TableCell>
+                      <TableCell className="py-1 px-2">{flight.arrivalTime}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         </div>
       )}
-      
+
+      {/* Connecting Flights */}
       {connectionFlights && connectionFlights.length > 0 && (
         <div className="mb-4">
           {!title && <h4 className="font-medium text-sm text-primary mb-2 border-b pb-1">Connecting Flights</h4>}
@@ -94,22 +99,28 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
                   <TableHead className="py-1 px-2 text-left">Price</TableHead>
                 </TableRow>
               </TableHeader>
-              <TableBody>
-                {connectionFlights.map((connection, index) => (
-                  <TableRow 
-                    key={`connection-${index}`} 
-                    className={index % 2 === 0 ? 'bg-background' : 'bg-muted/20'}
-                    onClick={() => onFlightSelect && handleFlightSelect(connection)}
-                  >
-                    <TableCell className="py-1 px-2">{connection.flights[0].departureAirport.code}</TableCell>
-                    <TableCell className="py-1 px-2">{connection.flights[connection.flights.length - 1].arrivalAirport.code}</TableCell>
-                    <TableCell className="py-1 px-2">{connection.totalDuration}</TableCell>
-                    <TableCell className="py-1 px-2">{connection.flights.length - 1}</TableCell>
-                    <TableCell className="py-1 px-2">${connection.price}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
             </Table>
+
+            {/* Scrollable body */}
+            <div style={maxHeightStyle}>
+              <Table>
+                <TableBody>
+                  {connectionFlights.map((connection, index) => (
+                    <TableRow 
+                      key={`connection-${index}`} 
+                      className={index % 2 === 0 ? 'bg-background' : 'bg-muted/20'}
+                      onClick={() => handleFlightSelect(connection)}
+                    >
+                      <TableCell className="py-1 px-2">{connection.flights[0].departureAirport.code}</TableCell>
+                      <TableCell className="py-1 px-2">{connection.flights[connection.flights.length - 1].arrivalAirport.code}</TableCell>
+                      <TableCell className="py-1 px-2">{connection.totalDuration}</TableCell>
+                      <TableCell className="py-1 px-2">{connection.flights.length - 1}</TableCell>
+                      <TableCell className="py-1 px-2">${connection.price}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         </div>
       )}
