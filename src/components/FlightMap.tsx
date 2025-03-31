@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { MapContainer, TileLayer, useMap, ZoomControl } from 'react-leaflet';
+import { MapContainer, TileLayer, useMap, ZoomControl, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css';
 import 'leaflet-defaulticon-compatibility';
@@ -43,6 +43,33 @@ const countryStyle = (feature: any) => ({
   fillOpacity: 0.2
 });
 
+// Create custom divIcon for city labels
+const createCityIcon = (cityName, type) => {
+  // Define colors based on type
+  const color = type === 'departure' ? '#2e7d32' : 
+                type === 'arrival' ? '#c62828' : '#1565c0';
+  
+  // Create prefix based on type
+  const prefix = type === 'departure' ? 'From: ' : 
+                type === 'arrival' ? 'To: ' : '';
+                
+  return L.divIcon({
+    className: `city-label-icon ${type}`,
+    html: `<div style="
+      background: rgba(255, 255, 255, 0.8); 
+      padding: 4px 8px; 
+      border-radius: 4px; 
+      color: ${color}; 
+      font-weight: bold;
+      border: 2px solid ${color};
+      box-shadow: 0 1px 5px rgba(0,0,0,0.2);
+      white-space: nowrap;
+    ">${prefix}${cityName}</div>`,
+    iconSize: [100, 20],
+    iconAnchor: [50, 0]
+  });
+};
+
 const FlightMap: React.FC<FlightMapProps> = ({
   directFlights,
   connectingFlights,
@@ -54,6 +81,11 @@ const FlightMap: React.FC<FlightMapProps> = ({
   const [mapReady, setMapReady] = useState(false);
   const flightPathRefs = useRef<Map<string, React.RefObject<any>>>(new Map());
   const [connectionLegsStatus, setConnectionLegsStatus] = useState<ConnectionLegStatus[]>([]);
+  
+  // Add state for origin and destination
+  const [originAirport, setOriginAirport] = useState<any>(null);
+  const [destinationAirport, setDestinationAirport] = useState<any>(null);
+  const [connectionAirports, setConnectionAirports] = useState<any[]>([]);
   
   useEffect(() => {
     if (connectingFlights.length > 0) {
@@ -74,6 +106,40 @@ const FlightMap: React.FC<FlightMapProps> = ({
       console.log(`Initialized ${initialLegsStatus.length} connection leg statuses`);
     }
   }, [connectingFlights]);
+  
+  // Determine origin, destination, and connection airports
+  useEffect(() => {
+    if (directFlights.length > 0) {
+      setOriginAirport(directFlights[0].departureAirport);
+      setDestinationAirport(directFlights[0].arrivalAirport);
+    } else if (connectingFlights.length > 0) {
+      const connectionPoints: any[] = [];
+      
+      connectingFlights.forEach(connection => {
+        if (connection.flights.length > 0) {
+          // Set origin from first flight's departure
+          setOriginAirport(connection.flights[0].departureAirport);
+          setDestinationAirport(connection.flights[connection.flights.length - 1].arrivalAirport);
+
+          // Add connection points (all arrival airports except the final one)
+          connection.flights.slice(0, -1).forEach(flight => {
+            if (flight.arrivalAirport) {
+              // Check if this airport is already in our list
+              const exists = connectionPoints.some(
+                airport => airport.code === flight.arrivalAirport.code
+              );
+              
+              if (!exists) {
+                connectionPoints.push(flight.arrivalAirport);
+              }
+            }
+          });
+        }
+      });
+      
+      setConnectionAirports(connectionPoints);
+    }
+  }, [directFlights, connectingFlights]);
   
   const allFlights = [...directFlights];
   const allConnectionLegs: Flight[] = [];
@@ -167,20 +233,8 @@ const FlightMap: React.FC<FlightMapProps> = ({
     return false;
   };
 
-  useEffect(() => {
-    const handleShowAirportPlanes = (event: any) => {
-      const { airportCode } = event.detail;
-      console.log(`Handling showAirportPlanes event for airport ${airportCode}`);
-      
-      document.addEventListener('showAirportPlanes', handleShowAirportPlanes);
-      
-      return () => {
-        document.removeEventListener('showAirportPlanes', handleShowAirportPlanes);
-      };
-    };
-  }, []);
-
   if (showContent) {
+    uniqueRoutes.clear();
     directFlights.forEach(flight => {
       if (flight.departureAirport && !airports.has(flight.departureAirport.code)) {
         airports.set(flight.departureAirport.code, flight.departureAirport);
@@ -303,9 +357,9 @@ const FlightMap: React.FC<FlightMapProps> = ({
       worldCopyJump={true}
       className="colorful-flight-map google-like-map"
     >
-<TileLayer
-  attribution='&copy; <a href="https://carto.com/">CARTO</a>'
-  url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+      <TileLayer
+  attribution='&copy; Esri &mdash; Sources: Esri, HERE, Garmin, USGS, NGA, EPA, and others'
+  url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}"
 />
 
       <GeoJSON data={countriesGeoJson as any} style={countryStyle} />
@@ -319,6 +373,7 @@ const FlightMap: React.FC<FlightMapProps> = ({
 
       {showContent && (
         <>
+          {/* Flight paths */}
           {directFlights.map((flight, index) => {
             const showPlane = shouldShowPlane(
               flight.departureAirport?.code || 'unknown', 
@@ -397,6 +452,34 @@ const FlightMap: React.FC<FlightMapProps> = ({
             })
           ))}
 
+          {/* City Labels using Markers with custom divIcons */}
+          {originAirport && (
+            <Marker 
+              position={[originAirport.lat, originAirport.lng]} 
+              icon={createCityIcon(originAirport.city || originAirport.name, 'departure')}
+              zIndexOffset={1000}
+            />
+          )}
+          
+          {destinationAirport && (
+            <Marker 
+              position={[destinationAirport.lat, destinationAirport.lng]} 
+              icon={createCityIcon(destinationAirport.city || destinationAirport.name, 'arrival')}
+              zIndexOffset={1000}
+            />
+          )}
+          
+          {/* Connection city labels */}
+          {connectionAirports.map((airport, index) => (
+            <Marker 
+              key={`connection-label-${airport.code}-${index}`}
+              position={[airport.lat, airport.lng]} 
+              icon={createCityIcon(airport.city || airport.name, 'connection')}
+              zIndexOffset={900}
+            />
+          ))}
+
+          {/* Airport Markers */}
           {Array.from(airports.values()).map(airport => (
             <AirportMarker
               key={`airport-${airport.code}`}
@@ -404,9 +487,9 @@ const FlightMap: React.FC<FlightMapProps> = ({
               departureFlights={airportDepartureFlights.get(airport.code) || []}
               arrivalFlights={airportArrivalFlights.get(airport.code) || []}
               connectingFlights={airportConnectionFlights.get(airport.code) || []}
-              type={airport.code === (directFlights[0]?.departureAirport?.code || connectingFlights[0]?.flights[0]?.departureAirport?.code) 
+              type={airport.code === (originAirport?.code) 
                 ? 'origin' 
-                : airport.code === (directFlights[0]?.arrivalAirport?.code || connectingFlights[0]?.flights[connectingFlights[0]?.flights.length - 1]?.arrivalAirport?.code) 
+                : airport.code === (destinationAirport?.code)
                   ? 'destination' 
                   : 'connection'}
             />

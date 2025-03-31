@@ -19,7 +19,7 @@ const Header: React.FC<HeaderProps> = ({ onSearch, loading }) => {
           </div>
           <div>
             <h1 className="text-xl md:text-2xl font-bold text-foreground whitespace-nowrap">Getting There Calculator</h1>
-            <p className="text-xs md:text-sm text-muted-foreground">Find the best routes to your destination</p>
+            <p className="text-xs md:text-sm text-muted-foreground">Find available flights and routes to your destination</p>
           </div>
         </div>
         <div className="w-full md:max-w-[350px]">
