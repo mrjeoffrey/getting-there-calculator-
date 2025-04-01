@@ -44,21 +44,20 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
         className="flight-popup"
         minWidth={320} 
         maxWidth={500}
-        autoPan={true}  // Ensure map pans to fit popup
-        autoPanPaddingTopLeft={[50, 50]}  // Add padding to avoid edge of screen
-        autoPanPaddingBottomRight={[50, 50]}  // Add padding to avoid edge of screen
-        keepInView={true} // Important: Keep popup in view at all times
+        autoPan={true}
+        autoPanPaddingTopLeft={[50, 50]}
+        autoPanPaddingBottomRight={[50, 50]}
+        keepInView={true}
       >
         <div className="p-2">
-          <h3 className="font-semibold text-primary text-lg mb-2">{airportName} ({airportCode})</h3>
-          <p className="text-sm text-muted-foreground mb-3">{airport.city}, {airport.country}</p>
+          <h3 className="font-semibold text-primary text-lg mb-1">{airportName} ({airportCode})</h3>
+          <p className="text-sm text-muted-foreground mb-2">{airport.city}, {airport.country}</p>
           
           {hasFlights ? (
-            <div className="mt-3">
+            <div className="mt-2">
               {departureFlights.length > 0 && (
-                <div className="mb-4">
+                <div className="mb-3">
                   <FlightScheduleTable 
-                    title="Departing Flights" 
                     flights={departureFlights} 
                   />
                 </div>

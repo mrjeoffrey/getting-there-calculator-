@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Flight, ConnectionFlight } from '../types/flightTypes';
 import { groupFlightsByDay } from '../utils/dateFormatUtils';
@@ -30,9 +31,21 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
     }
   };
   
+  // Extract route information for the header if flights are available
+  let routeHeader = '';
+  if (flights && flights.length > 0) {
+    const departAirport = flights[0].departureAirport;
+    const arriveAirport = flights[0].arrivalAirport;
+    routeHeader = `Available direct and connecting flights from ${departAirport.city}, ${departAirport.country} (${departAirport.code}) to ${arriveAirport.city}, ${arriveAirport.country} (${arriveAirport.code})`;
+  }
+  
   return (
-    <div className="space-y-0 mt-4">
-      {title && <h4 className="font-medium text-sm text-primary mb-3">{title}</h4>}
+    <div className="space-y-0 mt-2">
+      {routeHeader && (
+        <h3 className="font-medium text-sm text-primary mb-2 text-center">{routeHeader}</h3>
+      )}
+      
+      {title && <h4 className="font-medium text-sm text-primary mb-2">{title}</h4>}
       
       {/* Direct Flights */}
       {groupedDirectFlights.length > 0 && (
@@ -40,22 +53,21 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
           {!title && <h4 className="font-medium text-sm text-primary mb-1 border-b pb-1">Direct Flights</h4>}
           <div className="overflow-x-auto">
             {/* Table header outside scrollable area */}
-            <Table className="border-separate border-spacing-y-2 table-fixed w-full">
-            <TableHeader>
+            <Table className="border-separate border-spacing-y-1 table-fixed w-full">
+              <TableHeader>
                 <TableRow>
-                  <TableHead className="py-2 px-4 text-centre w-1/5 bg-background z-10">Airline</TableHead>
-                  <TableHead className="py-2 px-4 text-centre w-1/5 bg-background z-10">Time</TableHead>
-                  <TableHead className="py-2 px-4 text-centre w-1/5 bg-background z-10">Days</TableHead>
-                  <TableHead className="py-2 px-4 text-centre w-1/5 bg-background z-10">Dep</TableHead>
-                  <TableHead className="py-2 px-4 text-centre w-1/5 bg-background z-10">Arr</TableHead>
+                  <TableHead className="py-1 px-4 text-centre w-1/5 bg-background z-10">Airline</TableHead>
+                  <TableHead className="py-1 px-4 text-centre w-1/5 bg-background z-10">Time</TableHead>
+                  <TableHead className="py-1 px-4 text-centre w-1/5 bg-background z-10">Days</TableHead>
+                  <TableHead className="py-1 px-4 text-centre w-1/5 bg-background z-10">Dep</TableHead>
+                  <TableHead className="py-1 px-4 text-centre w-1/5 bg-background z-10">Arr</TableHead>
                 </TableRow>
               </TableHeader> 
-
             </Table>
             
             {/* Scrollable table body */}
             <div className="max-h-64 overflow-y-auto">
-              <Table className="border-separate border-spacing-y-2 table-fixed w-full">
+              <Table className="border-separate border-spacing-y-1 table-fixed w-full">
                 <TableBody>
                   {groupedDirectFlights.map((flight, index) => (
                     <TableRow
@@ -70,11 +82,11 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
                         if (originalFlight) handleFlightSelect(originalFlight);
                       }}
                     >
-                      <TableCell className="py-3 px-4 text-centre w-1/5">{flight.airline}</TableCell>
-                      <TableCell className="py-3 px-4 text-centre w-1/5">{flight.duration}</TableCell>
-                      <TableCell className="py-3 px-4 text-centre w-1/4">{flight.days}</TableCell>
-                      <TableCell className="py-3 px-4 text-centre w-1/5">{flight.departureTime}</TableCell>
-                      <TableCell className="py-3 px-4 text-centre w-1/5">{flight.arrivalTime}</TableCell>
+                      <TableCell className="py-2 px-4 text-centre w-1/5">{flight.airline}</TableCell>
+                      <TableCell className="py-2 px-4 text-centre w-1/5">{flight.duration}</TableCell>
+                      <TableCell className="py-2 px-4 text-centre w-1/4">{flight.days}</TableCell>
+                      <TableCell className="py-2 px-4 text-centre w-1/5">{flight.departureTime}</TableCell>
+                      <TableCell className="py-2 px-4 text-centre w-1/5">{flight.arrivalTime}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
