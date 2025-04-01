@@ -244,7 +244,7 @@ export const searchWeeklyFlights = async (fromCode: string, toCode: string): Pro
     const connectingFlights: Flight[] = [];
     const allFlights: Flight[] = [];
     
-    for (let i = 0; i < 1; i++) {
+    for (let i = 0; i < 3; i++) {
       const currentDate = new Date(startDate);
       currentDate.setDate(startDate.getDate() + i);
       const dateString = currentDate.toISOString().split('T')[0];
