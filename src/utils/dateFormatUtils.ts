@@ -1,10 +1,11 @@
 
 /**
- * Format day of week from date string to three-letter abbreviation
+ * Format day of week from date string to abbreviated format
+ * S - Sunday, M - Monday, T - Tuesday, W - Wednesday, R - Thursday, F - Friday, S - Saturday
  */
 export const getDayOfWeek = (dateString: string): string => {
   const date = new Date(dateString);
-  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const days = ['Su', 'M', 'Tu', 'W', 'R', 'F', 'S'];
   return days[date.getDay()];
 };
 
@@ -37,7 +38,14 @@ export const groupFlightsByDay = <T extends { departureTime: string }>(
   return Array.from(flightMap.entries()).map(([key, days]) => {
     // Parse the key back into flight details
     const [airline, duration, departureTime, arrivalTime] = key.split('-');
-    const daysString = Array.from(days).join(', ');
+    
+    // Format days string
+    let daysString;
+    if (days.size === 7) {
+      daysString = "Daily";
+    } else {
+      daysString = Array.from(days).join(', ');
+    }
     
     return {
       airline,

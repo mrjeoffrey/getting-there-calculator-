@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Flight, ConnectionFlight } from '../types/flightTypes';
 import { groupFlightsByDay } from '../utils/dateFormatUtils';
@@ -72,7 +73,7 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
                     >
                       <TableCell className="py-1 px-2">{flight.airline}</TableCell>
                       <TableCell className="py-1 px-2">{flight.duration}</TableCell>
-                      <TableCell className="py-1 px-2">{flight.days}</TableCell>
+                      <TableCell className="py-1 px-2 font-mono text-xs">{flight.days}</TableCell>
                       <TableCell className="py-1 px-2">{flight.departureTime}</TableCell>
                       <TableCell className="py-1 px-2">{flight.arrivalTime}</TableCell>
                     </TableRow>
