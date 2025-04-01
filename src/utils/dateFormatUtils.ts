@@ -1,7 +1,7 @@
 
 /**
  * Format day of week from date string to abbreviated format
- * S - Sunday, M - Monday, T - Tuesday, W - Wednesday, R - Thursday, F - Friday, S - Saturday
+ * Su - Sunday, M - Monday, Tu - Tuesday, W - Wednesday, R - Thursday, F - Friday, S - Saturday
  */
 export const getDayOfWeek = (dateString: string): string => {
   const date = new Date(dateString);
