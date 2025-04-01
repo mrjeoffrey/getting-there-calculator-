@@ -9,6 +9,7 @@ import FlightPath from './FlightPath';
 import { GeoJSON } from 'react-leaflet';
 import countriesGeoJson from "./map/custom.geo.json"
 import L from 'leaflet';
+import { Bold } from 'lucide-react';
 
 interface FlightMapProps {
   directFlights: Flight[];
@@ -490,15 +491,6 @@ const FlightMap: React.FC<FlightMapProps> = ({
             />
           )}
           
-          {/* Connection city labels */}
-          {/* {connectionAirports.map((airport, index) => (
-            <Marker 
-              key={`connection-label-${airport.code}-${index}`}
-              position={[airport.lat, airport.lng]} 
-              icon={createCityIcon(airport.city || airport.name, 'connection')}
-              zIndexOffset={900}
-            />
-          ))} */}
 
           {/* Airport Markers */}
           {Array.from(airports.values()).map(airport => (
@@ -553,9 +545,11 @@ const FlightMap: React.FC<FlightMapProps> = ({
           display: 'flex',
           alignItems: 'center',
           height: '16px',
+          fontSize: '12.5px',
+          fontWeight: 'bold',
         }}
       >
-        <svg 
+        {/* <svg 
           width="85" 
           height="20" 
           viewBox="0 0 151 29" 
@@ -586,7 +580,8 @@ const FlightMap: React.FC<FlightMapProps> = ({
             d="M147.868 25.52C145.815 27.5467 143.308 28.56 140.348 28.56C137.388 28.56 134.882 27.5467 132.828 25.52C130.802 23.4667 129.788 20.96 129.788 18C129.788 15.04 130.802 12.5467 132.828 10.52C134.882 8.46667 137.388 7.44 140.348 7.44C143.308 7.44 145.815 8.46667 147.868 10.52C149.922 12.5467 150.948 15.04 150.948 18C150.948 20.96 149.922 23.4667 147.868 25.52ZM136.468 21.96C137.508 23 138.802 23.52 140.348 23.52C141.895 23.52 143.188 23 144.228 21.96C145.268 20.92 145.788 19.6 145.788 18C145.788 16.4 145.268 15.08 144.228 14.04C143.188 13 141.895 12.48 140.348 12.48C138.802 12.48 137.508 13 136.468 14.04C135.455 15.08 134.948 16.4 134.948 18C134.948 19.6 135.455 20.92 136.468 21.96Z"
             fill="#363A3F"
           />
-        </svg>
+        </svg> */}
+        Bohamo.com
       </a>
     </div>
     </MapContainer>
