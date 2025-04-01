@@ -50,8 +50,6 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
         keepInView={true}
       >
         <div className="p-2">
-          <h3 className="font-semibold text-primary text-lg mb-1">{airportName} ({airportCode})</h3>
-          <p className="text-sm text-muted-foreground mb-2">{airport.city}, {airport.country}</p>
           
           {hasFlights ? (
             <div className="mt-2">
@@ -65,8 +63,7 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
               
               {arrivalFlights.length > 0 && (
                 <div>
-                  <FlightScheduleTable 
-                    title="Arriving Flights" 
+                  <FlightScheduleTable
                     flights={arrivalFlights} 
                   />
                 </div>

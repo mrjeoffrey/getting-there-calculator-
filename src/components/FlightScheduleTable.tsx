@@ -31,7 +31,13 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
     }
   };
   
-  // Extract route information for the header if flights are available
+  const maxHeightStyle: React.CSSProperties = { maxHeight: '200px', minHeight: '100px', overflowY: 'auto' }; // Fits approx 5 rows
+  const scrollableStyle: React.CSSProperties = {
+    minHeight: '100px',
+    maxHeight: '400px', // or however tall you want
+    overflowY: 'auto'
+  };
+  
   let routeHeader = '';
   if (flights && flights.length > 0) {
     const departAirport = flights[0].departureAirport;
@@ -50,7 +56,6 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
       {/* Direct Flights */}
       {groupedDirectFlights.length > 0 && (
         <div className="mb-2">
-          {!title && <h4 className="font-medium text-sm text-primary mb-1 border-b pb-1">Direct Flights</h4>}
           <div className="overflow-x-auto">
             {/* Table header outside scrollable area */}
             <Table className="border-separate border-spacing-y-1 table-fixed w-full">
@@ -66,7 +71,7 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
             </Table>
             
             {/* Scrollable table body */}
-            <div className="max-h-64 overflow-y-auto">
+            <div className="overflow-x-auto max-h-[200px] overflow-y-auto">
               <Table className="border-separate border-spacing-y-1 table-fixed w-full">
                 <TableBody>
                   {groupedDirectFlights.map((flight, index) => (
