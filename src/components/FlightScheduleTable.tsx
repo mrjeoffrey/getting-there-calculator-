@@ -89,7 +89,7 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
                     >
                       <TableCell className="py-2 px-4 text-centre w-1/5">{flight.airline}</TableCell>
                       <TableCell className="py-2 px-4 text-centre w-1/5">{flight.duration}</TableCell>
-                      <TableCell className="py-2 px-4 text-centre w-1/4">{flight.days}</TableCell>
+                      <TableCell className="py-2 px-4 text-centre w-1/5">{flight.days}</TableCell>
                       <TableCell className="py-2 px-4 text-centre w-1/5">{flight.departureTime}</TableCell>
                       <TableCell className="py-2 px-4 text-centre w-1/5">{flight.arrivalTime}</TableCell>
                     </TableRow>
