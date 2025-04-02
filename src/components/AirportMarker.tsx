@@ -94,11 +94,6 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
         autoClose={false}
       >
         <div className="p-2">
-          <h3 className="text-base font-medium mb-1">
-            {type === 'origin' ? `Flights from ${airport.city || airportName}` : 
-             type === 'destination' ? `Flights to ${airport.city || airportName}` :
-             `Connections via ${airport.city || airportName}`}
-          </h3>
           
           {hasFlights ? (
             <div className="mt-2">

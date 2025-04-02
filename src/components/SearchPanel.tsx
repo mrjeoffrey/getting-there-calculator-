@@ -21,6 +21,7 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ onSearch, loading }) => {
       return;
     }
     
+    
     console.log(`Searching for flights from ${from} to ${to}`);
     
     onSearch({

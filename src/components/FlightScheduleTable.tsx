@@ -51,7 +51,7 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
         <h3 className="font-medium text-sm text-primary mb-2">{routeHeader}</h3>
       )}
       
-      {title && <h4 className="font-medium text-sm text-primary mb-2">{title}</h4>}
+      {/* {title && <h4 className="font-medium text-sm text-primary mb-2">{title}</h4>} */}
       
       {/* Direct Flights */}
       {groupedDirectFlights.length > 0 && (

@@ -58,7 +58,7 @@ const Index = () => {
       if (directFlights.length === 0 && connectingFlights.length === 0) {
         toast.warning("No flights found. Try another departure airport or check back later.");
       } else {
-        toast.success(`Found ${directFlights.length} direct and ${connectingFlights.length} connecting flights to Tokyo!`);
+        // toast.success(`Found ${directFlights.length} direct and ${connectingFlights.length} connecting flights to Tokyo!`);
       }
     } catch (error) {
       console.error("Error searching flights:", error);
