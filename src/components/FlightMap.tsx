@@ -213,9 +213,11 @@ const FlightMap: React.FC<FlightMapProps> = ({
   const shouldShowConnectionLegPlane = (connectionId: string, legIndex: number): boolean => {
     if (legIndex === 0) {
       const connection = connectingFlights.find(c => c.id === connectionId);
-      if (!connection) return false;
+      if (!connection || !connection.flights || !connection.flights[0]) return false;
       
       const flight = connection.flights[0];
+      if (!flight.departureAirport || !flight.arrivalAirport) return false;
+      
       const routeKey = `${flight.departureAirport.code}-${flight.arrivalAirport.code}`;
       
       if (uniqueRoutes.has(routeKey)) {
@@ -236,9 +238,11 @@ const FlightMap: React.FC<FlightMapProps> = ({
     
     if (prevLegStatus?.isComplete && legStatus?.nextLegStarted) {
       const connection = connectingFlights.find(c => c.id === connectionId);
-      if (!connection) return false;
+      if (!connection || !connection.flights || !connection.flights[legIndex]) return false;
       
       const flight = connection.flights[legIndex];
+      if (!flight.departureAirport || !flight.arrivalAirport) return false;
+      
       const routeKey = `${flight.departureAirport.code}-${flight.arrivalAirport.code}`;
       
       if (uniqueRoutes.has(routeKey)) {
