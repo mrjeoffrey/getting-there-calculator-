@@ -20,6 +20,8 @@ interface FlightMapProps {
   onFlightSelect?: (flight: any) => void;
   autoAnimateConnections?: boolean;
   showInstructions?: boolean;
+  activePopup?: string | null;
+  onPopupOpen?: (airportCode: string | null) => void;
 }
 
 const createCityIcon = (cityName, type) => {
@@ -70,12 +72,13 @@ const FlightMap: React.FC<FlightMapProps> = ({
   loading = false,
   onFlightSelect,
   autoAnimateConnections = true,
-  showInstructions = false
+  showInstructions = false,
+  activePopup,
+  onPopupOpen
 }) => {
   const [mapReady, setMapReady] = useState(false);
   const flightPathRefs = useRef<Map<string, React.RefObject<any>>>(new Map());
   const [connectionLegsStatus, setConnectionLegsStatus] = useState<ConnectionLegStatus[]>([]);
-  const [activePopup, setActivePopup] = useState<string | null>(null);
   const [instructionsVisible, setInstructionsVisible] = useState(showInstructions);
   
   const [originAirport, setOriginAirport] = useState<any>(null);
@@ -86,9 +89,11 @@ const FlightMap: React.FC<FlightMapProps> = ({
     setInstructionsVisible(showInstructions);
   }, [showInstructions]);
   
-  const handlePopupOpen = (airportCode: string) => {
+  const handlePopupOpen = (airportCode: string | null) => {
     console.log(`Setting active popup to ${airportCode}`);
-    setActivePopup(airportCode);
+    if (onPopupOpen) {
+      onPopupOpen(airportCode);
+    }
   };
   
   const handleInstructionsClose = () => {
