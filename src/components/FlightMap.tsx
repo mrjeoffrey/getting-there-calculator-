@@ -7,7 +7,7 @@ import { Flight, ConnectionFlight, ConnectionLegStatus } from '../types/flightTy
 import AirportMarker from './AirportMarker';
 import FlightPath from './FlightPath';
 import { GeoJSON } from 'react-leaflet';
-import countriesGeoJson from "./map/custom.geo.json"
+import countriesGeoJson from "./map/custom.geo.json";
 import L from 'leaflet';
 import { Bold } from 'lucide-react';
 import MapInstructionCard from './MapInstructionCard';
@@ -87,8 +87,7 @@ const createCityIcon = (cityName, type) => {
       iconSize: [100, 30],
       iconAnchor: [50, 10] // anchors the icon dot, not the text
     });
-  };
-
+};
 
 const FlightMap: React.FC<FlightMapProps> = ({
   directFlights,
@@ -379,204 +378,185 @@ const FlightMap: React.FC<FlightMapProps> = ({
         className="colorful-flight-map google-like-map"
       >
         <TileLayer
-  attribution='&copy; Esri &mdash; Sources: Esri, HERE, Garmin, USGS, NGA, EPA, and others'
-  url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}"
-/>
+          attribution='&copy; Esri &mdash; Sources: Esri, HERE, Garmin, USGS, NGA, EPA, and others'
+          url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}"
+        />
 
-      {/* <GeoJSON data={countriesGeoJson as any}  /> */}
+        {/* <GeoJSON data={countriesGeoJson as any}  /> */}
 
-      <ZoomControl position="bottomright" />
-      <ResetMapView 
-        directFlights={directFlights} 
-        connectingFlights={connectingFlights}
-        onMapReady={() => setMapReady(true)}
-      />
+        <ZoomControl position="bottomright" />
+        <ResetMapView 
+          directFlights={directFlights} 
+          connectingFlights={connectingFlights}
+          onMapReady={() => setMapReady(true)}
+        />
 
-      {showContent && (
-        <>
-          {/* Flight paths */}
-          {directFlights.map((flight, index) => {
-            const showPlane = shouldShowPlane(
-              flight.departureAirport?.code || 'unknown', 
-              flight.arrivalAirport?.code || 'unknown'
-            );
-            
-            return (
-              <FlightPath
-                key={`direct-${flight.id}-${index}`}
-                departure={flight.departureAirport}
-                arrival={flight.arrivalAirport}
-                type="direct"
-                isActive={selectedFlightId === flight.id}
-                duration={flight.duration}
-                departureTime={flight.departureTime}
-                arrivalTime={flight.arrivalTime}
-                flightNumber={flight.flightNumber}
-                airline={flight.airline}
-                flightInfo={[{
-                  flightNumber: flight.flightNumber,
-                  airline: flight.airline,
-                  departureTime: flight.departureTime,
-                  arrivalTime: flight.arrivalTime,
-                  duration: flight.duration,
-                  price: 250
-                }]}
-                onFlightSelect={() => onFlightSelect && onFlightSelect(flight)}
-                showPlane={showPlane}
-                autoAnimate={true}
-              />
-            );
-          })}
-
-          {connectingFlights.map((connection) => (
-            connection.flights.map((flight, legIndex) => {
-              const showPlane = shouldShowConnectionLegPlane(connection.id, legIndex);
-              
-              const legDelay = legIndex * 500;
-              
-              const shouldStartAnimating = legIndex === 0 || 
-                connectionLegsStatus.find(
-                  status => status.connectionId === connection.id && 
-                           status.legIndex === legIndex &&
-                           status.nextLegStarted
-                ) !== undefined;
+        {showContent && (
+          <>
+            {/* Flight paths */}
+            {directFlights.map((flight, index) => {
+              const showPlane = shouldShowPlane(
+                flight.departureAirport?.code || 'unknown', 
+                flight.arrivalAirport?.code || 'unknown'
+              );
               
               return (
                 <FlightPath
-                  key={`connection-leg-${connection.id}-${legIndex}`}
+                  key={`direct-${flight.id}-${index}`}
                   departure={flight.departureAirport}
                   arrival={flight.arrivalAirport}
-                  type="connecting"
-                  isActive={selectedFlightId === connection.id}
+                  type="direct"
+                  isActive={selectedFlightId === flight.id}
                   duration={flight.duration}
                   departureTime={flight.departureTime}
                   arrivalTime={flight.arrivalTime}
                   flightNumber={flight.flightNumber}
                   airline={flight.airline}
-                  flightInfo={connection.flights.map(f => ({
-                    flightNumber: f.flightNumber,
-                    airline: f.airline,
-                    departureTime: f.departureTime,
-                    arrivalTime: f.arrivalTime,
-                    duration: f.duration,
-                    price: connection.price / connection.flights.length
-                  }))}
-                  onFlightSelect={() => onFlightSelect && onFlightSelect(connection)}
+                  flightInfo={[{
+                    flightNumber: flight.flightNumber,
+                    airline: flight.airline,
+                    departureTime: flight.departureTime,
+                    arrivalTime: flight.arrivalTime,
+                    duration: flight.duration,
+                    price: 250
+                  }]}
+                  onFlightSelect={() => onFlightSelect && onFlightSelect(flight)}
                   showPlane={showPlane}
-                  autoAnimate={shouldStartAnimating}
-                  legIndex={legIndex}
-                  totalLegs={connection.flights.length}
-                  legDelay={legDelay}
-                  connectionId={connection.id}
-                  onLegComplete={() => handleLegComplete(connection.id, legIndex)}
+                  autoAnimate={true}
                 />
               );
-            })
-          ))}
+            })}
 
-          {/* City Labels using Markers with custom divIcons */}
-          {originAirport && (
-            <Marker 
-              position={[originAirport.lat, originAirport.lng]} 
-              icon={createCityIcon(originAirport.city || originAirport.name, 'departure')}
-              zIndexOffset={1000}
-            >
-            </Marker>
+            {connectingFlights.map((connection) => (
+              connection.flights.map((flight, legIndex) => {
+                const showPlane = shouldShowConnectionLegPlane(connection.id, legIndex);
+                
+                const legDelay = legIndex * 500;
+                
+                const shouldStartAnimating = legIndex === 0 || 
+                  connectionLegsStatus.find(
+                    status => status.connectionId === connection.id && 
+                             status.legIndex === legIndex &&
+                             status.nextLegStarted
+                  ) !== undefined;
+                
+                return (
+                  <FlightPath
+                    key={`connection-leg-${connection.id}-${legIndex}`}
+                    departure={flight.departureAirport}
+                    arrival={flight.arrivalAirport}
+                    type="connecting"
+                    isActive={selectedFlightId === connection.id}
+                    duration={flight.duration}
+                    departureTime={flight.departureTime}
+                    arrivalTime={flight.arrivalTime}
+                    flightNumber={flight.flightNumber}
+                    airline={flight.airline}
+                    flightInfo={connection.flights.map(f => ({
+                      flightNumber: f.flightNumber,
+                      airline: f.airline,
+                      departureTime: f.departureTime,
+                      arrivalTime: f.arrivalTime,
+                      duration: f.duration,
+                      price: connection.price / connection.flights.length
+                    }))}
+                    onFlightSelect={() => onFlightSelect && onFlightSelect(connection)}
+                    showPlane={showPlane}
+                    autoAnimate={shouldStartAnimating}
+                    legIndex={legIndex}
+                    totalLegs={connection.flights.length}
+                    legDelay={legDelay}
+                    connectionId={connection.id}
+                    onLegComplete={() => handleLegComplete(connection.id, legIndex)}
+                  />
+                );
+              })
+            ))}
+
+            {/* City Labels using Markers with custom divIcons */}
+            {originAirport && (
+              <Marker 
+                position={[originAirport.lat, originAirport.lng]} 
+                icon={createCityIcon(originAirport.city || originAirport.name, 'departure')}
+                zIndexOffset={1000}
+              />
+            )}
             
-          )}
-          
-          {destinationAirport && (
-            <Marker 
-              position={[destinationAirport.lat, destinationAirport.lng]} 
-              icon={createCityIcon(destinationAirport.city || destinationAirport.name, 'arrival')}
-              zIndexOffset={1000}
-            />
-          )}
-          
+            {destinationAirport && (
+              <Marker 
+                position={[destinationAirport.lat, destinationAirport.lng]} 
+                icon={createCityIcon(destinationAirport.city || destinationAirport.name, 'arrival')}
+                zIndexOffset={1000}
+              />
+            )}
+            
 
-          {/* Airport Markers */}
-          {Array.from(airports.values()).map(airport => (
-            <AirportMarker
-              key={`airport-${airport.code}`}
-              airport={airport}
-              departureFlights={airportDepartureFlights.get(airport.code) || []}
-              arrivalFlights={airportArrivalFlights.get(airport.code) || []}
-              connectingFlights={airportConnectionFlights.get(airport.code) || []}
-              type={airport.code === (originAirport?.code) 
-                ? 'origin' 
-                : airport.code === (destinationAirport?.code)
-                  ? 'destination' 
-                  : 'connection'}
-            />
-          ))}
-        </>
-      )}
- <div 
-      style={{
-        position: 'absolute',
-        bottom: 12,
-        right: 16,
-        background: 'rgba(255, 255, 255, 0.9)',
-        padding: '6px 12px',
-        borderRadius: '9999px',
-        boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
-        backdropFilter: 'blur(4px)',
-        zIndex: 1000,
-        fontFamily: 'system-ui, sans-serif',
-      }}
-    >
-      <span
-        style={{
-          fontSize: '12.5px',
-          color: '#1a1a1a',
-          fontWeight: 500,
-          whiteSpace: 'nowrap',
-        }}
-      >
-        Powered by
-      </span>
-      
-      <a
-        href="https://bohamo.com"
-        target="_blank"
-        rel="noopener noreferrer"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          height: '16px',
-          fontSize: '12.5px',
-          fontWeight: 'bold',
-        }}
-      >
-        {/* <svg 
-          width="85" 
-          height="20" 
-          viewBox="0 0 151 29" 
-          fill="none" 
-          xmlns="http://www.w3.org/2000/svg"
+            {/* Airport Markers */}
+            {Array.from(airports.values()).map(airport => (
+              <AirportMarker
+                key={`airport-${airport.code}`}
+                airport={airport}
+                departureFlights={airportDepartureFlights.get(airport.code) || []}
+                arrivalFlights={airportArrivalFlights.get(airport.code) || []}
+                connectingFlights={airportConnectionFlights.get(airport.code) || []}
+                type={airport.code === (originAirport?.code) 
+                  ? 'origin' 
+                  : airport.code === (destinationAirport?.code)
+                    ? 'destination' 
+                    : 'connection'}
+              />
+            ))}
+          </>
+        )}
+        
+        <div 
+          style={{
+            position: 'absolute',
+            bottom: 12,
+            right: 16,
+            background: 'rgba(255, 255, 255, 0.9)',
+            padding: '6px 12px',
+            borderRadius: '9999px',
+            boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            backdropFilter: 'blur(4px)',
+            zIndex: 1000,
+            fontFamily: 'system-ui, sans-serif',
+          }}
         >
-          <path
-            d="M17.5196 13.48C19.9729 14.8933 21.1996 17.0267 21.1996 19.88C21.1996 22.2533 20.3596 24.2 18.6796 25.72C16.9996 27.24 14.9329 28 12.4796 28H0.599609V0H11.6396C14.0396 0 16.0529 0.746667 17.6796 2.24C19.3329 3.70667 20.1596 5.58667 20.1596 7.88C20.1596 10.2 19.2796 12.0667 17.5196 13.48ZM11.6396 5.16H6.11961V11.32H11.6396C12.4929 11.32 13.1996 11.0267 13.7596 10.44C14.3463 9.85333 14.6396 9.12 14.6396 8.24C14.6396 7.36 14.3596 6.62667 13.7996 6.04C13.2396 5.45333 12.5196 5.16 11.6396 5.16ZM12.4796 22.84C13.4129 22.84 14.1863 22.5333 14.7996 21.92C15.4129 21.28 15.7196 20.48 15.7196 19.52C15.7196 18.5867 15.4129 17.8133 14.7996 17.2C14.1863 16.56 13.4129 16.24 12.4796 16.24H6.11961V22.84H12.4796Z"
-            fill="#363A3F"
-          />
-          <path
-            d="M41.9309 25.52C39.8775 27.5467 37.3709 28.56 34.4109 28.56C31.4509 28.56 28.9442 27.5467 26.8909 25.52C24.8642 23.4667 23.8509 20.96 23.8509 18C23.8509 15.04 24.8642 12.5467 26.8909 10.52C28.9442 8.46667 31.4509 7.44 34.4109 7.44C37.3709 7.44 39.8775 8.46667 41.9309 10.52C43.9842 12.5467 45.0109 15.04 45.0109 18C45.0109 20.96 43.9842 23.4667 41.9309 25.52ZM30.5309 21.96C31.5709 23 32.8642 23.52 34.4109 23.52C35.9575 23.52 37.2509 23 38.2909 21.96C39.3309 20.92 39.8509 19.6 39.8509 18C39.8509 16.4 39.3309 15.08 38.2909 14.04C37.2509 13 35.9575 12.48 34.4109 12.48C32.8642 12.48 31.5709 13 30.5309 14.04C29.5175 15.08 29.0109 16.4 29.0109 18C29.0109 19.6 29.5175 20.92 30.5309 21.96Z"
-            fill="#363A3F"
-          />
-          <path
-            d="M59.7609 7.44C61.9475 7.44 63.7475 8.17334 65.1609 9.64C66.6009 11.1067 67.3209 13.1333 67.3209 15.72V28H62.1609V16.36C62.1609 15.0267 61.8009 14.0133 61.0809 13.32C60.3609 12.6 59.4009 12.24 58.2009 12.24C56.8675 12.24 55.8009 12.6533 55.0009 13.48C54.2009 14.3067 53.8009 15.5467 53.8009 17.2V28H48.6409V0H53.8009V10.24C55.0542 8.37333 57.0409 7.44 59.7609 7.44Z"
-            fill="#363A3F"
-          />
-          <path
-            d="M86.9268 8H92.0868V28H86.9268V25.64C85.3801 27.5867 83.2068 28.56 80.4068 28.56C77.7401 28.56 75.4468 27.5467 73.5268 25.52C71.6335 23.4667 70.6868 20.96 70.6868 18C70.6868 15.04 71.6335 12.5467 73.5268 10.52C75.4468 8.46667 77.7401 7.44 80.4068 7.44C83.2068 7.44 85.3801 8.41334 86.9268 10.36V8ZM77.4068 22.08C78.4468 23.12 79.7668 23.64 81.3668 23.64C82.9668 23.64 84.2868 23.12 85.3268 22.08C86.3935 21.0133 86.9268 19.6533 86.9268 18C86.9268 16.3467 86.3935 15 85.3268 13.96C84.2868 12.8933 82.9668 12.36 81.3668 12.36C79.7668 12.36 78.4468 12.8933 77.4068 13.96C76.3668 15 75.8468 16.3467 75.8468 18C75.8468 19.6533 76.3668 21.0133 77.4068 22.08Z"
-            fill="#363A3F"
-          />
-          <path
-            d="M118.886 7.44C121.179 7.44 123.006 8.18667 124.366 9.68C125.753 11.1733 126.446 13.1733 126.446 15.68V28H121.286V16.04C121.286 14.84 120.993 13.9067 120.406 13.24C119.819 12.5733 118.993 12.24 117.926 12.24C116.753 12.24 115.833 12.6267 115.166 13.4C114.526 14.1733 114.206 15.2933 114.206 16.76V28H109.046V16.04C109.046 14.84 108.753 13.9067 108.166 13.24C107.579 12.5733 106.753 12.24 105.686 12.24C104.539 12.24 103.619 12.6267 102.926 13.4C102.259 14.1733 101.926 15.2933 101.926 16.76V28H96.7659V8H101.926V10.12C103.126 8.33333 104.979 7.44 107.486 7.44C109.939 7.44 111.753 8.4 112.926 10.32C114.259 8.4 116.246 7.44 118.886 7.44Z"
-            fill="#363A3F"
-          />
-          <path
-            d="M147.868 25.52C145.815 27.5467 143.308
+          <span
+            style={{
+              fontSize: '12.5px',
+              color: '#1a1a1a',
+              fontWeight: 500,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            Powered by
+          </span>
+          
+          <a
+            href="https://bohamo.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              height: '16px',
+              fontSize: '12.5px',
+              fontWeight: 'bold',
+            }}
+          >
+            {/* Logo SVG was incomplete in original code, removing it */}
+          </a>
+        </div>
+      </MapContainer>
+      
+      <MapInstructionCard className="z-[999]" />
+    </>
+  );
+};
+
+export default FlightMap;
