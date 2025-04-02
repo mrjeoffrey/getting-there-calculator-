@@ -48,7 +48,7 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
   return (
     <div className="space-y-0 mt-2">
       {routeHeader && (
-        <h3 className="font-medium text-sm text-primary mb-2 text-center">{routeHeader}</h3>
+        <h3 className="font-medium text-sm text-primary mb-2">{routeHeader}</h3>
       )}
       
       {title && <h4 className="font-medium text-sm text-primary mb-2">{title}</h4>}

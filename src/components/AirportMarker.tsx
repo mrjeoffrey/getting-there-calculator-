@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { Marker, Popup } from 'react-leaflet';
+import React, { useState } from 'react';
+import { Marker, Popup, Tooltip } from 'react-leaflet';
 import { Airport, Flight, ConnectionFlight } from '../types/flightTypes';
 import { createAirportMarkerIcon } from './map/MarkerIconFactory';
 import FlightScheduleTable from './FlightScheduleTable';
@@ -33,6 +33,20 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
   
   const airportCode = airport.code || 'N/A';
   const airportName = airport.name || `Airport ${airportCode}`;
+  
+  // Tooltip content based on marker type
+  const getTooltipContent = () => {
+    switch(type) {
+      case 'origin':
+        return `Click to view flights from ${airport.city || airportName}`;
+      case 'destination':
+        return `Click to view flights to ${airport.city || airportName}`;
+      case 'connection':
+        return `Click to view connections via ${airport.city || airportName}`;
+      default:
+        return airport.city || airportName;
+    }
+  };
 
   return (
     <Marker 
@@ -40,6 +54,10 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
       icon={createAirportMarkerIcon(type)}
       zIndexOffset={2000}
     >
+      <Tooltip direction="top" offset={[0, -10]} opacity={0.9}>
+        {getTooltipContent()}
+      </Tooltip>
+      
       <Popup 
         className="flight-popup"
         minWidth={320} 
@@ -50,7 +68,6 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
         keepInView={true}
       >
         <div className="p-2">
-          
           {hasFlights ? (
             <div className="mt-2">
               {departureFlights.length > 0 && (
