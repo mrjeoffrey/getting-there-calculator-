@@ -19,39 +19,13 @@ interface FlightMapProps {
   loading?: boolean;
   onFlightSelect?: (flight: any) => void;
   autoAnimateConnections?: boolean;
+  showInstructions?: boolean;
 }
 
-// const getRandomColor = () => {
-//   const colors = [
-// '#ef5350', // Lighter Rich Red
-// '#66bb6a', // Lighter Deep Green
-// '#42a5f5', // Lighter Strong Blue
-// '#ab47bc', // Lighter Royal Purple
-// '#78909c', // Lighter Slate Blue-Gray
-// '#ffa726', // Lighter Burnt Orange
-// '#8d6e63', // Lighter Dark Cocoa
-// '#5c6bc0', // Lighter Indigo Blue
-// '#26a69a', // Lighter Teal Dark
-// '#9e9e9e'  // Lighter Almost Black (mid gray)
-//   ];
-//   return colors[Math.floor(Math.random() * colors.length)];
-// };
-
-// const countryStyle = (feature: any) => ({
-//   // fillColor: getRandomColor(),
-//   weight: 1,
-//   opacity: 1,
-//   color: 'black',
-//   fillOpacity: 0.2
-// });
-
-// Create custom divIcon for city labels
 const createCityIcon = (cityName, type) => {
-  // Define colors based on type
   const color = type === 'departure' ? '#2e7d32' : 
                 type === 'arrival' ? '#c62828' : '#1565c0';
   
-  // Create prefix based on type
   const prefix = type === 'departure' ? 'From: ' : 
                 type === 'arrival' ? 'To: ' : '';
                 
@@ -95,17 +69,32 @@ const FlightMap: React.FC<FlightMapProps> = ({
   selectedFlightId,
   loading = false,
   onFlightSelect,
-  autoAnimateConnections = true
+  autoAnimateConnections = true,
+  showInstructions = false
 }) => {
   const [mapReady, setMapReady] = useState(false);
   const flightPathRefs = useRef<Map<string, React.RefObject<any>>>(new Map());
   const [connectionLegsStatus, setConnectionLegsStatus] = useState<ConnectionLegStatus[]>([]);
+  const [activePopup, setActivePopup] = useState<string | null>(null);
+  const [instructionsVisible, setInstructionsVisible] = useState(showInstructions);
   
-  // Add state for origin and destination
   const [originAirport, setOriginAirport] = useState<any>(null);
   const [destinationAirport, setDestinationAirport] = useState<any>(null);
   const [connectionAirports, setConnectionAirports] = useState<any[]>([]);
   
+  useEffect(() => {
+    setInstructionsVisible(showInstructions);
+  }, [showInstructions]);
+  
+  const handlePopupOpen = (airportCode: string) => {
+    console.log(`Setting active popup to ${airportCode}`);
+    setActivePopup(airportCode);
+  };
+  
+  const handleInstructionsClose = () => {
+    setInstructionsVisible(false);
+  };
+
   useEffect(() => {
     if (connectingFlights.length > 0) {
       const initialLegsStatus: ConnectionLegStatus[] = [];
@@ -126,7 +115,6 @@ const FlightMap: React.FC<FlightMapProps> = ({
     }
   }, [connectingFlights]);
   
-  // Determine origin, destination, and connection airports
   useEffect(() => {
     if (directFlights.length > 0) {
       setOriginAirport(directFlights[0].departureAirport);
@@ -136,14 +124,11 @@ const FlightMap: React.FC<FlightMapProps> = ({
       
       connectingFlights.forEach(connection => {
         if (connection.flights.length > 0) {
-          // Set origin from first flight's departure
           setOriginAirport(connection.flights[0].departureAirport);
           setDestinationAirport(connection.flights[connection.flights.length - 1].arrivalAirport);
 
-          // Add connection points (all arrival airports except the final one)
           connection.flights.slice(0, -1).forEach(flight => {
             if (flight.arrivalAirport) {
-              // Check if this airport is already in our list
               const exists = connectionPoints.some(
                 airport => airport.code === flight.arrivalAirport.code
               );
@@ -284,7 +269,7 @@ const FlightMap: React.FC<FlightMapProps> = ({
     });
     
     connectingFlights.forEach(connection => {
-      const originAirport = connection.flights[0].departureAirport;
+      const originAirport = connection.flights[0]?.departureAirport;
       
       connection.flights.forEach((flight, index) => {
         if (flight.departureAirport && !airports.has(flight.departureAirport.code)) {
@@ -508,6 +493,8 @@ const FlightMap: React.FC<FlightMapProps> = ({
                   : airport.code === (destinationAirport?.code)
                     ? 'destination' 
                     : 'connection'}
+                onPopupOpen={handlePopupOpen}
+                activePopup={activePopup}
               />
             ))}
           </>
@@ -558,7 +545,11 @@ const FlightMap: React.FC<FlightMapProps> = ({
         </div>
       </MapContainer>
       
-      <MapInstructionCard className="z-[999]" />
+      <MapInstructionCard 
+        className="z-[999]" 
+        visible={instructionsVisible} 
+        onClose={handleInstructionsClose} 
+      />
     </>
   );
 };

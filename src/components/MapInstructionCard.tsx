@@ -1,24 +1,32 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, HelpCircle } from 'lucide-react';
 
 interface MapInstructionCardProps {
   className?: string;
+  visible: boolean;
+  onClose: () => void;
 }
 
-const MapInstructionCard: React.FC<MapInstructionCardProps> = ({ className }) => {
-  const [isVisible, setIsVisible] = useState(true);
+const MapInstructionCard: React.FC<MapInstructionCardProps> = ({ 
+  className,
+  visible,
+  onClose
+}) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
-
-  const handleClose = () => {
-    setIsVisible(false);
-  };
 
   const toggleCollapse = () => {
     setIsCollapsed(!isCollapsed);
   };
 
-  if (!isVisible) return null;
+  // Reset collapsed state when visibility changes
+  useEffect(() => {
+    if (visible) {
+      setIsCollapsed(false);
+    }
+  }, [visible]);
+
+  if (!visible) return null;
 
   return (
     <div 
@@ -38,7 +46,7 @@ const MapInstructionCard: React.FC<MapInstructionCardProps> = ({ className }) =>
           <HelpCircle className="w-4 h-4 mr-2" />
           {isCollapsed ? "Show Map Instructions" : "Map Instructions"}
         </button>
-        <button onClick={handleClose} className="text-gray-500 hover:text-gray-700">
+        <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
           <X className="w-4 h-4" />
         </button>
       </div>

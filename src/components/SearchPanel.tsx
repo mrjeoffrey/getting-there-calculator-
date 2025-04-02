@@ -9,9 +9,14 @@ import { toast } from "sonner";
 interface SearchPanelProps {
   onSearch: (params: SearchParams) => void;
   loading: boolean;
+  onToggleInstructions?: () => void;
 }
 
-const SearchPanel: React.FC<SearchPanelProps> = ({ onSearch, loading }) => {
+const SearchPanel: React.FC<SearchPanelProps> = ({ 
+  onSearch, 
+  loading, 
+  onToggleInstructions 
+}) => {
   const [from, setFrom] = useState('');
   const [to] = useState('HND'); // Fixed to Tokyo Haneda Airport
 
@@ -21,8 +26,12 @@ const SearchPanel: React.FC<SearchPanelProps> = ({ onSearch, loading }) => {
       return;
     }
     
-    
     console.log(`Searching for flights from ${from} to ${to}`);
+    
+    // Toggle map instructions when search is clicked
+    if (onToggleInstructions) {
+      onToggleInstructions();
+    }
     
     onSearch({
       from,

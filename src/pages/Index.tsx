@@ -13,6 +13,7 @@ const Index = () => {
   const [weeklyData, setWeeklyData] = useState<WeeklyFlightData>({});
   const [selectedFlightId, setSelectedFlightId] = useState<string | null>(null);
   const [searched, setSearched] = useState(false);
+  const [showInstructions, setShowInstructions] = useState(true);
 
   // Add debugging effect for monitoring flight data
   useEffect(() => {
@@ -31,6 +32,13 @@ const Index = () => {
       });
     }
   }, [directFlights, connectingFlights]);
+
+  const toggleInstructions = () => {
+    // Show instructions only when a search is performed
+    if (!loading && searched) {
+      setShowInstructions(true);
+    }
+  };
 
   const handleSearch = async (params: SearchParams) => {
     setLoading(true);
@@ -55,6 +63,9 @@ const Index = () => {
       setWeeklyData(weeklyData);
       setSearched(true);
       
+      // Show instructions after search
+      setShowInstructions(true);
+      
       if (directFlights.length === 0 && connectingFlights.length === 0) {
         toast.warning("No flights found. Try another departure airport or check back later.");
       } else {
@@ -71,12 +82,15 @@ const Index = () => {
   const handleFlightSelect = (flight: any) => {
     console.log("Selected flight:", flight);
     setSelectedFlightId(flight.id);
-    
   };
 
   return (
     <div className="flex flex-col h-screen">
-      <Header onSearch={handleSearch} loading={loading} />
+      <Header 
+        onSearch={handleSearch} 
+        loading={loading}
+        onToggleInstructions={toggleInstructions}
+      />
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
           <FlightMap
             directFlights={directFlights}
@@ -85,6 +99,7 @@ const Index = () => {
             loading={loading}
             onFlightSelect={handleFlightSelect}
             autoAnimateConnections={true}
+            showInstructions={showInstructions && searched}
           />
       </div>
     </div>

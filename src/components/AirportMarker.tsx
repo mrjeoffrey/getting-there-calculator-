@@ -14,6 +14,8 @@ interface AirportMarkerProps {
   departureFlights?: Flight[];
   arrivalFlights?: Flight[];
   connectingFlights?: ConnectionFlight[];
+  onPopupOpen?: (airportCode: string) => void;
+  activePopup?: string | null;
 }
 
 const AirportMarker: React.FC<AirportMarkerProps> = ({ 
@@ -24,7 +26,9 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
   isDarkMode = false,
   departureFlights = [],
   arrivalFlights = [],
-  connectingFlights = []
+  connectingFlights = [],
+  onPopupOpen,
+  activePopup
 }) => {
   // Check if we have any flights to display
   const hasFlights = departureFlights.length > 0 || arrivalFlights.length > 0 || (type !== 'origin' && connectingFlights.length > 0);
@@ -49,18 +53,40 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
     }
   };
 
+  // Manage popup state based on activePopup value
+  useEffect(() => {
+    if (markerRef.current) {
+      if (activePopup === airportCode) {
+        markerRef.current.openPopup();
+        setPopupOpen(true);
+        console.log(`Opening popup for ${airportCode} by parent control`);
+      } else if (popupOpen) {
+        markerRef.current.closePopup();
+        setPopupOpen(false);
+        console.log(`Closing popup for ${airportCode} by parent control`);
+      }
+    }
+  }, [activePopup, airportCode, popupOpen]);
+
   // Auto-open popup for origin airport when component mounts
   useEffect(() => {
     // Only open popup for origin airport with flights
-    if (type === 'origin' && hasFlights && markerRef.current) {
+    if (type === 'origin' && hasFlights && markerRef.current && !popupOpen && !activePopup) {
       // Use setTimeout to ensure the marker is fully rendered
-      setTimeout(() => {
-        markerRef.current.openPopup();
-        setPopupOpen(true);
-        console.log(`Opening popup for ${airportCode} (origin)`);
-      }, 100);
+      const timer = setTimeout(() => {
+        if (markerRef.current) {
+          markerRef.current.openPopup();
+          setPopupOpen(true);
+          if (onPopupOpen) {
+            onPopupOpen(airportCode);
+          }
+          console.log(`Opening popup for ${airportCode} (origin) on initial load`);
+        }
+      }, 500);
+      
+      return () => clearTimeout(timer);
     }
-  }, [type, hasFlights, airportCode, markerRef]);
+  }, [type, hasFlights, airportCode, onPopupOpen, popupOpen, activePopup]);
 
   return (
     <Marker 
@@ -71,6 +97,9 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
       eventHandlers={{
         popupopen: () => {
           setPopupOpen(true);
+          if (onPopupOpen) {
+            onPopupOpen(airportCode);
+          }
           console.log(`Popup opened for ${airportCode}`);
         },
         popupclose: () => {
@@ -91,9 +120,9 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
         autoPanPaddingTopLeft={[50, 50]}
         autoPanPaddingBottomRight={[50, 50]}
         keepInView={true}
-        autoClose={false}
       >
         <div className="p-2">
+          <h3 className="text-lg font-semibold mb-2">{airport.city || airport.name} ({airport.code})</h3>
           
           {hasFlights ? (
             <div className="mt-2">
