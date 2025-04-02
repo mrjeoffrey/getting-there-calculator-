@@ -14,6 +14,7 @@ const Index = () => {
   const [selectedFlightId, setSelectedFlightId] = useState<string | null>(null);
   const [searched, setSearched] = useState(false);
   const [showInstructions, setShowInstructions] = useState(true);
+  const [activePopup, setActivePopup] = useState<string | null>(null);
 
   // Add debugging effect for monitoring flight data
   useEffect(() => {
@@ -34,10 +35,8 @@ const Index = () => {
   }, [directFlights, connectingFlights]);
 
   const toggleInstructions = () => {
-    // Show instructions only when a search is performed
-    if (!loading && searched) {
-      setShowInstructions(true);
-    }
+    setShowInstructions(!showInstructions);
+    console.log(`Instructions visibility toggled: ${!showInstructions}`);
   };
 
   const handleSearch = async (params: SearchParams) => {
@@ -45,6 +44,7 @@ const Index = () => {
     setSearched(false);
     setDirectFlights([]);
     setConnectingFlights([]);
+    setActivePopup(null);
     
     try {
       // Ensure destination is set to Tokyo (HND) if not provided
@@ -68,8 +68,6 @@ const Index = () => {
       
       if (directFlights.length === 0 && connectingFlights.length === 0) {
         toast.warning("No flights found. Try another departure airport or check back later.");
-      } else {
-        // toast.success(`Found ${directFlights.length} direct and ${connectingFlights.length} connecting flights to Tokyo!`);
       }
     } catch (error) {
       console.error("Error searching flights:", error);
@@ -82,6 +80,11 @@ const Index = () => {
   const handleFlightSelect = (flight: any) => {
     console.log("Selected flight:", flight);
     setSelectedFlightId(flight.id);
+  };
+
+  const handlePopupOpen = (airportCode: string | null) => {
+    setActivePopup(airportCode);
+    console.log(`Active popup set to: ${airportCode}`);
   };
 
   return (
@@ -100,6 +103,8 @@ const Index = () => {
             onFlightSelect={handleFlightSelect}
             autoAnimateConnections={true}
             showInstructions={showInstructions && searched}
+            activePopup={activePopup}
+            onPopupOpen={handlePopupOpen}
           />
       </div>
     </div>

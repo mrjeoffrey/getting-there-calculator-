@@ -104,6 +104,10 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
         },
         popupclose: () => {
           setPopupOpen(false);
+          // Notify parent about popup close
+          if (onPopupOpen) {
+            onPopupOpen(null);
+          }
           console.log(`Popup closed for ${airportCode}`);
         }
       }}
@@ -120,6 +124,7 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
         autoPanPaddingTopLeft={[50, 50]}
         autoPanPaddingBottomRight={[50, 50]}
         keepInView={true}
+        closeButton={true}
       >
         <div className="p-2">
           <h3 className="text-lg font-semibold mb-2">{airport.city || airport.name} ({airport.code})</h3>

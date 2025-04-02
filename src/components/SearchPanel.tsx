@@ -28,16 +28,16 @@ const SearchPanel: React.FC<SearchPanelProps> = ({
     
     console.log(`Searching for flights from ${from} to ${to}`);
     
-    // Toggle map instructions when search is clicked
-    if (onToggleInstructions) {
-      onToggleInstructions();
-    }
-    
     onSearch({
       from,
       to,
       // No date required, will search for the next 7 days automatically
     });
+    
+    // Toggle map instructions when search is clicked
+    if (onToggleInstructions) {
+      onToggleInstructions();
+    }
   };
 
   return (
