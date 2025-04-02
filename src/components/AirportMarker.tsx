@@ -14,7 +14,7 @@ interface AirportMarkerProps {
   departureFlights?: Flight[];
   arrivalFlights?: Flight[];
   connectingFlights?: ConnectionFlight[];
-  onPopupOpen?: (airportCode: string) => void;
+  onPopupOpen?: (airportCode: string | null) => void;
   activePopup?: string | null;
 }
 
@@ -53,14 +53,19 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
     }
   };
 
-  // Manage popup state based on activePopup value
+  // Track if we're currently handling an event to prevent circular triggers
+  const isHandlingEvent = useRef(false);
+
+  // Only manage popup state based on activePopup value
   useEffect(() => {
     if (markerRef.current) {
-      if (activePopup === airportCode) {
+      if (activePopup === airportCode && !popupOpen) {
+        // Only open if currently closed
         markerRef.current.openPopup();
         setPopupOpen(true);
         console.log(`Opening popup for ${airportCode} by parent control`);
-      } else if (popupOpen) {
+      } else if (activePopup !== airportCode && popupOpen) {
+        // Close if we're not the active popup but we're open
         markerRef.current.closePopup();
         setPopupOpen(false);
         console.log(`Closing popup for ${airportCode} by parent control`);
@@ -70,17 +75,18 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
 
   // Auto-open popup for origin airport when component mounts
   useEffect(() => {
-    // Only open popup for origin airport with flights
     if (type === 'origin' && hasFlights && markerRef.current && !popupOpen && !activePopup) {
       // Use setTimeout to ensure the marker is fully rendered
       const timer = setTimeout(() => {
-        if (markerRef.current) {
+        if (markerRef.current && !isHandlingEvent.current) {
+          isHandlingEvent.current = true;
           markerRef.current.openPopup();
           setPopupOpen(true);
           if (onPopupOpen) {
             onPopupOpen(airportCode);
           }
           console.log(`Opening popup for ${airportCode} (origin) on initial load`);
+          isHandlingEvent.current = false;
         }
       }, 500);
       
@@ -96,19 +102,27 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
       zIndexOffset={2000}
       eventHandlers={{
         popupopen: () => {
-          setPopupOpen(true);
-          if (onPopupOpen) {
-            onPopupOpen(airportCode);
+          if (!isHandlingEvent.current) {
+            isHandlingEvent.current = true;
+            setPopupOpen(true);
+            if (onPopupOpen) {
+              onPopupOpen(airportCode);
+            }
+            console.log(`Popup opened for ${airportCode}`);
+            isHandlingEvent.current = false;
           }
-          console.log(`Popup opened for ${airportCode}`);
         },
         popupclose: () => {
-          setPopupOpen(false);
-          // Notify parent about popup close
-          if (onPopupOpen) {
-            onPopupOpen(null);
+          if (!isHandlingEvent.current) {
+            isHandlingEvent.current = true;
+            setPopupOpen(false);
+            // Notify parent about popup close only if this is the active popup
+            if (onPopupOpen && activePopup === airportCode) {
+              onPopupOpen(null);
+            }
+            console.log(`Popup closed for ${airportCode}`);
+            isHandlingEvent.current = false;
           }
-          console.log(`Popup closed for ${airportCode}`);
         }
       }}
     >

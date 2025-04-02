@@ -15,6 +15,7 @@ const Index = () => {
   const [searched, setSearched] = useState(false);
   const [showInstructions, setShowInstructions] = useState(true);
   const [activePopup, setActivePopup] = useState<string | null>(null);
+  const [preventPopupReopen, setPreventPopupReopen] = useState(false);
 
   // Add debugging effect for monitoring flight data
   useEffect(() => {
@@ -83,8 +84,23 @@ const Index = () => {
   };
 
   const handlePopupOpen = (airportCode: string | null) => {
-    setActivePopup(airportCode);
-    console.log(`Active popup set to: ${airportCode}`);
+    console.log(`Active popup request: ${airportCode}, current: ${activePopup}, prevent: ${preventPopupReopen}`);
+    
+    // If we're closing a popup (airportCode is null)
+    if (airportCode === null) {
+      // Temporarily prevent reopening
+      setPreventPopupReopen(true);
+      setActivePopup(null);
+      
+      // Allow reopening after a short delay
+      setTimeout(() => {
+        setPreventPopupReopen(false);
+      }, 300);
+    } 
+    // Only set a new active popup if we're not in prevention mode
+    else if (!preventPopupReopen) {
+      setActivePopup(airportCode);
+    }
   };
 
   return (
