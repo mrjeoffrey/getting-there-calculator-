@@ -1,10 +1,9 @@
 
-import React, { useState } from 'react';
-import { Marker, Popup, Tooltip } from 'react-leaflet';
+import React, { useState, useEffect } from 'react';
+import { Marker, Popup, Tooltip, useMap } from 'react-leaflet';
 import { Airport, Flight, ConnectionFlight } from '../types/flightTypes';
 import { createAirportMarkerIcon } from './map/MarkerIconFactory';
 import FlightScheduleTable from './FlightScheduleTable';
-import { useMap } from 'react-leaflet';
 
 interface AirportMarkerProps {
   airport: Airport;
@@ -30,6 +29,7 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
   // Check if we have any flights to display
   const hasFlights = departureFlights.length > 0 || arrivalFlights.length > 0 || (type !== 'origin' && connectingFlights.length > 0);
   const map = useMap();
+  const [popupOpen, setPopupOpen] = useState(type === 'origin');
   
   const airportCode = airport.code || 'N/A';
   const airportName = airport.name || `Airport ${airportCode}`;
@@ -48,11 +48,22 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
     }
   };
 
+  // Auto-open popup for origin airport when component mounts
+  useEffect(() => {
+    if (type === 'origin' && hasFlights) {
+      setPopupOpen(true);
+    }
+  }, [type, hasFlights]);
+
   return (
     <Marker 
       position={[airport.lat, airport.lng]} 
       icon={createAirportMarkerIcon(type)}
       zIndexOffset={2000}
+      eventHandlers={{
+        popupopen: () => setPopupOpen(true),
+        popupclose: () => setPopupOpen(false)
+      }}
     >
       <Tooltip direction="top" offset={[0, -10]} opacity={0.9}>
         {getTooltipContent()}
@@ -66,6 +77,7 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
         autoPanPaddingTopLeft={[50, 50]}
         autoPanPaddingBottomRight={[50, 50]}
         keepInView={true}
+        autoClose={false}
       >
         <div className="p-2">
           {hasFlights ? (
