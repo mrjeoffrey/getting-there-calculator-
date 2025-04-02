@@ -34,6 +34,8 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
   const hasFlights = departureFlights.length > 0 || arrivalFlights.length > 0 || (type !== 'origin' && connectingFlights.length > 0);
   const map = useMap();
   const [popupOpen, setPopupOpen] = useState(false);
+  const [popupDismissed, setPopupDismissed] = useState(false);
+
   const markerRef = useRef(null);
   
   const airportCode = airport.code || 'N/A';
@@ -75,8 +77,7 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
 
   // Auto-open popup for origin airport when component mounts
   useEffect(() => {
-    if (type === 'origin' && hasFlights && markerRef.current && !popupOpen && !activePopup) {
-      // Use setTimeout to ensure the marker is fully rendered
+    if (type === 'origin' && hasFlights && markerRef.current && !popupOpen && !activePopup && !popupDismissed ) {
       const timer = setTimeout(() => {
         if (markerRef.current && !isHandlingEvent.current) {
           isHandlingEvent.current = true;
@@ -116,6 +117,9 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
           if (!isHandlingEvent.current) {
             isHandlingEvent.current = true;
             setPopupOpen(false);
+            if (type === 'origin') {
+              setPopupDismissed(true);
+            }
             // Notify parent about popup close only if this is the active popup
             if (onPopupOpen && activePopup === airportCode) {
               onPopupOpen(null);
