@@ -549,7 +549,7 @@ const FlightMap: React.FC<FlightMapProps> = ({
               fontWeight: 'bold',
             }}
           >
-            {/* Logo SVG was incomplete in original code, removing it */}
+           Bohamo.com
           </a>
         </div>
       </MapContainer>
