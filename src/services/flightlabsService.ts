@@ -1,3 +1,4 @@
+
 import axios from 'axios';
 import { Flight, ConnectionFlight, WeeklyFlightData } from '../types/flightTypes';
 import { findAirportByCode } from '../utils/flightUtils';
@@ -110,14 +111,65 @@ export const searchWeeklyFlights = async (originSkyId, destinationSkyId) => {
         if (flight.direct) {
           directFlights.push(flight);
         } else {
-          const connectionFlight = {
-            id: `connection-${flight.id}`,
-            flights: [flight],
-            totalDuration: flight.duration,
-            stopoverDuration: '1h 30m',
-            price: Math.floor(Math.random() * 500) + 300
-          };
-          connectingFlights.push(connectionFlight);
+          // Create synthetic connecting flights for non-direct routes
+          const segments = flight.segments;
+          if (segments.length >= 2) {
+            // Create individual flight objects for each segment
+            const connectionFlights = segments.map((segment, idx) => {
+              // Generate a synthetic flight for this segment
+              const segmentFlight = {
+                id: `${flight.id}-segment-${idx}`,
+                departureAirport: segment.departureAirport,
+                arrivalAirport: segment.arrivalAirport,
+                departureTime: segment.departureTime,
+                arrivalTime: segment.arrivalTime,
+                flightNumber: segment.flightNumber,
+                airline: flight.airline,
+                duration: calculateFlightDuration(segment.departureTime, segment.arrivalTime),
+                direct: true,
+                segments: [segment]
+              };
+              return segmentFlight;
+            });
+            
+            // Calculate total duration and stopover duration
+            const totalDuration = calculateFlightDuration(
+              connectionFlights[0].departureTime, 
+              connectionFlights[connectionFlights.length - 1].arrivalTime
+            );
+            
+            // Calculate stopover duration between first and last segments
+            let stopoverMs = 0;
+            for (let i = 0; i < connectionFlights.length - 1; i++) {
+              const segmentArrival = new Date(connectionFlights[i].arrivalTime).getTime();
+              const nextSegmentDeparture = new Date(connectionFlights[i + 1].departureTime).getTime();
+              stopoverMs += nextSegmentDeparture - segmentArrival;
+            }
+            const stopoverHours = Math.floor(stopoverMs / (1000 * 60 * 60));
+            const stopoverMinutes = Math.floor((stopoverMs % (1000 * 60 * 60)) / (1000 * 60));
+            
+            // Create the connection flight
+            const connectionFlight = {
+              id: `connection-${flight.id}`,
+              flights: connectionFlights,
+              totalDuration,
+              stopoverDuration: `${stopoverHours}h ${stopoverMinutes}m`,
+              price: Math.floor(Math.random() * 500) + 300
+            };
+            
+            connectingFlights.push(connectionFlight);
+          } else {
+            // If there's only one segment but it was marked as non-direct,
+            // just create a simple connecting flight
+            const connectionFlight = {
+              id: `connection-${flight.id}`,
+              flights: [flight],
+              totalDuration: flight.duration,
+              stopoverDuration: '1h 30m',
+              price: Math.floor(Math.random() * 500) + 300
+            };
+            connectingFlights.push(connectionFlight);
+          }
         }
       });
     } catch (error) {

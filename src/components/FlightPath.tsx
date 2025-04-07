@@ -388,6 +388,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
   const color = type === 'direct' ? '#4CAF50' : '#FFC107';
   const weight = isActive ? 4 : 3;
   const opacity = isActive ? 0.8 : 0.6;
+  const dashArray = type === 'connecting' ? '5, 8' : '';
   
   return (
     <>
@@ -399,7 +400,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
             color,
             weight,
             opacity,
-            // dashArray: type === 'connecting' ? '5, 10' : '',
+            dashArray,
             className: `flight-path ${type} ${animationComplete ? 'animation-complete' : ''}`
           }}
           eventHandlers={{

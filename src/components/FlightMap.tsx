@@ -132,7 +132,8 @@ const FlightMap: React.FC<FlightMapProps> = ({
           setOriginAirport(connection.flights[0].departureAirport);
           setDestinationAirport(connection.flights[connection.flights.length - 1].arrivalAirport);
 
-          connection.flights.slice(0, -1).forEach(flight => {
+          for (let i = 0; i < connection.flights.length - 1; i++) {
+            const flight = connection.flights[i];
             if (flight.arrivalAirport) {
               const exists = connectionPoints.some(
                 airport => airport.code === flight.arrivalAirport.code
@@ -142,7 +143,7 @@ const FlightMap: React.FC<FlightMapProps> = ({
                 connectionPoints.push(flight.arrivalAirport);
               }
             }
-          });
+          }
         }
       });
       
@@ -274,8 +275,6 @@ const FlightMap: React.FC<FlightMapProps> = ({
     });
     
     connectingFlights.forEach(connection => {
-      const originAirport = connection.flights[0]?.departureAirport;
-      
       connection.flights.forEach((flight, index) => {
         if (flight.departureAirport && !airports.has(flight.departureAirport.code)) {
           airports.set(flight.departureAirport.code, flight.departureAirport);
@@ -291,10 +290,8 @@ const FlightMap: React.FC<FlightMapProps> = ({
         
         if (flight.departureAirport) {
           const departures = airportDepartureFlights.get(flight.departureAirport.code) || [];
-          if (index === 0) {
-            departures.push(flight);
-            airportDepartureFlights.set(flight.departureAirport.code, departures);
-          }
+          departures.push(flight);
+          airportDepartureFlights.set(flight.departureAirport.code, departures);
         }
         
         if (flight.arrivalAirport) {
@@ -303,7 +300,7 @@ const FlightMap: React.FC<FlightMapProps> = ({
           airportArrivalFlights.set(flight.arrivalAirport.code, arrivals);
         }
         
-        if (index === 0 && flight.arrivalAirport) {
+        if (index < connection.flights.length - 1 && flight.arrivalAirport) {
           const connections = airportConnectionFlights.get(flight.arrivalAirport.code) || [];
           connections.push(connection);
           airportConnectionFlights.set(flight.arrivalAirport.code, connections);
@@ -375,8 +372,6 @@ const FlightMap: React.FC<FlightMapProps> = ({
           attribution='&copy; Esri &mdash; Sources: Esri, HERE, Garmin, USGS, NGA, EPA, and others'
           url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}"
         />
-
-        {/* <GeoJSON data={countriesGeoJson as any}  /> */}
 
         <ZoomControl position="bottomright" />
         <ResetMapView 
@@ -467,7 +462,17 @@ const FlightMap: React.FC<FlightMapProps> = ({
               })
             ))}
 
-            {/* City Labels using Markers with custom divIcons */}
+            {/* Connection points labels */}
+            {connectionAirports.map(airport => (
+              <Marker 
+                key={`connection-point-${airport.code}`}
+                position={[airport.lat, airport.lng]} 
+                icon={createCityIcon(airport.city || airport.name, 'connection')}
+                zIndexOffset={800}
+              />
+            ))}
+
+            {/* Origin & Destination city labels */}
             {originAirport && (
               <Marker 
                 position={[originAirport.lat, originAirport.lng]} 
@@ -483,7 +488,6 @@ const FlightMap: React.FC<FlightMapProps> = ({
                 zIndexOffset={1000}
               />
             )}
-            
 
             {/* Airport Markers */}
             {Array.from(airports.values()).map(airport => (
