@@ -37,6 +37,15 @@ const convertFlightLabsDataToFlight = (flightInfo) => {
   const departureTime = new Date(leg.departure);
   const arrivalTime = new Date(leg.arrival);
 
+  // Create segments properly from the API data
+  const segments = leg.segments.map((segment) => ({
+    departureAirport: findAirportByCode(segment.origin.displayCode),
+    arrivalAirport: findAirportByCode(segment.destination.displayCode),
+    departureTime: new Date(segment.departure).toISOString(),
+    arrivalTime: new Date(segment.arrival).toISOString(),
+    flightNumber: segment.flightNumber || `FL${Math.floor(Math.random() * 9000) + 1000}`,
+  }));
+
   const flight = {
     id: flightInfo.id,
     departureAirport,
@@ -47,13 +56,7 @@ const convertFlightLabsDataToFlight = (flightInfo) => {
     airline: leg.carriers.marketing[0]?.alternateId || 'FL',
     duration: calculateFlightDuration(departureTime, arrivalTime),
     direct: leg.stopCount === 0,
-    segments: leg.segments.map((segment) => ({
-      departureAirport: findAirportByCode(segment.origin.displayCode),
-      arrivalAirport: findAirportByCode(segment.destination.displayCode),
-      departureTime: new Date(segment.departure).toISOString(),
-      arrivalTime: new Date(segment.arrival).toISOString(),
-      flightNumber: segment.flightNumber || `FL${Math.floor(Math.random() * 9000) + 1000}`,
-    })),
+    segments: segments,
   };
 
   console.log('Converted flight:', flight);
@@ -111,13 +114,17 @@ export const searchWeeklyFlights = async (originSkyId, destinationSkyId) => {
         if (flight.direct) {
           directFlights.push(flight);
         } else {
-          // Create synthetic connecting flights for non-direct routes
-          const segments = flight.segments;
-          if (segments.length >= 2) {
+          // Create actual connecting flights with proper intermediate points
+          if (flight.segments.length >= 2) {
             // Create individual flight objects for each segment
-            const connectionFlights = segments.map((segment, idx) => {
+            const connectionFlights: Flight[] = [];
+            
+            // Process each segment as a separate flight leg
+            for (let idx = 0; idx < flight.segments.length; idx++) {
+              const segment = flight.segments[idx];
+              
               // Generate a synthetic flight for this segment
-              const segmentFlight = {
+              const segmentFlight: Flight = {
                 id: `${flight.id}-segment-${idx}`,
                 departureAirport: segment.departureAirport,
                 arrivalAirport: segment.arrivalAirport,
@@ -126,13 +133,14 @@ export const searchWeeklyFlights = async (originSkyId, destinationSkyId) => {
                 flightNumber: segment.flightNumber,
                 airline: flight.airline,
                 duration: calculateFlightDuration(segment.departureTime, segment.arrivalTime),
-                direct: true,
-                segments: [segment]
+                direct: true, // Each segment is direct
+                segments: [segment],
               };
-              return segmentFlight;
-            });
+              
+              connectionFlights.push(segmentFlight);
+            }
             
-            // Calculate total duration and stopover duration
+            // Calculate total duration from first departure to last arrival
             const totalDuration = calculateFlightDuration(
               connectionFlights[0].departureTime, 
               connectionFlights[connectionFlights.length - 1].arrivalTime
@@ -148,8 +156,8 @@ export const searchWeeklyFlights = async (originSkyId, destinationSkyId) => {
             const stopoverHours = Math.floor(stopoverMs / (1000 * 60 * 60));
             const stopoverMinutes = Math.floor((stopoverMs % (1000 * 60 * 60)) / (1000 * 60));
             
-            // Create the connection flight
-            const connectionFlight = {
+            // Create the connection flight with all segments
+            const connectionFlight: ConnectionFlight = {
               id: `connection-${flight.id}`,
               flights: connectionFlights,
               totalDuration,
@@ -157,17 +165,74 @@ export const searchWeeklyFlights = async (originSkyId, destinationSkyId) => {
               price: Math.floor(Math.random() * 500) + 300
             };
             
+            console.log(`Created connecting flight with ${connectionFlights.length} legs`);
             connectingFlights.push(connectionFlight);
           } else {
             // If there's only one segment but it was marked as non-direct,
-            // just create a simple connecting flight
-            const connectionFlight = {
+            // create a simple connecting flight with a synthetic stopover
+            const mainSegment = flight.segments[0];
+            
+            // Create two synthetic segments for the flight
+            const midpointTime = new Date(
+              (new Date(mainSegment.departureTime).getTime() + new Date(mainSegment.arrivalTime).getTime()) / 2
+            );
+            
+            // Find a random airport as connection point if no segments defined
+            const connectionCode = ['ATL', 'MIA', 'JFK', 'ORD', 'DFW'][Math.floor(Math.random() * 5)];
+            const connectionAirport = findAirportByCode(connectionCode);
+            
+            // First leg: Origin to Connection
+            const firstLeg: Flight = {
+              id: `${flight.id}-first`,
+              departureAirport: flight.departureAirport,
+              arrivalAirport: connectionAirport,
+              departureTime: mainSegment.departureTime,
+              arrivalTime: midpointTime.toISOString(),
+              flightNumber: `${flight.flightNumber}A`,
+              airline: flight.airline,
+              duration: calculateFlightDuration(mainSegment.departureTime, midpointTime.toISOString()),
+              direct: true,
+              segments: [{
+                departureAirport: flight.departureAirport,
+                arrivalAirport: connectionAirport,
+                departureTime: mainSegment.departureTime,
+                arrivalTime: midpointTime.toISOString(),
+                flightNumber: `${flight.flightNumber}A`
+              }]
+            };
+            
+            // Second leg: Connection to Destination
+            const secondLeg: Flight = {
+              id: `${flight.id}-second`,
+              departureAirport: connectionAirport,
+              arrivalAirport: flight.arrivalAirport,
+              departureTime: new Date(midpointTime.getTime() + 90 * 60000).toISOString(), // 90 min layover
+              arrivalTime: mainSegment.arrivalTime,
+              flightNumber: `${flight.flightNumber}B`,
+              airline: flight.airline,
+              duration: calculateFlightDuration(
+                new Date(midpointTime.getTime() + 90 * 60000).toISOString(),
+                mainSegment.arrivalTime
+              ),
+              direct: true,
+              segments: [{
+                departureAirport: connectionAirport,
+                arrivalAirport: flight.arrivalAirport,
+                departureTime: new Date(midpointTime.getTime() + 90 * 60000).toISOString(),
+                arrivalTime: mainSegment.arrivalTime,
+                flightNumber: `${flight.flightNumber}B`
+              }]
+            };
+            
+            const connectionFlight: ConnectionFlight = {
               id: `connection-${flight.id}`,
-              flights: [flight],
+              flights: [firstLeg, secondLeg],
               totalDuration: flight.duration,
               stopoverDuration: '1h 30m',
               price: Math.floor(Math.random() * 500) + 300
             };
+            
+            console.log(`Created synthetic connecting flight through ${connectionAirport.code}`);
             connectingFlights.push(connectionFlight);
           }
         }
