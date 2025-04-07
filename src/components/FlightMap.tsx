@@ -10,19 +10,7 @@ import { GeoJSON } from 'react-leaflet';
 import countriesGeoJson from "./map/custom.geo.json";
 import L from 'leaflet';
 import { Bold } from 'lucide-react';
-import MapInstructionCard from './MapInstructionCard';
-
-interface FlightMapProps {
-  directFlights: Flight[];
-  connectingFlights: ConnectionFlight[];
-  selectedFlightId?: string | null;
-  loading?: boolean;
-  onFlightSelect?: (flight: any) => void;
-  autoAnimateConnections?: boolean;
-  showInstructions?: boolean;
-  activePopup?: string | null;
-  onPopupOpen?: (airportCode: string | null) => void;
-}
+// Remove MapInstructionCard import as it's not needed
 
 const createCityIcon = (cityName, type) => {
   const color = type === 'departure' ? '#2e7d32' : 
@@ -65,6 +53,18 @@ const createCityIcon = (cityName, type) => {
     });
 };
 
+interface FlightMapProps {
+  directFlights: Flight[];
+  connectingFlights: ConnectionFlight[];
+  selectedFlightId?: string | null;
+  loading?: boolean;
+  onFlightSelect?: (flight: any) => void;
+  autoAnimateConnections?: boolean;
+  showInstructions?: boolean;  // We'll keep the prop but not use it
+  activePopup?: string | null;
+  onPopupOpen?: (airportCode: string | null) => void;
+}
+
 const FlightMap: React.FC<FlightMapProps> = ({
   directFlights,
   connectingFlights,
@@ -72,32 +72,23 @@ const FlightMap: React.FC<FlightMapProps> = ({
   loading = false,
   onFlightSelect,
   autoAnimateConnections = true,
-  showInstructions = false,
+  showInstructions = false,  // We'll keep the prop but not use it
   activePopup,
   onPopupOpen
 }) => {
   const [mapReady, setMapReady] = useState(false);
   const flightPathRefs = useRef<Map<string, React.RefObject<any>>>(new Map());
   const [connectionLegsStatus, setConnectionLegsStatus] = useState<ConnectionLegStatus[]>([]);
-  const [instructionsVisible, setInstructionsVisible] = useState(showInstructions);
   
   const [originAirport, setOriginAirport] = useState<any>(null);
   const [destinationAirport, setDestinationAirport] = useState<any>(null);
   const [connectionAirports, setConnectionAirports] = useState<any[]>([]);
-  
-  useEffect(() => {
-    setInstructionsVisible(showInstructions);
-  }, [showInstructions]);
   
   const handlePopupOpen = (airportCode: string | null) => {
     console.log(`Setting active popup to ${airportCode}`);
     if (onPopupOpen) {
       onPopupOpen(airportCode);
     }
-  };
-  
-  const handleInstructionsClose = () => {
-    setInstructionsVisible(false);
   };
 
   useEffect(() => {
@@ -555,12 +546,6 @@ const FlightMap: React.FC<FlightMapProps> = ({
           </a>
         </div>
       </MapContainer>
-      
-      <MapInstructionCard 
-        className="z-[999]" 
-        visible={instructionsVisible} 
-        onClose={handleInstructionsClose} 
-      />
     </>
   );
 };

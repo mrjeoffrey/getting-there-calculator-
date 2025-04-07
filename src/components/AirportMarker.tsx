@@ -144,7 +144,6 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
         keepInView={true}
         closeButton={true}
         offset={[0, 10]}  // Offset to position the popup below the marker
-        direction="bottom" // Force popup to appear below the marker
       >
         <div className="p-2">
           <h3 className="text-lg font-semibold mb-2">{airport.city || airport.name} ({airport.code})</h3>
