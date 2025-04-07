@@ -104,13 +104,7 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
         </div>
       )}
 
-      {/* Add CSS to ensure proper positioning between markers */}
-      <style jsx>{`
-        .flight-schedule-between-markers {
-          position: relative;
-          z-index: 1000;
-        }
-      `}</style>
+      {/* Use a CSS class instead of styled-jsx */}
     </div>
   );
 };
