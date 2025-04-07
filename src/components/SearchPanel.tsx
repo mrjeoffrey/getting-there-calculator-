@@ -18,7 +18,7 @@ const SearchPanel: React.FC<SearchPanelProps> = ({
   onToggleInstructions 
 }) => {
   const [from, setFrom] = useState('');
-  const [to] = useState('GND'); // Fixed to Tokyo Haneda Airport
+  const [to] = useState('GND'); // Fixed to Grenada's Maurice Bishop International Airport
 
   const handleSearch = () => {
     if (!from) {
