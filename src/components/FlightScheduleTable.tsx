@@ -43,6 +43,7 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
     boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
   };
   
+  // Generate title based on available flights
   let routeHeader = '';
   if (flights && flights.length > 0) {
     const departAirport = flights[0].departureAirport;
@@ -52,7 +53,11 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
   
   return (
     <div className="flight-schedule-between-markers space-y-0 mt-2">
-      {routeHeader && (
+      {title && (
+        <h3 className="font-medium text-sm text-primary mb-2">{title}</h3>
+      )}
+      
+      {!title && routeHeader && (
         <h3 className="font-medium text-sm text-primary mb-2">{routeHeader}</h3>
       )}
       
@@ -105,12 +110,10 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
       )}
 
       <style>
-        {`
-        .flight-schedule-between-markers {
+        {`.flight-schedule-between-markers {
           position: relative;
           z-index: 1000;
-        }
-        `}
+        }`}
       </style>
     </div>
   );

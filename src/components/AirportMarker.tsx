@@ -47,7 +47,7 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
   // Calculate popup offset based on airport positions
   const getPopupOffset = (): PointTuple => {
     if (!destinationAirport || type === 'connection') {
-      return [0, 30]; // slightly more downward for connections too
+      return [0, 30] as PointTuple; // slightly more downward for connections too
     }
   
     const dx = destinationAirport.lng - airport.lng;
@@ -59,12 +59,8 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
     const xOffset = Math.cos(angle) * offsetDistance;
     const yOffset = Math.sin(angle) * offsetDistance * -1.3; // exaggerate downward movement
   
-    return [xOffset, yOffset];
+    return [xOffset, yOffset] as PointTuple;
   };
-  
-  
-  
-  
   
   // Tooltip content based on marker type
   const getTooltipContent = () => {
@@ -155,22 +151,21 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
         }
       }}
     >
-      <Tooltip direction="top" offset={[0, -10]} opacity={0.9}>
+      <Tooltip direction="top" offset={[0, -10] as PointTuple} opacity={0.9}>
         {getTooltipContent()}
       </Tooltip>
       
       <Popup 
-  className="flight-popup between-airports"
-  minWidth={320} 
-  maxWidth={500}
-  autoPan={true}
-  autoPanPaddingTopLeft={[50, 50]}
-  autoPanPaddingBottomRight={[50, 50]}
-  keepInView={true}
-  closeButton={true}
-  offset={getPopupOffset()}   
->
-
+        className="flight-popup between-airports"
+        minWidth={320} 
+        maxWidth={500}
+        autoPan={true}
+        autoPanPaddingTopLeft={[50, 50] as PointTuple}
+        autoPanPaddingBottomRight={[50, 50] as PointTuple}
+        keepInView={true}
+        closeButton={true}
+        offset={getPopupOffset()}   
+      >
         <div className="p-2">
           <h3 className="text-lg font-semibold mb-2">{airport.city || airport.name} ({airport.code})</h3>
           
@@ -199,6 +194,18 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
           )}
         </div>
       </Popup>
+
+      <style>
+        {`.flight-popup {
+          position: relative;
+          z-index: 1500;
+        }
+        .between-airports .leaflet-popup-content-wrapper {
+          background: rgba(255, 255, 255, 0.95);
+          backdrop-filter: blur(8px);
+          border: 1px solid rgba(0, 0, 0, 0.1);
+        }`}
+      </style>
     </Marker>
   );
 };
