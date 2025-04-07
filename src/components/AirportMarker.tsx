@@ -5,6 +5,7 @@ import { PointTuple } from 'leaflet';
 import { Airport, Flight, ConnectionFlight } from '../types/flightTypes';
 import { createAirportMarkerIcon } from './map/MarkerIconFactory';
 import FlightScheduleTable from './FlightScheduleTable';
+import { ScrollArea } from './ui/scroll-area';
 
 interface AirportMarkerProps {
   airport: Airport;
@@ -47,7 +48,7 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
   // Calculate popup offset based on airport positions
   const getPopupOffset = (): PointTuple => {
     if (!destinationAirport || type === 'connection') {
-      return [0, 30] as PointTuple; // slightly more downward for connections too
+      return [0, 10] as PointTuple; // Moved up from 30 to 10
     }
   
     const dx = destinationAirport.lng - airport.lng;
@@ -57,7 +58,7 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
     const offsetDistance = 200; // ⬅️ increase this for more pull
   
     const xOffset = Math.cos(angle) * offsetDistance;
-    const yOffset = Math.sin(angle) * offsetDistance * -1.3; // exaggerate downward movement
+    const yOffset = Math.sin(angle) * offsetDistance * -1.3 - 20; // exaggerate upward movement - subtracted 20
   
     return [xOffset, yOffset] as PointTuple;
   };
@@ -157,8 +158,8 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
       
       <Popup 
         className="flight-popup between-airports"
-        minWidth={320} 
-        maxWidth={500}
+        minWidth={400} 
+        maxWidth={600}
         autoPan={true}
         autoPanPaddingTopLeft={[50, 50] as PointTuple}
         autoPanPaddingBottomRight={[50, 50] as PointTuple}
@@ -170,59 +171,61 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
           <h3 className="text-lg font-semibold mb-2">{airport.city || airport.name} ({airport.code})</h3>
           
           {hasFlights ? (
-            <div className="mt-2">
-              {type === 'origin' && (
-                <>
-                  {departureFlights.length > 0 && (
-                    <div className="mb-3">
-                      <FlightScheduleTable 
-                        flights={departureFlights} 
-                        title="Departing Flights"
-                      />
-                    </div>
-                  )}
-                  
-                  {connectingFlights.length > 0 && (
-                    <div>
-                      <FlightScheduleTable
-                        connectionFlights={connectingFlights}
-                        title="Connecting Flights"
-                      />
-                    </div>
-                  )}
-                </>
-              )}
-              
-              {type === 'destination' && (
-                <div>
-                  <FlightScheduleTable
-                    flights={arrivalFlights} 
-                    title="Arriving Flights"
-                  />
-                </div>
-              )}
-              
-              {type === 'connection' && (
-                <>
-                  {departureFlights.length > 0 && (
-                    <div className="mb-3">
-                      <FlightScheduleTable 
-                        flights={departureFlights}
-                        title="Departing Flights"
-                      />
-                    </div>
-                  )}
-                  
-                  {arrivalFlights.length > 0 && (
-                    <div className="mb-3">
-                      <FlightScheduleTable
-                        flights={arrivalFlights}
-                      />
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
+            <ScrollArea className="h-[300px] w-full pr-4">
+              <div className="mt-2">
+                {type === 'origin' && (
+                  <>
+                    {departureFlights.length > 0 && (
+                      <div className="mb-3">
+                        <FlightScheduleTable 
+                          flights={departureFlights} 
+                          title="Departing Flights"
+                        />
+                      </div>
+                    )}
+                    
+                    {connectingFlights.length > 0 && (
+                      <div>
+                        <FlightScheduleTable
+                          connectionFlights={connectingFlights}
+                          title="Connecting Flights"
+                        />
+                      </div>
+                    )}
+                  </>
+                )}
+                
+                {type === 'destination' && (
+                  <div>
+                    <FlightScheduleTable
+                      flights={arrivalFlights} 
+                      title="Arriving Flights"
+                    />
+                  </div>
+                )}
+                
+                {type === 'connection' && (
+                  <>
+                    {departureFlights.length > 0 && (
+                      <div className="mb-3">
+                        <FlightScheduleTable 
+                          flights={departureFlights}
+                          title="Departing Flights"
+                        />
+                      </div>
+                    )}
+                    
+                    {arrivalFlights.length > 0 && (
+                      <div className="mb-3">
+                        <FlightScheduleTable
+                          flights={arrivalFlights}
+                        />
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </ScrollArea>
           ) : (
             <p className="text-sm text-muted-foreground italic">No flight information available for this airport.</p>
           )}
@@ -233,11 +236,19 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
         {`.flight-popup {
           position: relative;
           z-index: 1500;
+          width: auto !important;
         }
         .between-airports .leaflet-popup-content-wrapper {
           background: rgba(255, 255, 255, 0.95);
           backdrop-filter: blur(8px);
           border: 1px solid rgba(0, 0, 0, 0.1);
+          min-width: 400px;
+          max-width: 600px;
+        }
+        .leaflet-popup-content {
+          width: 100% !important;
+          margin: 13px 24px;
+          max-height: 400px;
         }`}
       </style>
     </Marker>
