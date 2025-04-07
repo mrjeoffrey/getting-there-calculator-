@@ -1,8 +1,10 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Marker, Popup, Tooltip, useMap } from 'react-leaflet';
 import { Airport, Flight, ConnectionFlight } from '../types/flightTypes';
 import { createAirportMarkerIcon } from './map/MarkerIconFactory';
 import FlightScheduleTable from './FlightScheduleTable';
+import { PointTuple } from 'leaflet';
 
 interface AirportMarkerProps {
   airport: Airport;
@@ -43,7 +45,7 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
   const airportName = airport.name || `Airport ${airportCode}`;
   
   // Calculate popup offset based on airport positions
-  const getPopupOffset = () => {
+  const getPopupOffset = (): PointTuple => {
     // Default offset if no destination is provided
     if (!destinationAirport) {
       return [0, 10]; 
@@ -60,13 +62,15 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
     
     // For origin markers, offset toward the destination
     if (type === 'origin') {
-      xOffset = Math.cos(angle * Math.PI / 180) * 30;
-      yOffset = Math.sin(angle * Math.PI / 180) * 30;
+      // Move the popup in the direction of destination, but more substantially
+      xOffset = Math.cos(angle * Math.PI / 180) * 50;  // Increased from 30
+      yOffset = Math.sin(angle * Math.PI / 180) * 50;  // Increased from 30
     } 
     // For destination markers, offset toward the origin
     else if (type === 'destination') {
-      xOffset = Math.cos((angle + 180) * Math.PI / 180) * 30;
-      yOffset = Math.sin((angle + 180) * Math.PI / 180) * 30;
+      // Move the popup in the direction of origin, but more substantially
+      xOffset = Math.cos((angle + 180) * Math.PI / 180) * 50;  // Increased from 30
+      yOffset = Math.sin((angle + 180) * Math.PI / 180) * 50;  // Increased from 30
     } 
     // Connection points get a general offset downward
     else {
@@ -165,7 +169,7 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
         }
       }}
     >
-      <Tooltip direction="top" offset={[0, -10]} opacity={0.9}>
+      <Tooltip direction="top" offset={[0, -10] as PointTuple} opacity={0.9}>
         {getTooltipContent()}
       </Tooltip>
       
@@ -174,8 +178,8 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
         minWidth={320} 
         maxWidth={500}
         autoPan={true}
-        autoPanPaddingTopLeft={[50, 50]}
-        autoPanPaddingBottomRight={[50, 50]}
+        autoPanPaddingTopLeft={[50, 50] as PointTuple}
+        autoPanPaddingBottomRight={[50, 50] as PointTuple}
         keepInView={true}
         closeButton={true}
         offset={getPopupOffset()}
@@ -209,12 +213,14 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
         </div>
       </Popup>
 
-      <style jsx>{`
+      <style>
+        {`
         .flight-popup.between-airports {
           z-index: 1000;
           transform-origin: center center;
         }
-      `}</style>
+        `}
+      </style>
     </Marker>
   );
 };
