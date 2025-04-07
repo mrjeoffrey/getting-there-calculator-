@@ -65,7 +65,7 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
               <TableHeader>
                 <TableRow>
                   <TableHead className="py-1 px-3 text-centre bg-background z-10 w-1/6">Airline</TableHead>
-                  <TableHead className="py-1 px-3 text-centre bg-background z-10 w-1/6">Duration</TableHead>
+                  <TableHead className="py-1 px-3 text-centre bg-background z-10 w-1/6">Total Duration</TableHead>
                   <TableHead className="py-1 px-3 text-centre bg-background z-10 w-1/6">Days</TableHead>
                   <TableHead className="py-1 px-3 text-centre bg-background z-10 w-1/6">Dep</TableHead>
                   <TableHead className="py-1 px-3 text-centre bg-background z-10 w-1/6">Arr</TableHead>
@@ -112,6 +112,10 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
                     const lastFlight = connectionFlight.flights[connectionFlight.flights.length - 1];
                     const stops = connectionFlight.flights.length - 1;
                     
+                    // Parse times for readability
+                    const departureTime = firstFlight.departureTime.split('T')[1].substring(0, 5);
+                    const arrivalTime = lastFlight.arrivalTime.split('T')[1].substring(0, 5);
+                    
                     return (
                       <TableRow
                         key={`connecting-flight-${index}`}
@@ -123,12 +127,8 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
                         </TableCell>
                         <TableCell className="py-2 px-3 text-centre w-1/6">{connectionFlight.totalDuration}</TableCell>
                         <TableCell className="py-2 px-3 text-centre w-1/6">-</TableCell>
-                        <TableCell className="py-2 px-3 text-centre w-1/6">
-                          {firstFlight.departureTime.split('T')[1].substring(0, 5)}
-                        </TableCell>
-                        <TableCell className="py-2 px-3 text-centre w-1/6">
-                          {lastFlight.arrivalTime.split('T')[1].substring(0, 5)}
-                        </TableCell>
+                        <TableCell className="py-2 px-3 text-centre w-1/6">{departureTime}</TableCell>
+                        <TableCell className="py-2 px-3 text-centre w-1/6">{arrivalTime}</TableCell>
                         <TableCell className="py-2 px-3 text-centre w-1/6 text-amber-600">
                           {stops} {stops === 1 ? 'stop' : 'stops'}
                         </TableCell>

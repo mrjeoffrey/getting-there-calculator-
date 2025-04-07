@@ -42,9 +42,10 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
   const airportCode = airport.code || 'N/A';
   const airportName = airport.name || `Airport ${airportCode}`;
   
+  // Updated to move popup higher up from marker
   const getPopupOffset = () => {
     if (!destinationAirport) {
-      return [0, -40] as [number, number]; // Fixed TypeScript error by explicitly typing as tuple
+      return [0, -45] as [number, number]; // Moved higher from -40 to -45
     }
     
     const dx = destinationAirport.lng - airport.lng;
@@ -52,7 +53,7 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
     const angle = Math.atan2(dy, dx) * (180 / Math.PI);
     
     let xOffset = 0;
-    let yOffset = -40; // Moved popup up by changing from -30 to -40
+    let yOffset = -45; // Moved higher from -40 to -45
     
     if (type === 'origin') {
       xOffset = Math.cos(angle * Math.PI / 180) * 20;
@@ -61,10 +62,10 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
       xOffset = Math.cos((angle + 180) * Math.PI / 180) * 20;
     } 
     else {
-      return [0, -40] as [number, number]; // Fixed TypeScript error
+      return [0, -45] as [number, number]; // Moved higher from -40 to -45
     }
     
-    return [xOffset, yOffset] as [number, number]; // Fixed TypeScript error
+    return [xOffset, yOffset] as [number, number];
   };
   
   const getTooltipContent = () => {
@@ -155,8 +156,8 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
       
       <Popup 
         className="flight-popup between-airports"
-        minWidth={500}  // Increased from 450
-        maxWidth={600}  // Increased from 550
+        minWidth={550}  // Increased from 500
+        maxWidth={650}  // Increased from 600
         autoPan={true}
         autoPanPaddingTopLeft={[50, 50]}
         autoPanPaddingBottomRight={[50, 50]}
@@ -164,7 +165,7 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
         closeButton={true}
         offset={getPopupOffset()}
       >
-        <div className="p-2 max-h-[350px] overflow-auto">
+        <div className="p-2 max-h-[400px] overflow-auto"> {/* Increased height from 350px to 400px */}
           <h3 className="text-lg font-semibold mb-2">{airport.city || airport.name} ({airport.code})</h3>
           
           {hasFlights ? (
