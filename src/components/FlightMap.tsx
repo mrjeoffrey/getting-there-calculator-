@@ -10,7 +10,6 @@ import { GeoJSON } from 'react-leaflet';
 import countriesGeoJson from "./map/custom.geo.json";
 import L from 'leaflet';
 import { Bold } from 'lucide-react';
-// Remove MapInstructionCard import as it's not needed
 
 const createCityIcon = (cityName, type) => {
   const color = type === 'departure' ? '#2e7d32' : 
@@ -352,14 +351,13 @@ const FlightMap: React.FC<FlightMapProps> = ({
   return (
     <>
      <MapContainer
-  center={[20, 0]}
-        zoom={2}
-        style={{ backgroundColor: '#abe3ff', height: '100%', width: '100%' }}
-
-  zoomControl={false}
-        worldCopyJump={true}
-        className="colorful-flight-map google-like-map"
->
+      center={[20, 0]}
+      zoom={2}
+      style={{ backgroundColor: '#abe3ff', height: '100%', width: '100%' }}
+      zoomControl={false}
+      worldCopyJump={true}
+      className="colorful-flight-map google-like-map"
+    >
         <TileLayer
           url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}"
           noWrap={true}
@@ -497,6 +495,10 @@ const FlightMap: React.FC<FlightMapProps> = ({
                     : 'connection'}
                 onPopupOpen={handlePopupOpen}
                 activePopup={activePopup}
+                destinationAirport={
+                  airport.code === originAirport?.code ? destinationAirport : 
+                  airport.code === destinationAirport?.code ? originAirport : null
+                }
               />
             ))}
           </>

@@ -1032,3 +1032,42 @@ export const getCustomerContextInformation = async (customerId: string) => {
 
 // Function to get customer consent information
 export const getCustomerConsentInformation = async (customerId: string) => {
+  try {
+    const response = await amadeus.customer.consent.get(customerId);
+    return response.data;
+  } catch (error) {
+    console.error("Error getting customer consent information:", error);
+    throw error;
+  }
+};
+
+// Function to search for weekly flights
+export const searchWeeklyFlights = async (
+  originCode: string,
+  destinationCode: string
+): Promise<{
+  directFlights: Flight[];
+  connectingFlights: ConnectionFlight[];
+  weeklyData: WeeklyFlightData;
+}> => {
+  try {
+    const response = await amadeus.analytics.itineraryPriceMetrics.get({
+      originIataCode: originCode,
+      destinationIataCode: destinationCode,
+      departureDate: '2023-07-01,2023-07-07'
+    });
+    
+    return {
+      directFlights: [],
+      connectingFlights: [],
+      weeklyData: response.data
+    };
+  } catch (error) {
+    console.error("Error searching weekly flights:", error);
+    return {
+      directFlights: [],
+      connectingFlights: [],
+      weeklyData: []
+    };
+  }
+};
