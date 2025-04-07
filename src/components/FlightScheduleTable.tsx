@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Flight, ConnectionFlight } from '../types/flightTypes';
 import { groupFlightsByDay } from '../utils/dateFormatUtils';
@@ -19,19 +18,23 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
   onFlightSelect,
   title
 }) => {
-  const groupedDirectFlights = flights && flights.length > 0 ? groupFlightsByDay(flights) : [];
-  
-  if ((flights?.length === 0 || !flights) && (connectionFlights?.length === 0 || !connectionFlights)) {
+  const groupedDirectFlights = flights && flights.length > 0 ? groupFlightsByDay(flights.filter(f => f.direct)) : [];
+
+  console.log('[FlightScheduleTable] groupedDirectFlights:', groupedDirectFlights);
+  console.log('[FlightScheduleTable] connectionFlights:', connectionFlights);
+
+  if ((groupedDirectFlights.length === 0 || !flights) && (connectionFlights?.length === 0 || !connectionFlights)) {
+    console.log('[FlightScheduleTable] No flights to display.');
     return null;
   }
-  
+
   const handleFlightSelect = (flight: Flight | ConnectionFlight) => {
+    console.log('[FlightScheduleTable] Flight selected:', flight);
     if (onFlightSelect) {
       onFlightSelect(flight);
     }
   };
-  
-  // Updated styles for better appearance with scrolling
+
   const scrollableStyle: React.CSSProperties = {
     minHeight: '100px',
     maxHeight: '300px',
@@ -42,25 +45,23 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
     borderRadius: '6px',
     boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
   };
-  
+
   let routeHeader = '';
   if (flights && flights.length > 0) {
     const departAirport = flights[0].departureAirport;
     const arriveAirport = flights[0].arrivalAirport;
     routeHeader = `Available direct and connecting flights from ${departAirport.city}, ${departAirport.country} (${departAirport.code}) to ${arriveAirport.city}, ${arriveAirport.country} (${arriveAirport.code})`;
   }
-  
+
   return (
     <div className="flight-schedule-between-markers space-y-0 mt-2">
       {routeHeader && (
         <h3 className="font-medium text-sm text-primary mb-2">{routeHeader}</h3>
       )}
-      
-      {/* All Flights (Direct and Connecting) */}
+
       {(groupedDirectFlights.length > 0 || connectionFlights.length > 0) && (
         <div className="mb-2">
           <div className="overflow-x-auto">
-            {/* Table header outside scrollable area */}
             <Table className="border-separate border-spacing-y-1 table-fixed w-full">
               <TableHeader>
                 <TableRow>
@@ -71,22 +72,21 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
                   <TableHead className="py-1 px-3 text-centre bg-background z-10 w-1/6">Arr</TableHead>
                   <TableHead className="py-1 px-3 text-centre bg-background z-10 w-1/6">Stops</TableHead>
                 </TableRow>
-              </TableHeader> 
+              </TableHeader>
             </Table>
-            
-            {/* Scrollable table body */}
+
             <div className="overflow-auto max-h-[300px]">
               <Table className="border-separate border-spacing-y-1 table-fixed w-full">
                 <TableBody>
-                  {/* Direct Flights */}
                   {groupedDirectFlights.map((flight, index) => {
-                    // Find original flight to get complete data
                     const originalFlight = flights.find(f =>
                       f.airline === flight.airline &&
                       f.departureTime.includes(flight.departureTime) &&
                       f.arrivalTime.includes(flight.arrivalTime)
                     );
-                    
+
+                    console.log(`[Rendering Direct Flight] ${flight.flightNumber} | Duration: ${flight.duration}`);
+
                     return (
                       <TableRow
                         key={`direct-flight-${index}`}
@@ -104,18 +104,16 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
                       </TableRow>
                     );
                   })}
-                  
-                  {/* Connecting Flights - Updated to show full journey details */}
+
                   {connectionFlights.map((connectionFlight, index) => {
-                    // Get first and last flight for complete journey info
                     const firstFlight = connectionFlight.flights[0];
                     const lastFlight = connectionFlight.flights[connectionFlight.flights.length - 1];
                     const stops = connectionFlight.flights.length - 1;
-                    
-                    // Parse times for readability
                     const departureTime = firstFlight.departureTime.split('T')[1].substring(0, 5);
                     const arrivalTime = lastFlight.arrivalTime.split('T')[1].substring(0, 5);
-                    
+
+                    console.log(`[Rendering Connection] Stops: ${stops}, Duration: ${connectionFlight.totalDuration}`);
+
                     return (
                       <TableRow
                         key={`connecting-flight-${index}`}
@@ -142,7 +140,6 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
         </div>
       )}
 
-      {/* Add CSS to ensure proper positioning between markers */}
       <style>{`
         .flight-schedule-between-markers {
           position: relative;

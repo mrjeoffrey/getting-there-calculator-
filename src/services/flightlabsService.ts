@@ -123,7 +123,7 @@ export const searchWeeklyFlights = async (originSkyId, destinationSkyId) => {
           directFlights.push(flight);
         } else {
           console.log(`[Connection Detected] 🔁 Segments: ${flight.segments.length}`);
-          if (flight.segments.length >= 2) {
+          if (flight.segments.length >= 1) {
             const connectionFlightsArray = flight.segments.map((segment, idx) => {
               const f = {
                 id: `${flight.id}-segment-${idx}`,

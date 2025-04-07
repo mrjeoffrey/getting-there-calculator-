@@ -481,26 +481,38 @@ const FlightMap: React.FC<FlightMapProps> = ({
             )}
 
             {/* Airport Markers */}
-            {Array.from(airports.values()).map(airport => (
-              <AirportMarker
-                key={`airport-${airport.code}`}
-                airport={airport}
-                departureFlights={airportDepartureFlights.get(airport.code) || []}
-                arrivalFlights={airportArrivalFlights.get(airport.code) || []}
-                connectingFlights={airportConnectionFlights.get(airport.code) || []}
-                type={airport.code === (originAirport?.code) 
-                  ? 'origin' 
-                  : airport.code === (destinationAirport?.code)
-                    ? 'destination' 
-                    : 'connection'}
-                onPopupOpen={handlePopupOpen}
-                activePopup={activePopup}
-                destinationAirport={
-                  airport.code === originAirport?.code ? destinationAirport : 
-                  airport.code === destinationAirport?.code ? originAirport : null
-                }
-              />
-            ))}
+            {Array.from(airports.values()).map(airport => {
+  const airportCode = airport.code;
+
+  const type = airportCode === originAirport?.code
+    ? 'origin'
+    : airportCode === destinationAirport?.code
+      ? 'destination'
+      : 'connection';
+
+  return (
+    <AirportMarker
+      key={`airport-${airport.code}`}
+      airport={airport}
+      departureFlights={airportDepartureFlights.get(airport.code) || []}
+      arrivalFlights={airportArrivalFlights.get(airport.code) || []}
+      connectingFlights={
+        type === 'origin' || type === 'destination'
+          ? connectingFlights // ✅ pass all for origin/destination
+          : airportConnectionFlights.get(airport.code) || [] // only partial for connections
+      }
+      type={type}
+      onPopupOpen={handlePopupOpen}
+      activePopup={activePopup}
+      destinationAirport={
+        airport.code === originAirport?.code ? destinationAirport
+        : airport.code === destinationAirport?.code ? originAirport
+        : null
+      }
+    />
+  );
+})}
+
           </>
         )}
         
