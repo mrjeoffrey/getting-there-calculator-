@@ -8,6 +8,14 @@ export interface Airport {
   lng: number;
 }
 
+export interface FlightSegment {
+  departureAirport: Airport;
+  arrivalAirport: Airport;
+  departureTime: string;
+  arrivalTime: string;
+  flightNumber: string;
+}
+
 export interface Flight {
   id: string;
   departureAirport: Airport;
@@ -18,16 +26,7 @@ export interface Flight {
   airline: string;
   duration: string;
   direct: boolean;
-  segments: {
-    arrivalAirport: {
-      code: string;
-    };
-    arrivalTime: string;
-    departureAirport: {
-      code: string;
-    };
-    departureTime: string;
-  }[];
+  segments: FlightSegment[];
 }
 
 export interface ConnectionFlight {

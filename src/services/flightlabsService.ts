@@ -1,6 +1,6 @@
 
 import axios from 'axios';
-import { Flight, ConnectionFlight, WeeklyFlightData } from '../types/flightTypes';
+import { Flight, ConnectionFlight, WeeklyFlightData, FlightSegment } from '../types/flightTypes';
 import { findAirportByCode } from '../utils/flightUtils';
 
 const FLIGHTLABS_API_BASE_URL = 'https://app.goflightlabs.com';
@@ -38,7 +38,7 @@ const convertFlightLabsDataToFlight = (flightInfo) => {
   const arrivalTime = new Date(leg.arrival);
 
   // Create segments properly from the API data
-  const segments = leg.segments.map((segment) => ({
+  const segments: FlightSegment[] = leg.segments.map((segment) => ({
     departureAirport: findAirportByCode(segment.origin.displayCode),
     arrivalAirport: findAirportByCode(segment.destination.displayCode),
     departureTime: new Date(segment.departure).toISOString(),
@@ -46,7 +46,7 @@ const convertFlightLabsDataToFlight = (flightInfo) => {
     flightNumber: segment.flightNumber || `FL${Math.floor(Math.random() * 9000) + 1000}`,
   }));
 
-  const flight = {
+  const flight: Flight = {
     id: flightInfo.id,
     departureAirport,
     arrivalAirport,
@@ -64,9 +64,9 @@ const convertFlightLabsDataToFlight = (flightInfo) => {
 };
 
 export const searchWeeklyFlights = async (originSkyId, destinationSkyId) => {
-  const directFlights = [];
-  const connectingFlights = [];
-  const weeklyData = {};
+  const directFlights: Flight[] = [];
+  const connectingFlights: ConnectionFlight[] = [];
+  const weeklyData: WeeklyFlightData = {};
   const startDate = new Date();
 
   const getDayOfWeek = (date) => {
@@ -182,6 +182,14 @@ export const searchWeeklyFlights = async (originSkyId, destinationSkyId) => {
             const connectionAirport = findAirportByCode(connectionCode);
             
             // First leg: Origin to Connection
+            const firstSegment: FlightSegment = {
+              departureAirport: flight.departureAirport,
+              arrivalAirport: connectionAirport,
+              departureTime: mainSegment.departureTime,
+              arrivalTime: midpointTime.toISOString(),
+              flightNumber: `${flight.flightNumber}A`
+            };
+            
             const firstLeg: Flight = {
               id: `${flight.id}-first`,
               departureAirport: flight.departureAirport,
@@ -192,21 +200,23 @@ export const searchWeeklyFlights = async (originSkyId, destinationSkyId) => {
               airline: flight.airline,
               duration: calculateFlightDuration(mainSegment.departureTime, midpointTime.toISOString()),
               direct: true,
-              segments: [{
-                departureAirport: flight.departureAirport,
-                arrivalAirport: connectionAirport,
-                departureTime: mainSegment.departureTime,
-                arrivalTime: midpointTime.toISOString(),
-                flightNumber: `${flight.flightNumber}A`
-              }]
+              segments: [firstSegment]
             };
             
-            // Second leg: Connection to Destination
+            // Second leg: Connection to Destination  
+            const secondSegment: FlightSegment = {
+              departureAirport: connectionAirport,
+              arrivalAirport: flight.arrivalAirport,
+              departureTime: new Date(midpointTime.getTime() + 90 * 60000).toISOString(),
+              arrivalTime: mainSegment.arrivalTime,
+              flightNumber: `${flight.flightNumber}B`
+            };
+            
             const secondLeg: Flight = {
               id: `${flight.id}-second`,
               departureAirport: connectionAirport,
               arrivalAirport: flight.arrivalAirport,
-              departureTime: new Date(midpointTime.getTime() + 90 * 60000).toISOString(), // 90 min layover
+              departureTime: new Date(midpointTime.getTime() + 90 * 60000).toISOString(),
               arrivalTime: mainSegment.arrivalTime,
               flightNumber: `${flight.flightNumber}B`,
               airline: flight.airline,
@@ -215,13 +225,7 @@ export const searchWeeklyFlights = async (originSkyId, destinationSkyId) => {
                 mainSegment.arrivalTime
               ),
               direct: true,
-              segments: [{
-                departureAirport: connectionAirport,
-                arrivalAirport: flight.arrivalAirport,
-                departureTime: new Date(midpointTime.getTime() + 90 * 60000).toISOString(),
-                arrivalTime: mainSegment.arrivalTime,
-                flightNumber: `${flight.flightNumber}B`
-              }]
+              segments: [secondSegment]
             };
             
             const connectionFlight: ConnectionFlight = {
