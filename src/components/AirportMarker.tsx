@@ -33,8 +33,8 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
   activePopup,
   destinationAirport = null
 }) => {
-  // Check if we have any flights to display
-  const hasFlights = departureFlights.length > 0 || arrivalFlights.length > 0 || (type === 'origin' && connectingFlights.length > 0);
+  // Check if we have any flights to display - show all flights for origin
+  const hasFlights = departureFlights.length > 0 || arrivalFlights.length > 0 || connectingFlights.length > 0;
   const map = useMap();
   const [popupOpen, setPopupOpen] = useState(false);
   const [popupDismissed, setPopupDismissed] = useState(false);
@@ -171,41 +171,56 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
           
           {hasFlights ? (
             <div className="mt-2">
-              {departureFlights.length > 0 && type === 'origin' && (
-                <div className="mb-3">
-                  <FlightScheduleTable 
-                    flights={departureFlights} 
-                    connectionFlights={connectingFlights}
-                    title="Departing Flights"
-                  />
-                </div>
+              {type === 'origin' && (
+                <>
+                  {departureFlights.length > 0 && (
+                    <div className="mb-3">
+                      <FlightScheduleTable 
+                        flights={departureFlights} 
+                        title="Departing Flights"
+                      />
+                    </div>
+                  )}
+                  
+                  {connectingFlights.length > 0 && (
+                    <div>
+                      <FlightScheduleTable
+                        connectionFlights={connectingFlights}
+                        title="Connecting Flights"
+                      />
+                    </div>
+                  )}
+                </>
               )}
-
-              {departureFlights.length > 0 && type !== 'origin' && (
-                <div className="mb-3">
-                  <FlightScheduleTable 
-                    flights={departureFlights}
-                    title="Departing Flights"
+              
+              {type === 'destination' && (
+                <div>
+                  <FlightScheduleTable
+                    flights={arrivalFlights} 
+                    title="Arriving Flights"
                   />
                 </div>
               )}
               
-              {arrivalFlights.length > 0 && (
-                <div>
-                  <FlightScheduleTable
-                    flights={arrivalFlights} 
-                    title={type === 'destination' ? "Arriving Flights" : undefined}
-                  />
-                </div>
-              )}
-
-              {type === 'connection' && connectingFlights.length > 0 && (
-                <div>
-                  <FlightScheduleTable
-                    connectionFlights={connectingFlights}
-                    title="Connecting Flights"
-                  />
-                </div>
+              {type === 'connection' && (
+                <>
+                  {departureFlights.length > 0 && (
+                    <div className="mb-3">
+                      <FlightScheduleTable 
+                        flights={departureFlights}
+                        title="Departing Flights"
+                      />
+                    </div>
+                  )}
+                  
+                  {arrivalFlights.length > 0 && (
+                    <div className="mb-3">
+                      <FlightScheduleTable
+                        flights={arrivalFlights}
+                      />
+                    </div>
+                  )}
+                </>
               )}
             </div>
           ) : (
