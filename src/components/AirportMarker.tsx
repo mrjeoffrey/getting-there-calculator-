@@ -31,6 +31,7 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
   activePopup,
   destinationAirport = null
 }) => {
+  // Check if we have any flights to display
   const hasFlights = departureFlights.length > 0 || arrivalFlights.length > 0 || (type !== 'origin' && connectingFlights.length > 0);
   const map = useMap();
   const [popupOpen, setPopupOpen] = useState(false);
@@ -41,33 +42,41 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
   const airportCode = airport.code || 'N/A';
   const airportName = airport.name || `Airport ${airportCode}`;
   
+  // Calculate popup offset based on airport positions
   const getPopupOffset = () => {
+    // Default offset if no destination is provided
     if (!destinationAirport) {
-      return [0, 10] as [number, number];
+      return [0, 10]; 
     }
     
+    // Calculate the angle between origin and destination
     const dx = destinationAirport.lng - airport.lng;
     const dy = destinationAirport.lat - airport.lat;
     const angle = Math.atan2(dy, dx) * (180 / Math.PI);
     
+    // Calculate offset based on the angle (point toward destination)
     let xOffset = 0;
     let yOffset = 0;
     
+    // For origin markers, offset toward the destination
     if (type === 'origin') {
       xOffset = Math.cos(angle * Math.PI / 180) * 30;
       yOffset = Math.sin(angle * Math.PI / 180) * 30;
     } 
+    // For destination markers, offset toward the origin
     else if (type === 'destination') {
       xOffset = Math.cos((angle + 180) * Math.PI / 180) * 30;
       yOffset = Math.sin((angle + 180) * Math.PI / 180) * 30;
     } 
+    // Connection points get a general offset downward
     else {
-      return [0, 20] as [number, number];
+      return [0, 20]; 
     }
     
-    return [xOffset, yOffset] as [number, number];
+    return [xOffset, yOffset];
   };
   
+  // Tooltip content based on marker type
   const getTooltipContent = () => {
     switch(type) {
       case 'origin':
@@ -81,15 +90,19 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
     }
   };
 
+  // Track if we're currently handling an event to prevent circular triggers
   const isHandlingEvent = useRef(false);
 
+  // Only manage popup state based on activePopup value
   useEffect(() => {
     if (markerRef.current) {
       if (activePopup === airportCode && !popupOpen) {
+        // Only open if currently closed
         markerRef.current.openPopup();
         setPopupOpen(true);
         console.log(`Opening popup for ${airportCode} by parent control`);
       } else if (activePopup !== airportCode && popupOpen) {
+        // Close if we're not the active popup but we're open
         markerRef.current.closePopup();
         setPopupOpen(false);
         console.log(`Closing popup for ${airportCode} by parent control`);
@@ -97,6 +110,7 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
     }
   }, [activePopup, airportCode, popupOpen]);
 
+  // Auto-open popup for origin airport when component mounts
   useEffect(() => {
     if (type === 'origin' && hasFlights && markerRef.current && !popupOpen && !activePopup && !popupDismissed ) {
       const timer = setTimeout(() => {
@@ -141,6 +155,7 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
             if (type === 'origin') {
               setPopupDismissed(true);
             }
+            // Notify parent about popup close only if this is the active popup
             if (onPopupOpen && activePopup === airportCode) {
               onPopupOpen(null);
             }
@@ -150,7 +165,7 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
         }
       }}
     >
-      <Tooltip direction="top" offset={[0, -10] as [number, number]} opacity={0.9}>
+      <Tooltip direction="top" offset={[0, -10]} opacity={0.9}>
         {getTooltipContent()}
       </Tooltip>
       
@@ -159,8 +174,8 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
         minWidth={320} 
         maxWidth={500}
         autoPan={true}
-        autoPanPaddingTopLeft={[50, 50] as [number, number]}
-        autoPanPaddingBottomRight={[50, 50] as [number, number]}
+        autoPanPaddingTopLeft={[50, 50]}
+        autoPanPaddingBottomRight={[50, 50]}
         keepInView={true}
         closeButton={true}
         offset={getPopupOffset()}
@@ -194,7 +209,12 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
         </div>
       </Popup>
 
-      <div className="flight-popup-styling" />
+      <style jsx>{`
+        .flight-popup.between-airports {
+          z-index: 1000;
+          transform-origin: center center;
+        }
+      `}</style>
     </Marker>
   );
 };
