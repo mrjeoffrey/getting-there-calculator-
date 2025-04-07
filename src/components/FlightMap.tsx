@@ -360,18 +360,20 @@ const FlightMap: React.FC<FlightMapProps> = ({
 
   return (
     <>
-      <MapContainer
-        center={[20, 0]}
+     <MapContainer
+  center={[20, 0]}
         zoom={2}
-        style={{ height: '100%', width: '100%' }}
-        zoomControl={false}
+        style={{ backgroundColor: '#abe3ff', height: '100%', width: '100%' }}
+
+  zoomControl={false}
         worldCopyJump={true}
         className="colorful-flight-map google-like-map"
-      >
+>
         <TileLayer
-          attribution='&copy; Esri &mdash; Sources: Esri, HERE, Garmin, USGS, NGA, EPA, and others'
           url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}"
-        />
+          noWrap={true}
+          bounds={[[-90, -180], [90, 180]]}
+      />
 
         <ZoomControl position="bottomright" />
         <ResetMapView 
