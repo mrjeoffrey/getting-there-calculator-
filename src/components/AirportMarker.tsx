@@ -175,6 +175,7 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
                 <div className="mb-3">
                   <FlightScheduleTable 
                     flights={departureFlights} 
+                    connectionFlights={connectingFlights}
                     title={type === 'origin' ? "Departing Flights" : undefined}
                   />
                 </div>
