@@ -31,10 +31,10 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
     }
   };
   
-  // Updated styles for better appearance
+  // Updated styles for better appearance with scrolling
   const scrollableStyle: React.CSSProperties = {
     minHeight: '100px',
-    maxHeight: '300px', // Increased height
+    maxHeight: '300px',
     overflow: 'auto',
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
     backdropFilter: 'blur(4px)',
@@ -75,37 +75,42 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
             </Table>
             
             {/* Scrollable table body */}
-            <div style={scrollableStyle} className="overflow-auto max-h-[300px]">
+            <div className="overflow-auto max-h-[300px]">
               <Table className="border-separate border-spacing-y-1 table-fixed w-full">
                 <TableBody>
                   {/* Direct Flights */}
-                  {groupedDirectFlights.map((flight, index) => (
-                    <TableRow
-                      key={`direct-flight-${index}`}
-                      className={index % 2 === 0 ? 'bg-background hover:bg-muted/40' : 'bg-muted/20 hover:bg-muted/40'}
-                      onClick={() => {
-                        const originalFlight = flights.find(f =>
-                          f.airline === flight.airline &&
-                          f.departureTime.includes(flight.departureTime) &&
-                          f.arrivalTime.includes(flight.arrivalTime)
-                        );
-                        if (originalFlight) handleFlightSelect(originalFlight);
-                      }}
-                    >
-                      <TableCell className="py-2 px-3 text-centre w-1/6">{flight.airline}</TableCell>
-                      <TableCell className="py-2 px-3 text-centre w-1/6">{flight.duration}</TableCell>
-                      <TableCell className="py-2 px-3 text-centre w-1/6">{flight.days}</TableCell>
-                      <TableCell className="py-2 px-3 text-centre w-1/6">{flight.departureTime}</TableCell>
-                      <TableCell className="py-2 px-3 text-centre w-1/6">{flight.arrivalTime}</TableCell>
-                      <TableCell className="py-2 px-3 text-centre w-1/6 text-green-600 font-medium">Direct</TableCell>
-                    </TableRow>
-                  ))}
+                  {groupedDirectFlights.map((flight, index) => {
+                    // Find original flight to get complete data
+                    const originalFlight = flights.find(f =>
+                      f.airline === flight.airline &&
+                      f.departureTime.includes(flight.departureTime) &&
+                      f.arrivalTime.includes(flight.arrivalTime)
+                    );
+                    
+                    return (
+                      <TableRow
+                        key={`direct-flight-${index}`}
+                        className={index % 2 === 0 ? 'bg-background hover:bg-muted/40' : 'bg-muted/20 hover:bg-muted/40'}
+                        onClick={() => {
+                          if (originalFlight) handleFlightSelect(originalFlight);
+                        }}
+                      >
+                        <TableCell className="py-2 px-3 text-centre w-1/6">{flight.airline}</TableCell>
+                        <TableCell className="py-2 px-3 text-centre w-1/6">{flight.duration}</TableCell>
+                        <TableCell className="py-2 px-3 text-centre w-1/6">{flight.days}</TableCell>
+                        <TableCell className="py-2 px-3 text-centre w-1/6">{flight.departureTime}</TableCell>
+                        <TableCell className="py-2 px-3 text-centre w-1/6">{flight.arrivalTime}</TableCell>
+                        <TableCell className="py-2 px-3 text-centre w-1/6 text-green-600 font-medium">Direct</TableCell>
+                      </TableRow>
+                    );
+                  })}
                   
-                  {/* Connecting Flights */}
+                  {/* Connecting Flights - Updated to show full journey details */}
                   {connectionFlights.map((connectionFlight, index) => {
-                    // Get first and last flight
+                    // Get first and last flight for complete journey info
                     const firstFlight = connectionFlight.flights[0];
-                    const lastFlight = connectionFlight.flights[connectionFlights.length - 1];
+                    const lastFlight = connectionFlight.flights[connectionFlight.flights.length - 1];
+                    const stops = connectionFlight.flights.length - 1;
                     
                     return (
                       <TableRow
@@ -125,7 +130,7 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
                           {lastFlight.arrivalTime.split('T')[1].substring(0, 5)}
                         </TableCell>
                         <TableCell className="py-2 px-3 text-centre w-1/6 text-amber-600">
-                          {connectionFlight.flights.length - 1} {connectionFlight.flights.length - 1 === 1 ? 'stop' : 'stops'}
+                          {stops} {stops === 1 ? 'stop' : 'stops'}
                         </TableCell>
                       </TableRow>
                     );

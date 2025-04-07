@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Marker, Popup, Tooltip, useMap } from 'react-leaflet';
 import { Airport, Flight, ConnectionFlight } from '../types/flightTypes';
@@ -43,7 +44,7 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
   
   const getPopupOffset = () => {
     if (!destinationAirport) {
-      return [0, -30]; 
+      return [0, -40] as [number, number]; // Fixed TypeScript error by explicitly typing as tuple
     }
     
     const dx = destinationAirport.lng - airport.lng;
@@ -51,7 +52,7 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
     const angle = Math.atan2(dy, dx) * (180 / Math.PI);
     
     let xOffset = 0;
-    let yOffset = -30;
+    let yOffset = -40; // Moved popup up by changing from -30 to -40
     
     if (type === 'origin') {
       xOffset = Math.cos(angle * Math.PI / 180) * 20;
@@ -60,10 +61,10 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
       xOffset = Math.cos((angle + 180) * Math.PI / 180) * 20;
     } 
     else {
-      return [0, -30]; 
+      return [0, -40] as [number, number]; // Fixed TypeScript error
     }
     
-    return [xOffset, yOffset];
+    return [xOffset, yOffset] as [number, number]; // Fixed TypeScript error
   };
   
   const getTooltipContent = () => {
@@ -154,8 +155,8 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
       
       <Popup 
         className="flight-popup between-airports"
-        minWidth={450}
-        maxWidth={550}
+        minWidth={500}  // Increased from 450
+        maxWidth={600}  // Increased from 550
         autoPan={true}
         autoPanPaddingTopLeft={[50, 50]}
         autoPanPaddingBottomRight={[50, 50]}
@@ -163,7 +164,7 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
         closeButton={true}
         offset={getPopupOffset()}
       >
-        <div className="p-2">
+        <div className="p-2 max-h-[350px] overflow-auto">
           <h3 className="text-lg font-semibold mb-2">{airport.city || airport.name} ({airport.code})</h3>
           
           {hasFlights ? (
