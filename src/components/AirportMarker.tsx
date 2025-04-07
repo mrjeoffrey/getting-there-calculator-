@@ -18,6 +18,7 @@ interface AirportMarkerProps {
   destinationAirport?: Airport | null;
 }
 
+
 const AirportMarker: React.FC<AirportMarkerProps> = ({ 
   airport, 
   isPulsing = false,
@@ -124,7 +125,7 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
           console.log(`Opening popup for ${airportCode} (origin) on initial load`);
           isHandlingEvent.current = false;
         }
-      }, 500);
+      }, 5000);
       
       return () => clearTimeout(timer);
     }
@@ -209,7 +210,7 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
         </div>
       </Popup>
 
-      <style jsx>{`
+      <style>{`
         .flight-popup.between-airports {
           z-index: 1000;
           transform-origin: center center;

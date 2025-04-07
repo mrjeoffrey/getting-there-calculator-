@@ -34,8 +34,7 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
   // Removed fixed max-height style to allow it to be positioned dynamically
   const scrollableStyle: React.CSSProperties = {
     minHeight: '100px',
-    maxHeight: '400px',
-    overflowY: 'auto',
+    maxHeight: '200px',
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
     backdropFilter: 'blur(4px)',
     border: '1px solid rgba(0, 0, 0, 0.1)',
@@ -105,9 +104,10 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
       )}
 
       {/* Add CSS to ensure proper positioning between markers */}
-      <style jsx>{`
+      <style>{`
         .flight-schedule-between-markers {
           position: relative;
+          max-height: 200px
           z-index: 1000;
         }
       `}</style>
