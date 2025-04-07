@@ -3,7 +3,8 @@ import React, { useState, useEffect } from 'react';
 import Header from '../components/Header';
 import FlightMap from '../components/FlightMap';
 import { Flight, ConnectionFlight, SearchParams, WeeklyFlightData } from '../types/flightTypes';
-import { searchWeeklyFlights } from '../services/amadeusService';
+// import { searchWeeklyFlights } from '../services/amadeusService';
+import { searchWeeklyFlights } from '../services/flightlabsService';
 import { toast } from "sonner";
 
 const Index = () => {
@@ -48,8 +49,7 @@ const Index = () => {
     setActivePopup(null);
     
     try {
-      // Ensure destination is set to Tokyo (HND) if not provided
-      const destination = params.to || 'HND';
+      const destination = params.to || 'GND';
       console.log(`Searching flights from ${params.from} to ${destination} (Tokyo Haneda)`);
       
       const { directFlights, connectingFlights, weeklyData } = await searchWeeklyFlights(
