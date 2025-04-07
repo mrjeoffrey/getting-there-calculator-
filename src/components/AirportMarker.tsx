@@ -34,7 +34,7 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
   destinationAirport = null
 }) => {
   // Check if we have any flights to display
-  const hasFlights = departureFlights.length > 0 || arrivalFlights.length > 0 || (type !== 'origin' && connectingFlights.length > 0);
+  const hasFlights = departureFlights.length > 0 || arrivalFlights.length > 0 || (type === 'origin' && connectingFlights.length > 0);
   const map = useMap();
   const [popupOpen, setPopupOpen] = useState(false);
   const [popupDismissed, setPopupDismissed] = useState(false);
@@ -171,12 +171,21 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
           
           {hasFlights ? (
             <div className="mt-2">
-              {departureFlights.length > 0 && (
+              {departureFlights.length > 0 && type === 'origin' && (
                 <div className="mb-3">
                   <FlightScheduleTable 
                     flights={departureFlights} 
-                    connectionFlights={type === 'origin' ? connectingFlights : []}
-                    title={type === 'origin' ? "Departing Flights" : undefined}
+                    connectionFlights={connectingFlights}
+                    title="Departing Flights"
+                  />
+                </div>
+              )}
+
+              {departureFlights.length > 0 && type !== 'origin' && (
+                <div className="mb-3">
+                  <FlightScheduleTable 
+                    flights={departureFlights}
+                    title="Departing Flights"
                   />
                 </div>
               )}
@@ -186,6 +195,15 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
                   <FlightScheduleTable
                     flights={arrivalFlights} 
                     title={type === 'destination' ? "Arriving Flights" : undefined}
+                  />
+                </div>
+              )}
+
+              {type === 'connection' && connectingFlights.length > 0 && (
+                <div>
+                  <FlightScheduleTable
+                    connectionFlights={connectingFlights}
+                    title="Connecting Flights"
                   />
                 </div>
               )}

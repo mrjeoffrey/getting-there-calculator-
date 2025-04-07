@@ -34,7 +34,7 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
   
   // Generate title based on available flights
   let routeHeader = '';
-  if (flights && flights.length > 0) {
+  if (flights && flights.length > 0 && !title) {
     const departAirport = flights[0].departureAirport;
     const arriveAirport = flights[0].arrivalAirport;
     routeHeader = `Available direct and connecting flights from ${departAirport.city}, ${departAirport.country} (${departAirport.code}) to ${arriveAirport.city}, ${arriveAirport.country} (${arriveAirport.code})`;
@@ -53,6 +53,7 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
       {/* Direct Flights */}
       {groupedDirectFlights.length > 0 && (
         <div className="mb-2">
+          {!title && <h4 className="font-medium text-xs text-muted-foreground mb-1">Direct Flights</h4>}
           <div className="overflow-x-auto">
             {/* Table header outside scrollable area */}
             <Table className="border-separate border-spacing-y-1 table-fixed w-full">
