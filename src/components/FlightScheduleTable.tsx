@@ -31,10 +31,11 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
     }
   };
   
-  // Removed fixed max-height style to allow it to be positioned dynamically
+  // Updated styles for better appearance
   const scrollableStyle: React.CSSProperties = {
     minHeight: '100px',
-    maxHeight: '200px',
+    maxHeight: '300px', // Increased height
+    overflow: 'auto',
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
     backdropFilter: 'blur(4px)',
     border: '1px solid rgba(0, 0, 0, 0.1)',
@@ -55,27 +56,29 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
         <h3 className="font-medium text-sm text-primary mb-2">{routeHeader}</h3>
       )}
       
-      {/* Direct Flights */}
-      {groupedDirectFlights.length > 0 && (
+      {/* All Flights (Direct and Connecting) */}
+      {(groupedDirectFlights.length > 0 || connectionFlights.length > 0) && (
         <div className="mb-2">
           <div className="overflow-x-auto">
             {/* Table header outside scrollable area */}
             <Table className="border-separate border-spacing-y-1 table-fixed w-full">
               <TableHeader>
                 <TableRow>
-                  <TableHead className="py-1 px-4 text-centre w-1/5 bg-background z-10">Airline</TableHead>
-                  <TableHead className="py-1 px-4 text-centre w-1/5 bg-background z-10">Time</TableHead>
-                  <TableHead className="py-1 px-4 text-centre w-1/5 bg-background z-10">Days</TableHead>
-                  <TableHead className="py-1 px-4 text-centre w-1/5 bg-background z-10">Dep</TableHead>
-                  <TableHead className="py-1 px-4 text-centre w-1/5 bg-background z-10">Arr</TableHead>
+                  <TableHead className="py-1 px-3 text-centre bg-background z-10 w-1/6">Airline</TableHead>
+                  <TableHead className="py-1 px-3 text-centre bg-background z-10 w-1/6">Duration</TableHead>
+                  <TableHead className="py-1 px-3 text-centre bg-background z-10 w-1/6">Days</TableHead>
+                  <TableHead className="py-1 px-3 text-centre bg-background z-10 w-1/6">Dep</TableHead>
+                  <TableHead className="py-1 px-3 text-centre bg-background z-10 w-1/6">Arr</TableHead>
+                  <TableHead className="py-1 px-3 text-centre bg-background z-10 w-1/6">Stops</TableHead>
                 </TableRow>
               </TableHeader> 
             </Table>
             
             {/* Scrollable table body */}
-            <div style={scrollableStyle} className="overflow-x-auto max-h-[200px] overflow-y-auto">
+            <div style={scrollableStyle} className="overflow-auto max-h-[300px]">
               <Table className="border-separate border-spacing-y-1 table-fixed w-full">
                 <TableBody>
+                  {/* Direct Flights */}
                   {groupedDirectFlights.map((flight, index) => (
                     <TableRow
                       key={`direct-flight-${index}`}
@@ -89,13 +92,44 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
                         if (originalFlight) handleFlightSelect(originalFlight);
                       }}
                     >
-                      <TableCell className="py-2 px-4 text-centre w-1/5">{flight.airline}</TableCell>
-                      <TableCell className="py-2 px-4 text-centre w-1/5">{flight.duration}</TableCell>
-                      <TableCell className="py-2 px-4 text-centre w-1/5">{flight.days}</TableCell>
-                      <TableCell className="py-2 px-4 text-centre w-1/5">{flight.departureTime}</TableCell>
-                      <TableCell className="py-2 px-4 text-centre w-1/5">{flight.arrivalTime}</TableCell>
+                      <TableCell className="py-2 px-3 text-centre w-1/6">{flight.airline}</TableCell>
+                      <TableCell className="py-2 px-3 text-centre w-1/6">{flight.duration}</TableCell>
+                      <TableCell className="py-2 px-3 text-centre w-1/6">{flight.days}</TableCell>
+                      <TableCell className="py-2 px-3 text-centre w-1/6">{flight.departureTime}</TableCell>
+                      <TableCell className="py-2 px-3 text-centre w-1/6">{flight.arrivalTime}</TableCell>
+                      <TableCell className="py-2 px-3 text-centre w-1/6 text-green-600 font-medium">Direct</TableCell>
                     </TableRow>
                   ))}
+                  
+                  {/* Connecting Flights */}
+                  {connectionFlights.map((connectionFlight, index) => {
+                    // Get first and last flight
+                    const firstFlight = connectionFlight.flights[0];
+                    const lastFlight = connectionFlight.flights[connectionFlights.length - 1];
+                    
+                    return (
+                      <TableRow
+                        key={`connecting-flight-${index}`}
+                        className={index % 2 === 0 ? 'bg-background hover:bg-muted/40' : 'bg-muted/20 hover:bg-muted/40'}
+                        onClick={() => handleFlightSelect(connectionFlight)}
+                      >
+                        <TableCell className="py-2 px-3 text-centre w-1/6">
+                          {connectionFlight.flights.map(f => f.airline).join('+')}
+                        </TableCell>
+                        <TableCell className="py-2 px-3 text-centre w-1/6">{connectionFlight.totalDuration}</TableCell>
+                        <TableCell className="py-2 px-3 text-centre w-1/6">-</TableCell>
+                        <TableCell className="py-2 px-3 text-centre w-1/6">
+                          {firstFlight.departureTime.split('T')[1].substring(0, 5)}
+                        </TableCell>
+                        <TableCell className="py-2 px-3 text-centre w-1/6">
+                          {lastFlight.arrivalTime.split('T')[1].substring(0, 5)}
+                        </TableCell>
+                        <TableCell className="py-2 px-3 text-centre w-1/6 text-amber-600">
+                          {connectionFlight.flights.length - 1} {connectionFlight.flights.length - 1 === 1 ? 'stop' : 'stops'}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </div>
@@ -107,7 +141,6 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
       <style>{`
         .flight-schedule-between-markers {
           position: relative;
-          max-height: 200px
           z-index: 1000;
         }
       `}</style>
