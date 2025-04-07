@@ -635,7 +635,8 @@ const generateMockConnectingFlights = (originCode: string, destinationCode: stri
         departureAirport: currentOrigin,
         arrivalAirport: layoverAirport,
         departureTime: currentDepartureTime.toISOString(),
-        arrivalTime: arrivalTime.toISOString()
+        arrivalTime: arrivalTime.toISOString(),
+        flightNumber: `${flightNumber}-${j+1}`
       });
       
       // Layover duration
@@ -786,4 +787,3 @@ const createSpecificConnectionFlights = (originCode: string, destinationCode: st
   
   return connectionFlights;
 };
-
