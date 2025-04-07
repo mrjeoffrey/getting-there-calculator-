@@ -157,7 +157,7 @@ export const bookFlight = async (flightOffer: any, passengers: any[]) => {
 // Function to get flight inspiration
 export const getFlightInspiration = async (originCode: string) => {
   try {
-    const response = await amadeus.shopping.flightInspirationSearch.get({
+    const response = await amadeus.shopping.flightDestinations.get({
       origin: originCode
     });
     return response.data;
@@ -515,7 +515,7 @@ export const getCarRentalRecommendations = async (latitude: number, longitude: n
 // Function to get points of interest
 export const getPointsOfInterest = async (latitude: number, longitude: number) => {
   try {
-    const response = await amadeus.referenceData.locations.pointsOfInterest.get({
+    const response = await amadeus.referenceData.locations.pois.get({
       latitude: latitude,
       longitude: longitude
     });

@@ -31,11 +31,16 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
     }
   };
   
-  const maxHeightStyle: React.CSSProperties = { maxHeight: '200px', minHeight: '100px', overflowY: 'auto' }; // Fits approx 5 rows
+  // Removed fixed max-height style to allow it to be positioned dynamically
   const scrollableStyle: React.CSSProperties = {
     minHeight: '100px',
-    maxHeight: '400px', // or however tall you want
-    overflowY: 'auto'
+    maxHeight: '400px',
+    overflowY: 'auto',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    backdropFilter: 'blur(4px)',
+    border: '1px solid rgba(0, 0, 0, 0.1)',
+    borderRadius: '6px',
+    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
   };
   
   let routeHeader = '';
@@ -46,12 +51,10 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
   }
   
   return (
-    <div className="space-y-0 mt-2">
+    <div className="flight-schedule-between-markers space-y-0 mt-2">
       {routeHeader && (
         <h3 className="font-medium text-sm text-primary mb-2">{routeHeader}</h3>
       )}
-      
-      {/* {title && <h4 className="font-medium text-sm text-primary mb-2">{title}</h4>} */}
       
       {/* Direct Flights */}
       {groupedDirectFlights.length > 0 && (
@@ -71,7 +74,7 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
             </Table>
             
             {/* Scrollable table body */}
-            <div className="overflow-x-auto max-h-[200px] overflow-y-auto">
+            <div style={scrollableStyle} className="overflow-x-auto max-h-[200px] overflow-y-auto">
               <Table className="border-separate border-spacing-y-1 table-fixed w-full">
                 <TableBody>
                   {groupedDirectFlights.map((flight, index) => (
@@ -100,6 +103,14 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
           </div>
         </div>
       )}
+
+      {/* Add CSS to ensure proper positioning between markers */}
+      <style jsx>{`
+        .flight-schedule-between-markers {
+          position: relative;
+          z-index: 1000;
+        }
+      `}</style>
     </div>
   );
 };

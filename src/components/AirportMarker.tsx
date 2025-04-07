@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Marker, Popup, Tooltip, useMap } from 'react-leaflet';
 import { Airport, Flight, ConnectionFlight } from '../types/flightTypes';
@@ -47,7 +46,7 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
   const getPopupOffset = () => {
     // Default offset if no destination is provided
     if (!destinationAirport) {
-      return [0, 10] as [number, number]; // Explicitly type as tuple
+      return [0, 10]; 
     }
     
     // Calculate the angle between origin and destination
@@ -71,10 +70,10 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
     } 
     // Connection points get a general offset downward
     else {
-      return [0, 20] as [number, number]; // Explicitly type as tuple
+      return [0, 20]; 
     }
     
-    return [xOffset, yOffset] as [number, number]; // Explicitly type as tuple
+    return [xOffset, yOffset];
   };
   
   // Tooltip content based on marker type
@@ -166,17 +165,17 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
         }
       }}
     >
-      <Tooltip direction="top" offset={[0, -10] as [number, number]} opacity={0.9}>
+      <Tooltip direction="top" offset={[0, -10]} opacity={0.9}>
         {getTooltipContent()}
       </Tooltip>
       
       <Popup 
-        className="flight-popup"
+        className="flight-popup between-airports"
         minWidth={320} 
         maxWidth={500}
         autoPan={true}
-        autoPanPaddingTopLeft={[50, 50] as [number, number]}
-        autoPanPaddingBottomRight={[50, 50] as [number, number]}
+        autoPanPaddingTopLeft={[50, 50]}
+        autoPanPaddingBottomRight={[50, 50]}
         keepInView={true}
         closeButton={true}
         offset={getPopupOffset()}
@@ -209,6 +208,13 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
           )}
         </div>
       </Popup>
+
+      <style jsx>{`
+        .flight-popup.between-airports {
+          z-index: 1000;
+          transform-origin: center center;
+        }
+      `}</style>
     </Marker>
   );
 };
