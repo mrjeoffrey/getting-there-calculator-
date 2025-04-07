@@ -2,8 +2,6 @@
 import { Airport, Flight, ConnectionFlight } from '../types/flightTypes';
 import { airports } from './airports.json';
 
-
-
 export const transformAirports = (originalAirports: any[]): Airport[] => {
   return originalAirports.map(airport => ({
     code: airport.iata_code,
@@ -20,6 +18,26 @@ const transformedAirports = transformAirports(airports);
 export const findAirportByCode = (code: string): Airport | undefined => {
   return transformedAirports.find(airport => airport.code === code);
 };
+
+// Create proper Airport objects instead of just using {code: string}
+export const createFullAirportObject = (code: string): Airport => {
+  const airport = findAirportByCode(code);
+  
+  if (!airport) {
+    // Return a default airport object with required fields if not found
+    return {
+      code: code,
+      name: `Airport ${code}`,
+      city: 'Unknown',
+      country: 'Unknown',
+      lat: 0,
+      lng: 0
+    };
+  }
+  
+  return airport;
+};
+
 // Calculate distance between two points using Haversine formula
 export const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
   const R = 6371; // Earth's radius in km

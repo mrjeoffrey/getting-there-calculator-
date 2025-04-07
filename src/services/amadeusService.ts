@@ -1,5 +1,5 @@
 import Amadeus from 'amadeus';
-import { Flight, FlightSegment, Airport, ConnectionFlight } from '../types/flightTypes';
+import { Flight, FlightSegment, Airport, ConnectionFlight, WeeklyFlightData } from '../types/flightTypes';
 import { transformAirports, createFullAirportObject } from '../utils/flightUtils';
 import { addDays, format, subDays } from 'date-fns';
 
@@ -35,8 +35,8 @@ export const mapFlightOffers = (flightOffers: any[]): Flight[] => {
     const departureTime = segments[0].departure.at;
     const arrivalTime = segments[segments.length - 1].arrival.at;
     const duration = offer.itineraries[0].duration;
-    const price = offer.offerPricing.price.total;
-    const flightNumber = segments[0].number;
+    const price = offer.offerPricing?.price?.total || '0';
+    const flightNumber = segments[0].number || `Unknown-${Math.random().toString(36).substring(7)}`;
     const airline = segments[0].carrierCode;
 
     return {
@@ -46,9 +46,10 @@ export const mapFlightOffers = (flightOffers: any[]): Flight[] => {
       departureTime,
       arrivalTime,
       duration,
-      price,
       flightNumber,
-      airline
+      airline,
+      direct: segments.length === 1,
+      segments: extractFlightSegments(offer) || []
     };
   });
 };
@@ -228,7 +229,7 @@ const extractFlightSegments = (flightOffer: any): FlightSegment[] => {
       arrivalAirport: createFullAirportObject(segment.arrival.iataCode),
       departureTime: segment.departure.at,
       arrivalTime: segment.arrival.at,
-      flightNumber: segment.number || `Unknown-${Math.random().toString(36).substring(7)}` // Adding flightNumber
+      flightNumber: segment.number || `Unknown-${Math.random().toString(36).substring(7)}`
     };
     return flightSegment;
   });
@@ -243,10 +244,40 @@ export const mapConnectionFlights = (flightOffers: any[]): ConnectionFlight[] =>
     const departureTime = segments[0].departure.at;
     const arrivalTime = segments[segments.length - 1].arrival.at;
     const duration = offer.itineraries[0].duration;
-    const price = offer.offerPricing.price.total;
+    const price = offer.offerPricing?.price?.total || 0;
     
-    // Extract flight segments
-    const flights: FlightSegment[] = extractFlightSegments(offer);
+    // Extract flight segments and create Flight objects
+    const flightSegments = extractFlightSegments(offer);
+    const flights: Flight[] = flightSegments.map((segment, index) => {
+      return {
+        id: `${offer.id}-segment-${index}`,
+        departureAirport: segment.departureAirport,
+        arrivalAirport: segment.arrivalAirport,
+        departureTime: segment.departureTime,
+        arrivalTime: segment.arrivalTime,
+        flightNumber: segment.flightNumber,
+        airline: segments[index].carrierCode || 'Unknown',
+        duration: segments[index].duration || 'Unknown',
+        direct: true,
+        segments: []
+      };
+    });
+    
+    // Calculate stopover duration if there are multiple segments
+    let stopoverDuration = 'N/A';
+    if (segments.length > 1) {
+      // Try to calculate time between segments
+      try {
+        const firstArrival = new Date(segments[0].arrival.at);
+        const secondDeparture = new Date(segments[1].departure.at);
+        const diffMs = secondDeparture.getTime() - firstArrival.getTime();
+        const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
+        const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+        stopoverDuration = `${diffHrs}h ${diffMins}m`;
+      } catch (e) {
+        console.error("Error calculating stopover duration:", e);
+      }
+    }
     
     return {
       id: offer.id,
@@ -255,8 +286,10 @@ export const mapConnectionFlights = (flightOffers: any[]): ConnectionFlight[] =>
       departureTime,
       arrivalTime,
       duration,
-      price,
-      flights // Assign the extracted flight segments
+      price: Number(price),
+      flights,
+      totalDuration: duration || 'Unknown',
+      stopoverDuration
     };
   });
 };
@@ -312,7 +345,9 @@ export const mapFlightSchedules = (flightSchedules: any[]): Flight[] => {
       arrivalAirport,
       departureTime,
       arrivalTime,
-      duration
+      duration,
+      direct: true,
+      segments: []
     };
   });
 };
@@ -1067,7 +1102,7 @@ export const searchWeeklyFlights = async (
     return {
       directFlights: [],
       connectingFlights: [],
-      weeklyData: []
+      weeklyData: {}
     };
   }
 };
