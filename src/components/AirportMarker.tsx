@@ -1,11 +1,8 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Marker, Popup, Tooltip, useMap } from 'react-leaflet';
-import { PointTuple } from 'leaflet';
 import { Airport, Flight, ConnectionFlight } from '../types/flightTypes';
 import { createAirportMarkerIcon } from './map/MarkerIconFactory';
 import FlightScheduleTable from './FlightScheduleTable';
-import { ScrollArea } from './ui/scroll-area';
 
 interface AirportMarkerProps {
   airport: Airport;
@@ -34,8 +31,8 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
   activePopup,
   destinationAirport = null
 }) => {
-  // Check if we have any flights to display - show all flights for origin
-  const hasFlights = departureFlights.length > 0 || arrivalFlights.length > 0 || connectingFlights.length > 0;
+  // Check if we have any flights to display
+  const hasFlights = departureFlights.length > 0 || arrivalFlights.length > 0 || (type !== 'origin' && connectingFlights.length > 0);
   const map = useMap();
   const [popupOpen, setPopupOpen] = useState(false);
   const [popupDismissed, setPopupDismissed] = useState(false);
@@ -46,21 +43,37 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
   const airportName = airport.name || `Airport ${airportCode}`;
   
   // Calculate popup offset based on airport positions
-  const getPopupOffset = (): PointTuple => {
-    if (!destinationAirport || type === 'connection') {
-      return [0, 10] as PointTuple; // Moved up from 30 to 10
+  const getPopupOffset = () => {
+    // Default offset if no destination is provided
+    if (!destinationAirport) {
+      return [0, 10]; 
     }
-  
+    
+    // Calculate the angle between origin and destination
     const dx = destinationAirport.lng - airport.lng;
     const dy = destinationAirport.lat - airport.lat;
-  
-    const angle = Math.atan2(dy, dx);
-    const offsetDistance = 200; // ⬅️ increase this for more pull
-  
-    const xOffset = Math.cos(angle) * offsetDistance;
-    const yOffset = Math.sin(angle) * offsetDistance * -1.3 - 20; // exaggerate upward movement - subtracted 20
-  
-    return [xOffset, yOffset] as PointTuple;
+    const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+    
+    // Calculate offset based on the angle (point toward destination)
+    let xOffset = 0;
+    let yOffset = 0;
+    
+    // For origin markers, offset toward the destination
+    if (type === 'origin') {
+      xOffset = Math.cos(angle * Math.PI / 180) * 30;
+      yOffset = Math.sin(angle * Math.PI / 180) * 30;
+    } 
+    // For destination markers, offset toward the origin
+    else if (type === 'destination') {
+      xOffset = Math.cos((angle + 180) * Math.PI / 180) * 30;
+      yOffset = Math.sin((angle + 180) * Math.PI / 180) * 30;
+    } 
+    // Connection points get a general offset downward
+    else {
+      return [0, 20]; 
+    }
+    
+    return [xOffset, yOffset];
   };
   
   // Tooltip content based on marker type
@@ -152,105 +165,56 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
         }
       }}
     >
-      <Tooltip direction="top" offset={[0, -10] as PointTuple} opacity={0.9}>
+      <Tooltip direction="top" offset={[0, -10]} opacity={0.9}>
         {getTooltipContent()}
       </Tooltip>
       
       <Popup 
         className="flight-popup between-airports"
-        minWidth={400} 
-        maxWidth={600}
+        minWidth={320} 
+        maxWidth={500}
         autoPan={true}
-        autoPanPaddingTopLeft={[50, 50] as PointTuple}
-        autoPanPaddingBottomRight={[50, 50] as PointTuple}
+        autoPanPaddingTopLeft={[50, 50]}
+        autoPanPaddingBottomRight={[50, 50]}
         keepInView={true}
         closeButton={true}
-        offset={getPopupOffset()}   
+        offset={getPopupOffset()}
       >
         <div className="p-2">
           <h3 className="text-lg font-semibold mb-2">{airport.city || airport.name} ({airport.code})</h3>
           
           {hasFlights ? (
-            <ScrollArea className="h-[300px] w-full pr-4">
-              <div className="mt-2">
-                {type === 'origin' && (
-                  <>
-                    {departureFlights.length > 0 && (
-                      <div className="mb-3">
-                        <FlightScheduleTable 
-                          flights={departureFlights} 
-                          title="Departing Flights"
-                        />
-                      </div>
-                    )}
-                    
-                    {connectingFlights.length > 0 && (
-                      <div>
-                        <FlightScheduleTable
-                          connectionFlights={connectingFlights}
-                          title="Connecting Flights"
-                        />
-                      </div>
-                    )}
-                  </>
-                )}
-                
-                {type === 'destination' && (
-                  <div>
-                    <FlightScheduleTable
-                      flights={arrivalFlights} 
-                      title="Arriving Flights"
-                    />
-                  </div>
-                )}
-                
-                {type === 'connection' && (
-                  <>
-                    {departureFlights.length > 0 && (
-                      <div className="mb-3">
-                        <FlightScheduleTable 
-                          flights={departureFlights}
-                          title="Departing Flights"
-                        />
-                      </div>
-                    )}
-                    
-                    {arrivalFlights.length > 0 && (
-                      <div className="mb-3">
-                        <FlightScheduleTable
-                          flights={arrivalFlights}
-                        />
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-            </ScrollArea>
+            <div className="mt-2">
+              {departureFlights.length > 0 && (
+                <div className="mb-3">
+                  <FlightScheduleTable 
+                    flights={departureFlights} 
+                    title={type === 'origin' ? "Departing Flights" : undefined}
+                  />
+                </div>
+              )}
+              
+              {arrivalFlights.length > 0 && (
+                <div>
+                  <FlightScheduleTable
+                    flights={arrivalFlights} 
+                    title={type === 'destination' ? "Arriving Flights" : undefined}
+                  />
+                </div>
+              )}
+            </div>
           ) : (
             <p className="text-sm text-muted-foreground italic">No flight information available for this airport.</p>
           )}
         </div>
       </Popup>
 
-      <style>
-        {`.flight-popup {
-          position: relative;
-          z-index: 1500;
-          width: auto !important;
+      <style jsx>{`
+        .flight-popup.between-airports {
+          z-index: 1000;
+          transform-origin: center center;
         }
-        .between-airports .leaflet-popup-content-wrapper {
-          background: rgba(255, 255, 255, 0.95);
-          backdrop-filter: blur(8px);
-          border: 1px solid rgba(0, 0, 0, 0.1);
-          min-width: 400px;
-          max-width: 600px;
-        }
-        .leaflet-popup-content {
-          width: 100% !important;
-          margin: 13px 24px;
-          max-height: 400px;
-        }`}
-      </style>
+      `}</style>
     </Marker>
   );
 };
