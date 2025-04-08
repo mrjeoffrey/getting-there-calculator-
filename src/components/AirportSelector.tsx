@@ -22,6 +22,7 @@ interface AirportSelectorProps {
   onChange: (value: string) => void;
   placeholder: string;
   exclude?: string[];
+  className?: string;
 }
 
 const AirportSelector: React.FC<AirportSelectorProps> = ({

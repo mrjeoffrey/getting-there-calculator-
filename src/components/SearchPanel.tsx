@@ -43,12 +43,13 @@ const SearchPanel: React.FC<SearchPanelProps> = ({
   return (
     <div className="animate-scale-in w-full">
       <div className="flex items-center gap-2">
-        <div className="flex-1">
+      <div className="flex-1 [&_*]:text-blue-100">
           <AirportSelector 
             value={from} 
             onChange={setFrom} 
             placeholder="Select departure airport" 
             exclude={to ? [to] : []}
+            className="text-blue-600"
           />
         </div>
         
@@ -65,7 +66,7 @@ const SearchPanel: React.FC<SearchPanelProps> = ({
           ) : (
             <div className="flex items-center">
               <Search className="h-4 w-4" />
-              <span className="sr-only md:not-sr-only ml-1">Search</span>
+              <span className="sr-only md:not-sr-only ml-1 blue-900">Search</span>
             </div>
           )}
         </Button>
