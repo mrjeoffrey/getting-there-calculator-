@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useRef } from 'react';
 import { MapContainer, TileLayer, useMap, ZoomControl, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -408,7 +409,9 @@ const FlightMap: React.FC<FlightMapProps> = ({
               connection.flights.map((flight, legIndex) => {
                 const showPlane = shouldShowConnectionLegPlane(connection.id, legIndex);
                 
-                const legDelay = legIndex * 1000; 
+                // Delay for first leg remains minimal
+                // For subsequent legs, we rely on the completion of previous leg
+                const legDelay = legIndex === 0 ? 500 : legIndex * 1000;
                 
                 const shouldStartAnimating = legIndex === 0 || 
                   connectionLegsStatus.find(

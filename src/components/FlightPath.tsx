@@ -73,6 +73,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
   const [animationComplete, setAnimationComplete] = useState(false);
   const [lineDrawingComplete, setLineDrawingComplete] = useState(false);
   const [animationStarted, setAnimationStarted] = useState(false);
+  const [planeAnimationStarted, setPlaneAnimationStarted] = useState(false);
   const drawingTimerRef = useRef<NodeJS.Timeout | null>(null);
   const popupRef = useRef<L.Popup | null>(null);
   const planeMarkerRef = useRef<L.Marker | null>(null);
@@ -114,17 +115,15 @@ const FlightPath: React.FC<FlightPathProps> = ({
   }, [departure, arrival, type, isActive, legDelay]);
   
   useEffect(() => {
-    if (showPlane && !animationComplete && autoAnimate && !animationStarted) {
+    if (autoAnimate && !animationStarted) {
       setAnimationStarted(true);
       
+      // First draw the complete line
       setTimeout(() => {
-        createPlaneMarker();
-        // Start animation with empty line - we'll draw it as plane moves
-        setDisplayedPoints([arcPointsRef.current[0]]);
-        startFlightAnimation();
+        drawLineThenStartPlane();
       }, 500);
     }
-  }, [showPlane, autoAnimate, animationComplete, animationStarted]);
+  }, [autoAnimate, animationStarted]);
   
   const cleanup = () => {
     if (drawingTimerRef.current) {
@@ -145,6 +144,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
     currentIndexRef.current = 1;
     setLineDrawingComplete(false);
     setAnimationStarted(false);
+    setPlaneAnimationStarted(false);
   };
   
   const initializeFlightPath = () => {
@@ -284,6 +284,42 @@ const FlightPath: React.FC<FlightPathProps> = ({
     }
   };
   
+  // New function to draw the line first, then start the plane
+  const drawLineThenStartPlane = () => {
+    const points = arcPointsRef.current;
+    if (points.length < 2) return;
+    
+    const totalPoints = points.length;
+    
+    // Calculate total time for drawing the line (faster than plane animation)
+    const durationInMinutes = getDurationInMinutes();
+    const lineDrawTime = Math.min(4000, Math.max(2000, durationInMinutes * 10));
+    const pointDelay = lineDrawTime / totalPoints;
+    
+    let currentDrawIndex = 1; // Start with the second point
+    
+    const drawNextSegment = () => {
+      if (currentDrawIndex < totalPoints) {
+        setDisplayedPoints(points.slice(0, currentDrawIndex + 1));
+        currentDrawIndex++;
+        drawingTimerRef.current = setTimeout(drawNextSegment, pointDelay);
+      } else {
+        setLineDrawingComplete(true);
+        
+        // Line drawing is complete, now start the plane animation after a short delay
+        setTimeout(() => {
+          createPlaneMarker();
+          setPlaneAnimationStarted(true);
+          startFlightAnimation();
+        }, 500);
+      }
+    };
+    
+    // Start drawing from first point
+    setDisplayedPoints([points[0]]);
+    drawNextSegment();
+  };
+  
   const startFlightAnimation = () => {
     const points = arcPointsRef.current;
     if (points.length < 2) return;
@@ -305,22 +341,14 @@ const FlightPath: React.FC<FlightPathProps> = ({
           
         updatePlanePosition(currentPosition, nextPosition);
         
-        // Update the line to show progress up to the current position
-        // This is the key change - line is drawn as plane moves
-        setDisplayedPoints(points.slice(0, currentIndexRef.current + 1));
-        
         currentIndexRef.current++;
         
         drawingTimerRef.current = setTimeout(animateNextStep, pointDelay);
       } else {
         setAnimationComplete(true);
-        setLineDrawingComplete(true);
         
         const finalPosition = points[points.length - 1];
         updatePlanePosition(finalPosition, null);
-        
-        // Ensure the full path is shown at the end
-        setDisplayedPoints(points);
         
         if (onLegComplete) {
           onLegComplete();
