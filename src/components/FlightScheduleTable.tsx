@@ -111,7 +111,7 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
                       {[...new Set(connectionFlight.flights.map(f => f.airline))].join(' + ')}
                     </TableCell>
                     <TableCell className="py-2 px-3 text-centre w-1/6">{connectionFlight.totalDuration}</TableCell>
-                    <TableCell className="py-2 px-3 text-centre w-1/6">-</TableCell>
+                    <TableCell className="py-2 px-3 text-centre w-1/6">{new Date(firstFlight.departureTime).toLocaleDateString(undefined, { weekday: 'short' })}</TableCell>
                     <TableCell className="py-2 px-3 text-centre w-1/6">{departureTime}</TableCell>
                     <TableCell className="py-2 px-3 text-centre w-1/6">{arrivalTime}</TableCell>
                     {title?.toLowerCase().includes('origin') && (

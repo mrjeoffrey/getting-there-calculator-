@@ -82,7 +82,7 @@ export const searchWeeklyFlights = async (originSkyId, destinationSkyId) => {
     return days[date.getDay()];
   };
 
-  for (let i = 0; i < 1; i++) {
+  for (let i = 0; i < 2; i++) {
     const currentDate = new Date(startDate);
     currentDate.setDate(currentDate.getDate() + i);
     const dateString = currentDate.toISOString().split('T')[0];
