@@ -42,7 +42,6 @@ interface FlightPathProps {
   legDelay?: number;
   connectionId?: string;
   onLegComplete?: () => void;
-  onAnimationComplete?: (arrival: Airport) => void;
 }
 
 const FlightPath: React.FC<FlightPathProps> = ({ 
@@ -65,8 +64,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
   totalLegs = 1,
   legDelay = 0,
   connectionId = '',
-  onLegComplete,
-  onAnimationComplete
+  onLegComplete
 }) => {
   const arcPointsRef = useRef<[number, number][]>([]);
   const [arcPoints, setArcPoints] = useState<[number, number][]>([]);
@@ -286,19 +284,6 @@ const FlightPath: React.FC<FlightPathProps> = ({
     }
   };
   
-  const zoomToDestination = () => {
-    if (arrival && map) {
-      // Zoom in slightly on the arrival airport
-      map.flyTo([arrival.lat, arrival.lng], 
-        map.getZoom() + 0.5, // Zoom in slightly
-        { 
-          duration: 1.5, 
-          easeLinearity: 0.5 
-        }
-      );
-    }
-  };
-  
   const startFlightAnimation = () => {
     const points = arcPointsRef.current;
     if (points.length < 2) return;
@@ -326,11 +311,6 @@ const FlightPath: React.FC<FlightPathProps> = ({
         
         currentIndexRef.current++;
         
-        // When we're 75% through the flight path, start zooming toward destination
-        if (currentIndexRef.current === Math.floor(totalPoints * 0.75)) {
-          zoomToDestination();
-        }
-        
         drawingTimerRef.current = setTimeout(animateNextStep, pointDelay);
       } else {
         setAnimationComplete(true);
@@ -345,19 +325,6 @@ const FlightPath: React.FC<FlightPathProps> = ({
         if (onLegComplete) {
           onLegComplete();
         }
-        
-        // Trigger popup after animation completes
-        if (onAnimationComplete && arrival) {
-          onAnimationComplete(arrival);
-        }
-        
-        // Remove plane after a moment
-        setTimeout(() => {
-          if (planeMarkerRef.current) {
-            planeMarkerRef.current.remove();
-            planeMarkerRef.current = null;
-          }
-        }, 1000);
       }
     };
     
