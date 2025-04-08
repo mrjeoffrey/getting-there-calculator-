@@ -173,36 +173,36 @@ export const generateConnectionFlight = (fromCode: string, toCode: string, date:
 };
 
 // Update the search function to always include Grenada
-export const searchFlights = async (fromCode: string, toCode: string, date: string): Promise<{
-  directFlights: Flight[];
-  connectingFlights: ConnectionFlight[];
-}> => {
-  // If toCode is not GND, force it to be GND (Grenada)
-  const destinationCode = 'GND';
+// export const searchFlights = async (fromCode: string, toCode: string, date: string): Promise<{
+//   directFlights: Flight[];
+//   connectingFlights: ConnectionFlight[];
+// }> => {
+//   // If toCode is not GND, force it to be GND (Grenada)
+//   const destinationCode = 'GND';
   
-  // Simulate API call delay
-  await new Promise(resolve => setTimeout(resolve, 1500));
+//   // Simulate API call delay
+//   await new Promise(resolve => setTimeout(resolve, 1500));
   
-  // Generate 1-2 direct flights
-  const directFlights: Flight[] = [];
-  const directFlightCount = Math.floor(Math.random() * 2) + 1;
+//   // Generate 1-2 direct flights
+//   const directFlights: Flight[] = [];
+//   const directFlightCount = Math.floor(Math.random() * 2) + 1;
   
-  for (let i = 0; i < directFlightCount; i++) {
-    const flight = generateDirectFlight(fromCode, destinationCode, date);
-    if (flight) directFlights.push(flight);
-  }
+//   for (let i = 0; i < directFlightCount; i++) {
+//     const flight = generateDirectFlight(fromCode, destinationCode, date);
+//     if (flight) directFlights.push(flight);
+//   }
   
-  // Generate 1-3 connecting flights
-  const connectingFlights: ConnectionFlight[] = [];
-  const connectingFlightCount = Math.floor(Math.random() * 3) + 1;
+//   // Generate 1-3 connecting flights
+//   const connectingFlights: ConnectionFlight[] = [];
+//   const connectingFlightCount = Math.floor(Math.random() * 3) + 1;
   
-  for (let i = 0; i < connectingFlightCount; i++) {
-    const flight = generateConnectionFlight(fromCode, destinationCode, date);
-    if (flight) connectingFlights.push(flight);
-  }
+//   for (let i = 0; i < connectingFlightCount; i++) {
+//     const flight = generateConnectionFlight(fromCode, destinationCode, date);
+//     if (flight) connectingFlights.push(flight);
+//   }
   
-  return { directFlights, connectingFlights };
-};
+//   return { directFlights, connectingFlights };
+// };
 
 // Format date for display
 export const formatDate = (dateString: string): string => {

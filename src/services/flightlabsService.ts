@@ -20,6 +20,36 @@ const flightLabsRequest = async (endpoint, params) => {
   }
 };
 
+export const getAirportInfo = async (query: string) => {
+  const endpoint = 'retrieveAirport';
+  const params = {
+    access_key: FLIGHTLABS_ACCESS_KEY,
+    query
+  };
+
+  console.log(`[Airport Lookup] 🔍 Searching for "${query}"`);
+
+  try {
+    const response = await axios.get(`${FLIGHTLABS_API_BASE_URL}/${endpoint}`, { params });
+    const airports = response.data;
+
+    if (airports.length === 0) {
+      console.warn(`[Airport Lookup] No results for "${query}"`);
+      return null;
+    }
+
+    const topMatch = airports[0];
+    const { skyId, entityId } = topMatch;
+
+    console.log(`[Airport Lookup] ✅ Found`, { skyId, entityId });
+    return { skyId, entityId };
+  } catch (error) {
+    console.error(`[Airport Lookup] ❌ Error searching airport "${query}":`, error);
+    throw error;
+  }
+};
+
+
 const formatMinutesToHours = (minutes) => {
   const hours = Math.floor(minutes / 60);
   const remainingMinutes = minutes % 60;
@@ -60,7 +90,7 @@ const convertFlightLabsDataToFlights = (flightInfo) => {
       flightNumber: leg.segments[0]?.flightNumber || `FL${Math.floor(Math.random() * 9000) + 1000}`,
       airline: leg.carriers.marketing[0]?.alternateId || 'FL',
       duration: formatMinutesToHours(leg.durationInMinutes) || 'N/A',
-      direct: leg.stopCount === 0,
+      direct: leg.stopCount === 0 && leg.segments.length === 1,
       segments,
     };
 
@@ -81,7 +111,17 @@ export const searchWeeklyFlights = async (originSkyId, destinationSkyId) => {
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     return days[date.getDay()];
   };
+  let originQuery = originSkyId;
+  let originEntityId = '128667998'; // fallback
 
+  const originInfo = await getAirportInfo(originQuery);
+  if (originInfo) {
+    console.log(`[Origin Airport Info] Found: ${originInfo.skyId} (${originInfo.entityId})`);
+    originSkyId = originInfo.skyId;
+    originEntityId = originInfo.entityId;
+  } else {
+    console.warn(`[Origin Airport Info] Not found for "${originQuery}", using fallback`);
+  }
   for (let i = 0; i < 2; i++) {
     const currentDate = new Date(startDate);
     currentDate.setDate(currentDate.getDate() + i);
@@ -94,16 +134,15 @@ export const searchWeeklyFlights = async (originSkyId, destinationSkyId) => {
       flights: [],
       error: null
     };
-
+   
+    
     try {
       const params = {
         originSkyId,
+        originEntityId,
         destinationSkyId: 'GND',
-        originEntityId: originSkyId === 'JFK' ? '95565058' : null,
         destinationEntityId: '128667998',
-        date: dateString,
-        adults: 1,
-        currency: 'USD',
+        date: dateString
       };
 
       const flightData = await flightLabsRequest('retrieveFlights', params);
