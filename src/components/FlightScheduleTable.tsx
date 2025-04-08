@@ -35,17 +35,6 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
     }
   };
 
-  const scrollableStyle: React.CSSProperties = {
-    minHeight: '100px',
-    maxHeight: '300px',
-    overflow: 'auto',
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    backdropFilter: 'blur(4px)',
-    border: '1px solid rgba(0, 0, 0, 0.1)',
-    borderRadius: '6px',
-    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
-  };
-
   let routeHeader = '';
   if (flights && flights.length > 0) {
     const departAirport = flights[0].departureAirport;
@@ -60,83 +49,81 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
       )}
 
       {(groupedDirectFlights.length > 0 || connectionFlights.length > 0) && (
-        <div className="mb-2">
-          <div className="overflow-x-auto">
-            <Table className="border-separate border-spacing-y-1 table-fixed w-full">
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="py-1 px-3 text-centre bg-background z-10 w-1/6">Airline</TableHead>
-                  <TableHead className="py-1 px-3 text-centre bg-background z-10 w-1/6">Total Duration</TableHead>
-                  <TableHead className="py-1 px-3 text-centre bg-background z-10 w-1/6">Days</TableHead>
-                  <TableHead className="py-1 px-3 text-centre bg-background z-10 w-1/6">Dep</TableHead>
-                  <TableHead className="py-1 px-3 text-centre bg-background z-10 w-1/6">Arr</TableHead>
+        <div className="mb-2 overflow-x-auto">
+          <Table className="border-separate border-spacing-y-1 table-fixed w-full">
+            <TableHeader>
+              <TableRow>
+                <TableHead className="py-1 px-3 text-centre bg-background z-10 w-1/6">Airline</TableHead>
+                <TableHead className="py-1 px-3 text-centre bg-background z-10 w-1/6">Total Duration</TableHead>
+                <TableHead className="py-1 px-3 text-centre bg-background z-10 w-1/6">Days</TableHead>
+                <TableHead className="py-1 px-3 text-centre bg-background z-10 w-1/6">Dep</TableHead>
+                <TableHead className="py-1 px-3 text-centre bg-background z-10 w-1/6">Arr</TableHead>
+                {title?.toLowerCase().includes('origin') && (
                   <TableHead className="py-1 px-3 text-centre bg-background z-10 w-1/6">Stops</TableHead>
-                </TableRow>
-              </TableHeader>
-            </Table>
+                )}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {groupedDirectFlights.map((flight, index) => {
+                const originalFlight = flights.find(f =>
+                  f.airline === flight.airline &&
+                  f.departureTime.includes(flight.departureTime) &&
+                  f.arrivalTime.includes(flight.arrivalTime)
+                );
 
-            <div className="overflow-auto max-h-[300px]">
-              <Table className="border-separate border-spacing-y-1 table-fixed w-full">
-                <TableBody>
-                  {groupedDirectFlights.map((flight, index) => {
-                    const originalFlight = flights.find(f =>
-                      f.airline === flight.airline &&
-                      f.departureTime.includes(flight.departureTime) &&
-                      f.arrivalTime.includes(flight.arrivalTime)
-                    );
+                const isDestinationMatch = flights[0]?.arrivalAirport?.code === originalFlight?.arrivalAirport?.code;
+                if (!isDestinationMatch) return null;
 
-                    console.log(`[Rendering Direct Flight] ${flight.flightNumber} | Duration: ${flight.duration}`);
+                return (
+                  <TableRow
+                    key={`direct-flight-${index}`}
+                    className={index % 2 === 0 ? 'bg-background hover:bg-muted/40' : 'bg-muted/20 hover:bg-muted/40'}
+                    onClick={() => {
+                      if (originalFlight) handleFlightSelect(originalFlight);
+                    }}
+                  >
+                    <TableCell className="py-2 px-3 text-centre w-1/6">{flight.airline}</TableCell>
+                    <TableCell className="py-2 px-3 text-centre w-1/6">{flight.duration}</TableCell>
+                    <TableCell className="py-2 px-3 text-centre w-1/6">{flight.days}</TableCell>
+                    <TableCell className="py-2 px-3 text-centre w-1/6">{flight.departureTime}</TableCell>
+                    <TableCell className="py-2 px-3 text-centre w-1/6">{flight.arrivalTime}</TableCell>
+                    {title?.toLowerCase().includes('origin') && (
+                      <TableCell className="py-2 px-3 text-centre w-1/6 text-green-600 font-medium">Direct</TableCell>
+                    )}
+                  </TableRow>
+                );
+              })}
 
-                    return (
-                      <TableRow
-                        key={`direct-flight-${index}`}
-                        className={index % 2 === 0 ? 'bg-background hover:bg-muted/40' : 'bg-muted/20 hover:bg-muted/40'}
-                        onClick={() => {
-                          if (originalFlight) handleFlightSelect(originalFlight);
-                        }}
-                      >
-                        <TableCell className="py-2 px-3 text-centre w-1/6">{flight.airline}</TableCell>
-                        <TableCell className="py-2 px-3 text-centre w-1/6">{flight.duration}</TableCell>
-                        <TableCell className="py-2 px-3 text-centre w-1/6">{flight.days}</TableCell>
-                        <TableCell className="py-2 px-3 text-centre w-1/6">{flight.departureTime}</TableCell>
-                        <TableCell className="py-2 px-3 text-centre w-1/6">{flight.arrivalTime}</TableCell>
-                        <TableCell className="py-2 px-3 text-centre w-1/6 text-green-600 font-medium">Direct</TableCell>
-                      </TableRow>
-                    );
-                  })}
+              {connectionFlights.map((connectionFlight, index) => {
+                const firstFlight = connectionFlight.flights[0];
+                const lastFlight = connectionFlight.flights[connectionFlight.flights.length - 1];
+                const stops = connectionFlight.flights.length - 1;
+                const departureTime = firstFlight.departureTime.split('T')[1].substring(0, 5);
+                const arrivalTime = lastFlight.arrivalTime.split('T')[1].substring(0, 5);
 
-                  {connectionFlights.map((connectionFlight, index) => {
-                    const firstFlight = connectionFlight.flights[0];
-                    const lastFlight = connectionFlight.flights[connectionFlight.flights.length - 1];
-                    const stops = connectionFlight.flights.length - 1;
-                    const departureTime = firstFlight.departureTime.split('T')[1].substring(0, 5);
-                    const arrivalTime = lastFlight.arrivalTime.split('T')[1].substring(0, 5);
-
-                    console.log(`[Rendering Connection] Stops: ${stops}, Duration: ${connectionFlight.totalDuration}`);
-
-                    return (
-                      <TableRow
-                        key={`connecting-flight-${index}`}
-                        className={index % 2 === 0 ? 'bg-background hover:bg-muted/40' : 'bg-muted/20 hover:bg-muted/40'}
-                        onClick={() => handleFlightSelect(connectionFlight)}
-                      >
-                        <TableCell className="py-2 px-3 text-centre w-1/6">
-                          {connectionFlight.flights.map(f => f.airline).join('+')}
-                        </TableCell>
-                        <TableCell className="py-2 px-3 text-centre w-1/6">{connectionFlight.totalDuration}</TableCell>
-                        <TableCell className="py-2 px-3 text-centre w-1/6">-</TableCell>
-                        <TableCell className="py-2 px-3 text-centre w-1/6">{departureTime}</TableCell>
-                        <TableCell className="py-2 px-3 text-centre w-1/6">{arrivalTime}</TableCell>
-                        <TableCell className="py-2 px-3 text-centre w-1/6 text-amber-600">
-                          {stops} {stops === 1 ? 'stop' : 'stops'}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
-          </div>
+                return (
+                  <TableRow
+                    key={`connecting-flight-${index}`}
+                    className={index % 2 === 0 ? 'bg-background hover:bg-muted/40' : 'bg-muted/20 hover:bg-muted/40'}
+                    onClick={() => handleFlightSelect(connectionFlight)}
+                  >
+                    <TableCell className="py-2 px-3 text-centre w-1/6">
+                      {[...new Set(connectionFlight.flights.map(f => f.airline))].join(' + ')}
+                    </TableCell>
+                    <TableCell className="py-2 px-3 text-centre w-1/6">{connectionFlight.totalDuration}</TableCell>
+                    <TableCell className="py-2 px-3 text-centre w-1/6">-</TableCell>
+                    <TableCell className="py-2 px-3 text-centre w-1/6">{departureTime}</TableCell>
+                    <TableCell className="py-2 px-3 text-centre w-1/6">{arrivalTime}</TableCell>
+                    {title?.toLowerCase().includes('origin') && (
+                      <TableCell className="py-2 px-3 text-centre w-1/6 text-amber-600">
+                        {stops} {stops === 1 ? 'stop' : 'stops'}
+                      </TableCell>
+                    )}
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
         </div>
       )}
 
