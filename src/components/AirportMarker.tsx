@@ -17,6 +17,7 @@ interface AirportMarkerProps {
   onPopupOpen?: (airportCode: string | null) => void;
   activePopup?: string | null;
   destinationAirport?: Airport | null;
+  showPopupAfterAnimation?: boolean;
 }
 
 const AirportMarker: React.FC<AirportMarkerProps> = ({ 
@@ -30,7 +31,8 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
   connectingFlights = [],
   onPopupOpen,
   activePopup,
-  destinationAirport = null
+  destinationAirport = null,
+  showPopupAfterAnimation = false
 }) => {
   const hasFlights = departureFlights.length > 0 || arrivalFlights.length > 0 || (type !== 'origin' && connectingFlights.length > 0);
   const map = useMap();
@@ -42,30 +44,29 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
   const airportCode = airport.code || 'N/A';
   const airportName = airport.name || `Airport ${airportCode}`;
   
-  // Updated to move popup higher up from marker
+  // Updated popup offset calculation
   const getPopupOffset = () => {
     if (!destinationAirport) {
-      return [0, -45] as [number, number]; // Moved higher from -40 to -45
+      return [0, -35] as [number, number]; // More compact
     }
     
     const dx = destinationAirport.lng - airport.lng;
     const dy = destinationAirport.lat - airport.lat;
     const angle = Math.atan2(dy, dx) * (180 / Math.PI);
     
-    let xOffset = 0;
-    let yOffset = -45; // Moved higher from -40 to -45
-    
+    // Adjust offset based on airport type
     if (type === 'origin') {
-      xOffset = Math.cos(angle * Math.PI / 180) * 20;
+      // For origin, move popup towards the destination
+      return [Math.cos(angle * Math.PI / 180) * 20, -35] as [number, number];
     } 
     else if (type === 'destination') {
-      xOffset = Math.cos((angle + 180) * Math.PI / 180) * 20;
+      // For destination, move popup away from origin
+      return [Math.cos((angle + 180) * Math.PI / 180) * 20, -35] as [number, number];
     } 
     else {
-      return [0, -45] as [number, number]; // Moved higher from -40 to -45
+      // For connection points
+      return [0, -35] as [number, number];
     }
-    
-    return [xOffset, yOffset] as [number, number];
   };
   
   const getTooltipContent = () => {
@@ -98,7 +99,8 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
   }, [activePopup, airportCode, popupOpen]);
 
   useEffect(() => {
-    if (type === 'origin' && hasFlights && markerRef.current && !popupOpen && !activePopup && !popupDismissed ) {
+    // Delay showing the popup for origin until all animations are complete
+    if (type === 'origin' && hasFlights && markerRef.current && !popupOpen && !activePopup && !popupDismissed && !showPopupAfterAnimation) {
       const timer = setTimeout(() => {
         if (markerRef.current && !isHandlingEvent.current) {
           isHandlingEvent.current = true;
@@ -114,7 +116,7 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
       
       return () => clearTimeout(timer);
     }
-  }, [type, hasFlights, airportCode, onPopupOpen, popupOpen, activePopup]);
+  }, [type, hasFlights, airportCode, onPopupOpen, popupOpen, activePopup, showPopupAfterAnimation]);
 
   return (
     <Marker 
@@ -131,6 +133,20 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
               onPopupOpen(airportCode);
             }
             console.log(`Popup opened for ${airportCode}`);
+            
+            // Center the map above the popup to avoid pulling it in the opposite direction
+            if (type === 'destination') {
+              const popupHeight = 400; // Approximate height of popup
+              const offsetY = -popupHeight / 2;
+              map.panTo([airport.lat, airport.lng], { 
+                animate: true, 
+                duration: 0.5,
+                noMoveStart: true,
+                // Apply an offset to move the point below the center of the map
+                offset: [0, offsetY]
+              });
+            }
+            
             isHandlingEvent.current = false;
           }
         },
@@ -156,8 +172,8 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
       
       <Popup 
         className="flight-popup between-airports"
-        minWidth={550}  // Increased from 500
-        maxWidth={650}  // Increased from 600
+        minWidth={450}  // Reduced from 550 for more compact display
+        maxWidth={550}  // Reduced from 650 for more compact display
         autoPan={true}
         autoPanPaddingTopLeft={[50, 50]}
         autoPanPaddingBottomRight={[50, 50]}
@@ -165,13 +181,13 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
         closeButton={true}
         offset={getPopupOffset()}
       >
-        <div className="p-2 max-h-[400px] overflow-auto"> {/* Increased height from 350px to 400px */}
-          <h3 className="text-lg font-semibold mb-2">{airport.city || airport.name} ({airport.code})</h3>
+        <div className="p-2 max-h-[350px] overflow-auto"> {/* Reduced from 400px to 350px */}
+          <h3 className="text-lg font-semibold mb-1">{airport.city || airport.name} ({airport.code})</h3>
           
           {hasFlights ? (
-            <div className="mt-2">
+            <div className="mt-1"> {/* Reduced margin from 2 to 1 */}
               {type === 'origin' && (
-                <div className="mb-3">
+                <div className="mb-2"> {/* Reduced margin from 3 to 2 */}
                   <FlightScheduleTable 
                     flights={departureFlights} 
                     connectionFlights={connectingFlights}
