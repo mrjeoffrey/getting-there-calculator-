@@ -57,46 +57,46 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
   const destinationCountry = 'Grenada';
   // ✅ Only direct flights going to the correct destination
   const groupedDirectFlights =
-  flights && flights.length > 0
-    ? groupFlightsByDay(
-        flights.filter(f => {
-          const isDirect = f.direct;
-          const isToGrenada = f.arrivalAirport?.code === destinationAirportCode;
-          return isDirect && (type !== 'origin' || isToGrenada);
-        })
-      )
-    : [];
-
-const groupedConnectingFlights =
-  connectionFlights && connectionFlights.length > 0
-    ? groupFlightsByDay(
-      connectionFlights
-      .filter(cf => {
-        const lastLeg = cf.flights.at(-1);
-        const isToGrenada = lastLeg?.arrivalAirport?.code === destinationAirportCode;
-        return type !== 'origin' || isToGrenada;
-      })
-          .map(cf => {
-            const firstFlight = cf.flights[0];
-            const lastFlight = cf.flights.at(-1)!;
-            console.log('First flight:---', firstFlight);
-            console.log('Last flight:---', lastFlight);
-            console.log('All flights:---', cf.flights.length);
-            console.log('All flights name', cf.flights);
-            return {
-              id: cf.id,
-              departureTime: firstFlight.departureTime,
-              arrivalTime: lastFlight.arrivalTime,
-              airline: [...new Set(cf.flights.map(f => f.airline))].join(', '),
-              duration: cf.totalDuration,
-              days: new Date(firstFlight.departureTime).toLocaleDateString(undefined, { weekday: 'short' }),
-              direct: false,
-              stops: cf.flights.length-1,
-              originalConnection: cf
-            };
+    flights && flights.length > 0
+      ? groupFlightsByDay(
+          flights.filter(f => {
+            const isDirect = f.direct;
+            const isToGrenada = f.arrivalAirport?.code === destinationAirportCode;
+            return isDirect && (type !== 'origin' || isToGrenada);
           })
-      )
-    : [];
+        )
+      : [];
+
+  const groupedConnectingFlights =
+    connectionFlights && connectionFlights.length > 0
+      ? groupFlightsByDay(
+          connectionFlights
+            .filter(cf => {
+              const lastLeg = cf.flights.at(-1);
+              const isToGrenada = lastLeg?.arrivalAirport?.code === destinationAirportCode;
+              return type !== 'origin' || isToGrenada;
+            })
+            .map(cf => {
+              const firstFlight = cf.flights[0];
+              const lastFlight = cf.flights.at(-1)!;
+              console.log('First flight:---', firstFlight);
+              console.log('Last flight:---', lastFlight);
+              console.log('All flights:---', cf.flights.length);
+              console.log('All flights name', cf.flights);
+              return {
+                id: cf.id,
+                departureTime: firstFlight.departureTime,
+                arrivalTime: lastFlight.arrivalTime,
+                airline: [...new Set(cf.flights.map(f => f.airline))].join(', '),
+                duration: cf.totalDuration,
+                days: new Date(firstFlight.departureTime).toLocaleDateString(undefined, { weekday: 'short' }),
+                direct: false,
+                stops: cf.flights.length-1,
+                originalConnection: cf
+              };
+            })
+        )
+      : [];
 
 
   const handleFlightSelect = (flight: Flight | ConnectionFlight) => {

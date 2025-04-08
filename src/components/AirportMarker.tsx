@@ -187,7 +187,7 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
                     connectionFlights={connectingFlights}
                     flights={arrivalFlights} 
                     title="Arriving Flights"
-                    type = 'destination'
+                    type="destination"
                   />
                 </div>
               )}
@@ -197,13 +197,13 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
                   <FlightScheduleTable
                     flights={departureFlights}
                     title="Connecting Flights"
-                    type = 'connection'
+                    type="connection"
                   />
                 </div>
               )}
             </div>
           ) : (
-            <p className="text-xs text-muted-foreground italic">No flight information available for this airport.</p> {/* Reduced text size from text-sm to text-xs */}
+            <p className="text-xs text-muted-foreground italic">No flight information available for this airport.</p> /* Reduced text size from text-sm to text-xs */
           )}
         </div>
       </Popup>
