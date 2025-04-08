@@ -232,7 +232,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
     const planeIconHtml = ReactDOMServer.renderToString(
       <div className="plane-marker">
         <Plane 
-          size={24}
+          size={18}
           fill={type === 'direct' ? '#4CAF50' : '#FFC107'}
           stroke={isDarkMode ? 'white' : 'black'} 
           strokeWidth={1.5}
@@ -247,8 +247,8 @@ const FlightPath: React.FC<FlightPathProps> = ({
     const planeIcon = L.divIcon({
       html: planeIconHtml,
       className: 'plane-icon-marker',
-      iconSize: [24, 24],
-      iconAnchor: [12, 12]
+      iconSize: [12, 12],
+      iconAnchor: [6, 6]
     });
     
     const marker = L.marker(position, {
@@ -386,7 +386,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
   };
   
   const color = type === 'direct' ? '#4CAF50' : '#FFC107';
-  const weight = isActive ? 4 : 3;
+  const weight = isActive ? 2.5 : 1.5;
   const opacity = isActive ? 0.8 : 0.6;
   const dashArray = type === 'connecting' ? '5, 8' : '';
   

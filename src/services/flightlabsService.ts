@@ -122,7 +122,7 @@ export const searchWeeklyFlights = async (originSkyId, destinationSkyId) => {
   } else {
     console.warn(`[Origin Airport Info] Not found for "${originQuery}", using fallback`);
   }
-  for (let i = 0; i < 2; i++) {
+  for (let i = 0; i < 1; i++) {
     const currentDate = new Date(startDate);
     currentDate.setDate(currentDate.getDate() + i);
     const dateString = currentDate.toISOString().split('T')[0];

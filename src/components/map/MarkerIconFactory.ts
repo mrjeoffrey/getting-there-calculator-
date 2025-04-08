@@ -1,12 +1,13 @@
 
+import { differenceInCalendarWeeks } from 'date-fns';
 import L from 'leaflet';
 
 type MarkerType = 'origin' | 'destination' | 'connection';
 
 export const createAirportMarkerIcon = (type: MarkerType): L.DivIcon => {
-  let size = type === 'origin' || type === 'destination' ? 28 : 18; // Slightly larger for visibility
+  const size = type === 'origin' || type === 'destination' ? 20 : 14;
   let color = '';
-  let darkerColor = '';
+  let darkerColor = ''; // Default to pink for origin
 
   switch (type) {
     case 'origin':
@@ -70,6 +71,7 @@ export const createAirportMarkerIcon = (type: MarkerType): L.DivIcon => {
     className: 'custom-div-icon',
     html: html,
     iconSize: [size, size],
-    iconAnchor: [size / 2, size / 2]
+    iconAnchor: [size / 2, size / 2],
+    shadowUrl:''
   });
 };

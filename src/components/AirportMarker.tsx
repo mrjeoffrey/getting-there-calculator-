@@ -110,7 +110,7 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
           console.log(`Opening popup for ${airportCode} (origin) on initial load`);
           isHandlingEvent.current = false;
         }
-      }, 5000);
+      }, 7500);
       
       return () => clearTimeout(timer);
     }
