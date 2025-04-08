@@ -120,7 +120,7 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
   return (
     <div className="flight-schedule-between-markers space-y-0 mt-1"> {/* Reduced margin from mt-2 to mt-1 */}
       {routeHeader && (
-        <h3 className="font-medium text-xs text-primary mb-1">{routeHeader}</h3> /* Reduced text size from text-sm to text-xs and margin */
+        <h3 className="font-medium text-xs text-primary mb-1">{routeHeader}</h3> {/* Reduced text size from text-sm to text-xs and margin */}
       )}
 
       {(groupedDirectFlights.length > 0 || groupedConnectingFlights.length > 0) && (

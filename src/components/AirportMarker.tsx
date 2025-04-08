@@ -203,7 +203,7 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
               )}
             </div>
           ) : (
-            <p className="text-xs text-muted-foreground italic">No flight information available for this airport.</p> /* Reduced text size from text-sm to text-xs */
+            <p className="text-xs text-muted-foreground italic">No flight information available for this airport.</p> {/* Reduced text size from text-sm to text-xs */}
           )}
         </div>
       </Popup>
