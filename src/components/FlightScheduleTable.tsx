@@ -36,6 +36,7 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
     return date.toLocaleTimeString(undefined, {
       hour: '2-digit',
       minute: '2-digit',
+      timeZone: 'UTC' ,
       hour12: false
     });
   };
@@ -56,18 +57,30 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
   const groupedDirectFlights =
   flights && flights.length > 0
     ? groupFlightsByDay(
-        flights.filter(f => f.direct && f.arrivalAirport?.code === destinationAirportCode)
+        flights.filter(f => {
+          const isDirect = f.direct;
+          const isToGrenada = f.arrivalAirport?.code === destinationAirportCode;
+          return isDirect && (type !== 'origin' || isToGrenada);
+        })
       )
     : [];
 
 const groupedConnectingFlights =
   connectionFlights && connectionFlights.length > 0
     ? groupFlightsByDay(
-        connectionFlights
-          .filter(cf => cf.flights.at(-1)?.arrivalAirport?.code === destinationAirportCode)
+      connectionFlights
+      .filter(cf => {
+        const lastLeg = cf.flights.at(-1);
+        const isToGrenada = lastLeg?.arrivalAirport?.code === destinationAirportCode;
+        return type !== 'origin' || isToGrenada;
+      })
           .map(cf => {
             const firstFlight = cf.flights[0];
             const lastFlight = cf.flights.at(-1)!;
+            console.log('First flight:---', firstFlight);
+            console.log('Last flight:---', lastFlight);
+            console.log('All flights:---', cf.flights.length);
+            console.log('All flights name', cf.flights);
             return {
               id: cf.id,
               departureTime: firstFlight.departureTime,
@@ -76,7 +89,7 @@ const groupedConnectingFlights =
               duration: cf.totalDuration,
               days: new Date(firstFlight.departureTime).toLocaleDateString(undefined, { weekday: 'short' }),
               direct: false,
-              stops: cf.flights.length - 1,
+              stops: cf.flights.length-1,
               originalConnection: cf
             };
           })
@@ -94,10 +107,12 @@ const groupedConnectingFlights =
     const originAirport = flights[0]?.departureAirport || connectionFlights[0]?.flights[0]?.departureAirport;
   
     if (originAirport) {
-      routeHeader = `Available direct and connecting flights from ${originAirport.city}, ${originAirport.country} (${originAirport.code}) to ${destinationCity}, ${destinationCountry} (${destinationAirportCode})`;
+      routeHeader =
+        type === 'origin'
+          ? `Available direct and connecting flights from ${originAirport.city}, ${originAirport.country} (${originAirport.code}) to ${destinationCity}, ${destinationCountry} (${destinationAirportCode})`
+          : `Connecting flights from ${originAirport.city}, ${originAirport.country} (${originAirport.code})`;
     }
   }
-  
 
   return (
     <div className="flight-schedule-between-markers space-y-0 mt-2">
