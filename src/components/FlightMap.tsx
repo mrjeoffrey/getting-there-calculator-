@@ -100,13 +100,12 @@ const FlightMap: React.FC<FlightMapProps> = ({
             connectionId: connection.id,
             legIndex: index,
             isComplete: false,
-            nextLegStarted: false
+            nextLegStarted: index === 0 // Only the first leg starts automatically
           });
         });
       });
       
       setConnectionLegsStatus(initialLegsStatus);
-      // console.log(`Initialized ${initialLegsStatus.length} connection leg statuses`);
     }
   }, [connectingFlights]);
   
@@ -160,8 +159,6 @@ const FlightMap: React.FC<FlightMapProps> = ({
   const uniqueRoutes = new Map<string, boolean>();
   
   const handleLegComplete = (connectionId: string, legIndex: number) => {
-    // console.log(`Leg ${legIndex} of connection ${connectionId} completed`);
-    
     setConnectionLegsStatus(prevStatus => {
       const newStatus = [...prevStatus];
       
@@ -411,7 +408,7 @@ const FlightMap: React.FC<FlightMapProps> = ({
               connection.flights.map((flight, legIndex) => {
                 const showPlane = shouldShowConnectionLegPlane(connection.id, legIndex);
                 
-                const legDelay = legIndex * 500;
+                const legDelay = legIndex * 800;
                 
                 const shouldStartAnimating = legIndex === 0 || 
                   connectionLegsStatus.find(
