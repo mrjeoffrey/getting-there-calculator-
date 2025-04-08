@@ -4,6 +4,7 @@ import { Marker, Popup, Tooltip, useMap } from 'react-leaflet';
 import { Airport, Flight, ConnectionFlight } from '../types/flightTypes';
 import { createAirportMarkerIcon } from './map/MarkerIconFactory';
 import FlightScheduleTable from './FlightScheduleTable';
+import L from 'leaflet';
 
 interface AirportMarkerProps {
   airport: Airport;
@@ -138,12 +139,16 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
             if (type === 'destination') {
               const popupHeight = 400; // Approximate height of popup
               const offsetY = -popupHeight / 2;
-              map.panTo([airport.lat, airport.lng], { 
+              
+              // Create a point offset from the airport location
+              const targetPoint = map.project([airport.lat, airport.lng]).subtract([0, offsetY]);
+              const targetLatLng = map.unproject(targetPoint);
+              
+              // Use panTo with the new target point
+              map.panTo(targetLatLng, { 
                 animate: true, 
                 duration: 0.5,
-                noMoveStart: true,
-                // Apply an offset to move the point below the center of the map
-                offset: [0, offsetY]
+                noMoveStart: true
               });
             }
             
