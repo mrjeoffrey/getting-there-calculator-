@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { Flight, ConnectionFlight } from '../types/flightTypes';
 import { groupFlightsByDay } from '../utils/dateFormatUtils';
@@ -48,8 +49,9 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
     const diffMin = Math.floor(diffMs / (1000 * 60));
     const hours = Math.floor(diffMin / 60);
     const minutes = diffMin % 60;
-    return `${hours}h ${minutes}m`;
+    return `${hours}h${minutes}m`; // Removed space to make more compact
   };
+  
   const destinationAirportCode = 'GND';
   const destinationCity = 'St. George\'s';
   const destinationCountry = 'Grenada';
@@ -101,6 +103,7 @@ const groupedConnectingFlights =
     log('Flight selected', flight);
     if (onFlightSelect) onFlightSelect(flight);
   };
+  
   let routeHeader = '';
 
   if (flights.length > 0 || connectionFlights.length > 0) {
@@ -109,29 +112,29 @@ const groupedConnectingFlights =
     if (originAirport) {
       routeHeader =
         type === 'origin'
-          ? `Available direct and connecting flights from ${originAirport.city}, ${originAirport.country} (${originAirport.code}) to ${destinationCity}, ${destinationCountry} (${destinationAirportCode})`
-          : `Connecting flights from ${originAirport.city}, ${originAirport.country} (${originAirport.code})`;
+          ? `Flights from ${originAirport.code} to ${destinationAirportCode}`
+          : `Connections from ${originAirport.code}`;
     }
   }
 
   return (
-    <div className="flight-schedule-between-markers space-y-0 mt-2">
+    <div className="flight-schedule-between-markers space-y-0 mt-1"> {/* Reduced margin from mt-2 to mt-1 */}
       {routeHeader && (
-        <h3 className="font-medium text-sm text-primary mb-2">{routeHeader}</h3>
+        <h3 className="font-medium text-xs text-primary mb-1">{routeHeader}</h3> /* Reduced text size from text-sm to text-xs and margin */
       )}
 
       {(groupedDirectFlights.length > 0 || groupedConnectingFlights.length > 0) && (
-        <div className="mb-2 overflow-x-auto">
-          <Table className="border-separate border-spacing-y-1 table-fixed w-full">
+        <div className="mb-1 overflow-x-auto"> {/* Reduced margin */}
+          <Table className="border-separate border-spacing-y-0 table-fixed w-full text-xs"> {/* Added text-xs class and reduced border-spacing */}
             <TableHeader>
-              <TableRow>
-                <TableHead className="py-1 px-3 text-centre w-1/6">Airline</TableHead>
-                <TableHead className="py-1 px-3 text-centre w-1/6">Total Duration</TableHead>
-                <TableHead className="py-1 px-3 text-centre w-1/6">Days</TableHead>
-                <TableHead className="py-1 px-3 text-centre w-1/6">Dep</TableHead>
-                <TableHead className="py-1 px-3 text-centre w-1/6">Arr</TableHead>
+              <TableRow className="h-6"> {/* Reduced row height */}
+                <TableHead className="py-0 px-1 text-center w-1/6">Airline</TableHead> {/* Reduced padding */}
+                <TableHead className="py-0 px-1 text-center w-1/6">Duration</TableHead>
+                <TableHead className="py-0 px-1 text-center w-1/6">Days</TableHead>
+                <TableHead className="py-0 px-1 text-center w-1/6">Dep</TableHead>
+                <TableHead className="py-0 px-1 text-center w-1/6">Arr</TableHead>
                 {type === 'origin' && (
-                  <TableHead className="py-1 px-3 text-centre w-1/6">Stops</TableHead>
+                  <TableHead className="py-0 px-1 text-center w-1/6">Stops</TableHead>
                 )}
               </TableRow>
             </TableHeader>
@@ -139,20 +142,20 @@ const groupedConnectingFlights =
               {groupedDirectFlights.map((flight, index) => (
                 <TableRow
                   key={`direct-${index}`}
-                  className={index % 2 === 0 ? 'bg-background hover:bg-muted/40' : 'bg-muted/20 hover:bg-muted/40'}
+                  className={`h-6 ${index % 2 === 0 ? 'bg-background hover:bg-muted/40' : 'bg-muted/20 hover:bg-muted/40'}`} {/* Reduced row height */}
                   onClick={() => handleFlightSelect(flights.find(f =>
                     f.airline === flight.airline &&
                     f.departureTime.includes(flight.departureTime) &&
                     f.arrivalTime.includes(flight.arrivalTime)
                   )!)}
                 >
-                  <TableCell className="py-2 px-3 text-centre">{flight.airline}</TableCell>
-                  <TableCell className="py-2 px-3 text-centre">{calculateDuration(flight.departureTime, flight.arrivalTime)}</TableCell>
-                  <TableCell className="py-2 px-3 text-centre">{flight.days}</TableCell>
-                  <TableCell className="py-2 px-3 text-centre">{formatToTimeOnly(flight.departureTime)}</TableCell>
-                  <TableCell className="py-2 px-3 text-centre">{formatToTimeOnly(flight.arrivalTime)}</TableCell>
+                  <TableCell className="py-1 px-1 text-center">{flight.airline}</TableCell> {/* Reduced padding */}
+                  <TableCell className="py-1 px-1 text-center">{calculateDuration(flight.departureTime, flight.arrivalTime)}</TableCell>
+                  <TableCell className="py-1 px-1 text-center">{flight.days}</TableCell>
+                  <TableCell className="py-1 px-1 text-center">{formatToTimeOnly(flight.departureTime)}</TableCell>
+                  <TableCell className="py-1 px-1 text-center">{formatToTimeOnly(flight.arrivalTime)}</TableCell>
                   {type === 'origin' && (
-                    <TableCell className="py-2 px-3 text-green-600 font-medium text-centre">Direct</TableCell>
+                    <TableCell className="py-1 px-1 text-green-600 font-medium text-center">Direct</TableCell>
                   )}
                 </TableRow>
               ))}
@@ -162,16 +165,16 @@ const groupedConnectingFlights =
                 return (
                   <TableRow
                     key={`connect-${index}`}
-                    className={(index + groupedDirectFlights.length) % 2 === 0 ? 'bg-background hover:bg-muted/40' : 'bg-muted/20 hover:bg-muted/40'}
+                    className={`h-6 ${(index + groupedDirectFlights.length) % 2 === 0 ? 'bg-background hover:bg-muted/40' : 'bg-muted/20 hover:bg-muted/40'}`} {/* Reduced row height */}
                     onClick={() => originalConnection && handleFlightSelect(originalConnection)}
                   >
-                    <TableCell className="py-2 px-3 text-centre">{flight.airline}</TableCell>
-                    <TableCell className="py-2 px-3 text-centre">{calculateDuration(flight.departureTime, flight.arrivalTime)}</TableCell>
-                    <TableCell className="py-2 px-3 text-centre">{flight.days}</TableCell>
-                    <TableCell className="py-2 px-3 text-centre">{formatToTimeOnly(flight.departureTime)}</TableCell>
-                    <TableCell className="py-2 px-3 text-centre">{formatToTimeOnly(flight.arrivalTime)}</TableCell>
+                    <TableCell className="py-1 px-1 text-center">{flight.airline}</TableCell> {/* Reduced padding */}
+                    <TableCell className="py-1 px-1 text-center">{calculateDuration(flight.departureTime, flight.arrivalTime)}</TableCell>
+                    <TableCell className="py-1 px-1 text-center">{flight.days}</TableCell>
+                    <TableCell className="py-1 px-1 text-center">{formatToTimeOnly(flight.departureTime)}</TableCell>
+                    <TableCell className="py-1 px-1 text-center">{formatToTimeOnly(flight.arrivalTime)}</TableCell>
                     {type === 'origin' && (
-                      <TableCell className="py-2 px-3 text-amber-600 text-centre">
+                      <TableCell className="py-1 px-1 text-amber-600 text-center">
                         {flight.stops}
                       </TableCell>
                     )}

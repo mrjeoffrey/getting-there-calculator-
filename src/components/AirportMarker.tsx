@@ -156,8 +156,8 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
       
       <Popup 
         className="flight-popup between-airports"
-        minWidth={550}  // Increased from 500
-        maxWidth={650}  // Increased from 600
+        minWidth={450}  // Decreased from 550 to 450
+        maxWidth={500}  // Decreased from 650 to 500
         autoPan={true}
         autoPanPaddingTopLeft={[50, 50]}
         autoPanPaddingBottomRight={[50, 50]}
@@ -165,13 +165,13 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
         closeButton={true}
         offset={getPopupOffset()}
       >
-        <div className="p-2 max-h-[400px] overflow-auto"> {/* Increased height from 350px to 400px */}
-          <h3 className="text-lg font-semibold mb-2">{airport.city || airport.name} ({airport.code})</h3>
+        <div className="p-1 max-h-[350px] overflow-auto"> {/* Decreased padding from p-2 to p-1 and height from 400px to 350px */}
+          <h3 className="text-base font-semibold mb-1">{airport.city || airport.name} ({airport.code})</h3> {/* Reduced text size and margin */}
           
           {hasFlights ? (
-            <div className="mt-2">
+            <div className="mt-1"> {/* Reduced margin from mt-2 to mt-1 */}
               {type === 'origin' && (
-                <div className="mb-3">
+                <div className="mb-2"> {/* Reduced margin from mb-3 to mb-2 */}
                   <FlightScheduleTable 
                     flights={departureFlights} 
                     connectionFlights={connectingFlights}
@@ -203,7 +203,7 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
               )}
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground italic">No flight information available for this airport.</p>
+            <p className="text-xs text-muted-foreground italic">No flight information available for this airport.</p> {/* Reduced text size from text-sm to text-xs */}
           )}
         </div>
       </Popup>
