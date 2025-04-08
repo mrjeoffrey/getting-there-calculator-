@@ -100,7 +100,7 @@ const FlightMap: React.FC<FlightMapProps> = ({
             connectionId: connection.id,
             legIndex: index,
             isComplete: false,
-            nextLegStarted: index === 0 // Only the first leg starts automatically
+            nextLegStarted: index === 0 // Only the first leg starts automatically now
           });
         });
       });
@@ -408,7 +408,7 @@ const FlightMap: React.FC<FlightMapProps> = ({
               connection.flights.map((flight, legIndex) => {
                 const showPlane = shouldShowConnectionLegPlane(connection.id, legIndex);
                 
-                const legDelay = legIndex * 800;
+                const legDelay = legIndex * 1000; 
                 
                 const shouldStartAnimating = legIndex === 0 || 
                   connectionLegsStatus.find(

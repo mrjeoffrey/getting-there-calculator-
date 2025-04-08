@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useRef } from 'react';
 import { Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -113,15 +114,17 @@ const FlightPath: React.FC<FlightPathProps> = ({
   }, [departure, arrival, type, isActive, legDelay]);
   
   useEffect(() => {
-    if (showPlane && !animationComplete && lineDrawingComplete && arcPointsRef.current.length > 0 && autoAnimate && !animationStarted) {
+    if (showPlane && !animationComplete && autoAnimate && !animationStarted) {
       setAnimationStarted(true);
       
       setTimeout(() => {
         createPlaneMarker();
+        // Start animation with empty line - we'll draw it as plane moves
+        setDisplayedPoints([arcPointsRef.current[0]]);
         startFlightAnimation();
       }, 500);
     }
-  }, [showPlane, autoAnimate, lineDrawingComplete, animationComplete, animationStarted]);
+  }, [showPlane, autoAnimate, animationComplete, animationStarted]);
   
   const cleanup = () => {
     if (drawingTimerRef.current) {
@@ -171,11 +174,9 @@ const FlightPath: React.FC<FlightPathProps> = ({
       
       calculateInitialRotation(points);
       
+      // Initially just show the departure point
       setDisplayedPoints([points[0]]);
       
-      setTimeout(() => {
-        startPathDrawing();
-      }, 300);
     } catch (error) {
       console.error(`[${pathId.current}] Error initializing flight path:`, error);
     }
@@ -283,33 +284,6 @@ const FlightPath: React.FC<FlightPathProps> = ({
     }
   };
   
-  const startPathDrawing = () => {
-    const points = arcPointsRef.current;
-    if (points.length < 2) return;
-    
-    currentIndexRef.current = 1;
-    const totalPoints = points.length;
-    
-    const durationInMinutes = getDurationInMinutes();
-    
-    const drawAnimationDuration = Math.min(2500, Math.max(800, durationInMinutes * 4)); 
-    const pointDelay = drawAnimationDuration / totalPoints;
-    
-    const drawNextSegment = () => {
-      if (currentIndexRef.current < totalPoints) {
-        setDisplayedPoints(points.slice(0, currentIndexRef.current + 1));
-        
-        currentIndexRef.current++;
-        
-        drawingTimerRef.current = setTimeout(drawNextSegment, pointDelay);
-      } else {
-        setLineDrawingComplete(true);
-      }
-    };
-    
-    drawNextSegment();
-  };
-  
   const startFlightAnimation = () => {
     const points = arcPointsRef.current;
     if (points.length < 2) return;
@@ -331,14 +305,22 @@ const FlightPath: React.FC<FlightPathProps> = ({
           
         updatePlanePosition(currentPosition, nextPosition);
         
+        // Update the line to show progress up to the current position
+        // This is the key change - line is drawn as plane moves
+        setDisplayedPoints(points.slice(0, currentIndexRef.current + 1));
+        
         currentIndexRef.current++;
         
         drawingTimerRef.current = setTimeout(animateNextStep, pointDelay);
       } else {
         setAnimationComplete(true);
+        setLineDrawingComplete(true);
         
         const finalPosition = points[points.length - 1];
         updatePlanePosition(finalPosition, null);
+        
+        // Ensure the full path is shown at the end
+        setDisplayedPoints(points);
         
         if (onLegComplete) {
           onLegComplete();
