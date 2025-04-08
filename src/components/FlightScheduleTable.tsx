@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Flight, ConnectionFlight } from '../types/flightTypes';
 import { groupFlightsByDay } from '../utils/dateFormatUtils';
@@ -10,6 +9,7 @@ interface FlightScheduleTableProps {
   selectedFlightId?: string | null;
   onFlightSelect?: (flight: Flight | ConnectionFlight) => void;
   title?: string;
+  type?: 'origin' | 'destination' | 'connection';
 }
 
 const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
@@ -17,39 +17,30 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
   connectionFlights = [],
   selectedFlightId = null,
   onFlightSelect,
-  title
+  title,
+  type = 'origin'
 }) => {
   const groupedDirectFlights = flights && flights.length > 0 ? groupFlightsByDay(flights.filter(f => f.direct)) : [];
-  
-  // Group connecting flights similarly to direct flights
+
   const groupedConnectingFlights = connectionFlights && connectionFlights.length > 0 ? 
     groupFlightsByDay(connectionFlights.map(cf => {
       const firstFlight = cf.flights[0];
       const lastFlight = cf.flights[cf.flights.length - 1];
-      
+
       return {
         id: cf.id,
         departureTime: firstFlight.departureTime,
         arrivalTime: lastFlight.arrivalTime,
-        airline: cf.flights.map(f => f.airline).join(' + '),
+        airline: [...new Set(cf.flights.map(f => f.airline))].join(', '),
         duration: cf.totalDuration,
+        days: new Date(firstFlight.departureTime).toLocaleDateString(undefined, { weekday: 'short' }),
         direct: false,
         stops: cf.flights.length - 1,
         originalConnection: cf
       };
     })) : [];
 
-  console.log('[FlightScheduleTable] groupedDirectFlights:', groupedDirectFlights);
-  console.log('[FlightScheduleTable] groupedConnectingFlights:', groupedConnectingFlights);
-  console.log('[FlightScheduleTable] connectionFlights:', connectionFlights);
-
-  if ((groupedDirectFlights.length === 0 || !flights) && (groupedConnectingFlights.length === 0 && (connectionFlights?.length === 0 || !connectionFlights))) {
-    console.log('[FlightScheduleTable] No flights to display.');
-    return null;
-  }
-
   const handleFlightSelect = (flight: Flight | ConnectionFlight) => {
-    console.log('[FlightScheduleTable] Flight selected:', flight);
     if (onFlightSelect) {
       onFlightSelect(flight);
     }
@@ -86,7 +77,7 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
                 <TableHead className="py-1 px-3 text-centre bg-background z-10 w-1/6">Days</TableHead>
                 <TableHead className="py-1 px-3 text-centre bg-background z-10 w-1/6">Dep</TableHead>
                 <TableHead className="py-1 px-3 text-centre bg-background z-10 w-1/6">Arr</TableHead>
-                {title?.toLowerCase().includes('origin') && (
+                {type === 'origin' && (
                   <TableHead className="py-1 px-3 text-centre bg-background z-10 w-1/6">Stops</TableHead>
                 )}
               </TableRow>
@@ -101,7 +92,7 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
 
                 const isDestinationMatch = flights.length > 0 ? 
                   flights[0]?.arrivalAirport?.code === originalFlight?.arrivalAirport?.code : true;
-                  
+
                 if (!isDestinationMatch) return null;
 
                 return (
@@ -117,7 +108,7 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
                     <TableCell className="py-2 px-3 text-centre w-1/6">{flight.days}</TableCell>
                     <TableCell className="py-2 px-3 text-centre w-1/6">{flight.departureTime}</TableCell>
                     <TableCell className="py-2 px-3 text-centre w-1/6">{flight.arrivalTime}</TableCell>
-                    {title?.toLowerCase().includes('origin') && (
+                    {type === 'origin' && (
                       <TableCell className="py-2 px-3 text-centre w-1/6 text-green-600 font-medium">Direct</TableCell>
                     )}
                   </TableRow>
@@ -125,11 +116,7 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
               })}
 
               {groupedConnectingFlights.map((flight, index) => {
-                const originalConnection = connectionFlights.find(cf => {
-                  const firstFlight = cf.flights[0];
-                  const departureTime = firstFlight.departureTime.split('T')[1].substring(0, 5);
-                  return departureTime === flight.departureTime;
-                });
+                const originalConnection = connectionFlights.find(cf => cf.id === flight.id);
 
                 return (
                   <TableRow
@@ -142,39 +129,11 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
                     <TableCell className="py-2 px-3 text-centre w-1/6">{flight.days}</TableCell>
                     <TableCell className="py-2 px-3 text-centre w-1/6">{flight.departureTime}</TableCell>
                     <TableCell className="py-2 px-3 text-centre w-1/6">{flight.arrivalTime}</TableCell>
-                    {title?.toLowerCase().includes('origin') && (
+                    {type === 'origin' && (
                       <TableCell className="py-2 px-3 text-centre w-1/6 text-amber-600">
-                        {(flight as any).stops || 1} {(flight as any).stops === 1 ? 'stop' : 'stops'}
-                      </TableCell>
-                    )}
-                  </TableRow>
-                );
-              })}
+                        {originalConnection?.flights.length > 1 &&
+  `${originalConnection.flights.length - 1} ${originalConnection.flights.length - 1 === 1 ? 'stop' : 'stops'}`}
 
-              {/* Display ungrouped connecting flights if no grouped ones are available */}
-              {groupedConnectingFlights.length === 0 && connectionFlights.map((connectionFlight, index) => {
-                const firstFlight = connectionFlight.flights[0];
-                const lastFlight = connectionFlight.flights[connectionFlight.flights.length - 1];
-                const stops = connectionFlight.flights.length - 1;
-                const departureTime = firstFlight.departureTime.split('T')[1].substring(0, 5);
-                const arrivalTime = lastFlight.arrivalTime.split('T')[1].substring(0, 5);
-
-                return (
-                  <TableRow
-                    key={`connecting-flight-${index}`}
-                    className={(index + groupedDirectFlights.length) % 2 === 0 ? 'bg-background hover:bg-muted/40' : 'bg-muted/20 hover:bg-muted/40'}
-                    onClick={() => handleFlightSelect(connectionFlight)}
-                  >
-                    <TableCell className="py-2 px-3 text-centre w-1/6">
-                      {[...new Set(connectionFlight.flights.map(f => f.airline))].join(' + ')}
-                    </TableCell>
-                    <TableCell className="py-2 px-3 text-centre w-1/6">{connectionFlight.totalDuration}</TableCell>
-                    <TableCell className="py-2 px-3 text-centre w-1/6">{new Date(firstFlight.departureTime).toLocaleDateString(undefined, { weekday: 'short' })}</TableCell>
-                    <TableCell className="py-2 px-3 text-centre w-1/6">{departureTime}</TableCell>
-                    <TableCell className="py-2 px-3 text-centre w-1/6">{arrivalTime}</TableCell>
-                    {title?.toLowerCase().includes('origin') && (
-                      <TableCell className="py-2 px-3 text-centre w-1/6 text-amber-600">
-                        {stops} {stops === 1 ? 'stop' : 'stops'}
                       </TableCell>
                     )}
                   </TableRow>

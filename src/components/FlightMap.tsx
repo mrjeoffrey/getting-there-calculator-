@@ -106,7 +106,7 @@ const FlightMap: React.FC<FlightMapProps> = ({
       });
       
       setConnectionLegsStatus(initialLegsStatus);
-      console.log(`Initialized ${initialLegsStatus.length} connection leg statuses`);
+      // console.log(`Initialized ${initialLegsStatus.length} connection leg statuses`);
     }
   }, [connectingFlights]);
   
@@ -160,7 +160,7 @@ const FlightMap: React.FC<FlightMapProps> = ({
   const uniqueRoutes = new Map<string, boolean>();
   
   const handleLegComplete = (connectionId: string, legIndex: number) => {
-    console.log(`Leg ${legIndex} of connection ${connectionId} completed`);
+    // console.log(`Leg ${legIndex} of connection ${connectionId} completed`);
     
     setConnectionLegsStatus(prevStatus => {
       const newStatus = [...prevStatus];

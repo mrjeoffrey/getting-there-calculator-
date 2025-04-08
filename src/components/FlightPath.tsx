@@ -101,7 +101,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
       return;
     }
     
-    console.log(`[${pathId.current}] Initializing flight path from ${departure.code} to ${arrival.code} (type: ${type}, legIndex: ${legIndex}/${totalLegs})`);
+    // console.log(`[${pathId.current}] Initializing flight path from ${departure.code} to ${arrival.code} (type: ${type}, legIndex: ${legIndex}/${totalLegs})`);
     
     isInitializedRef.current = true;
     
@@ -120,7 +120,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
   useEffect(() => {
     // Only start the animation when line drawing is complete, showPlane is true, and autoAnimate is true
     if (showPlane && !animationComplete && lineDrawingComplete && arcPointsRef.current.length > 0 && autoAnimate && !animationStarted) {
-      console.log(`[${pathId.current}] Animating flight from ${departure?.code} to ${arrival?.code} after line drawing complete (leg ${legIndex}/${totalLegs})`);
+      // console.log(`[${pathId.current}] Animating flight from ${departure?.code} to ${arrival?.code} after line drawing complete (leg ${legIndex}/${totalLegs})`);
       setAnimationStarted(true);
       
       setTimeout(() => {
@@ -160,7 +160,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
     const arcHeight = type === 'direct' ? 0.2 : 0.15;
     
     try {
-      console.log(`[${pathId.current}] Calculating arc points for ${departure.code} to ${arrival.code}`);
+      // console.log(`[${pathId.current}] Calculating arc points for ${departure.code} to ${arrival.code}`);
       const points = calculateArcPoints(
         departure.lat, 
         departure.lng, 
@@ -174,7 +174,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
         return;
       }
       
-      console.log(`[${pathId.current}] Generated ${points.length} arc points for flight path`);
+      // console.log(`[${pathId.current}] Generated ${points.length} arc points for flight path`);
       setArcPoints(points);
       arcPointsRef.current = points;
       
@@ -209,7 +209,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
     // Only create plane if showPlane is true
     if (!showPlane) return;
     
-    console.log(`[${pathId.current}] Creating plane marker for ${type} flight (leg ${legIndex}/${totalLegs})`);
+    // console.log(`[${pathId.current}] Creating plane marker for ${type} flight (leg ${legIndex}/${totalLegs})`);
     
     const flight = flightInfo && flightInfo.length > 0 
       ? flightInfo[0] 
@@ -302,7 +302,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
     const points = arcPointsRef.current;
     if (points.length < 2) return;
     
-    console.log(`[${pathId.current}] Starting path drawing animation for ${type} flight (leg ${legIndex}/${totalLegs})`);
+    // console.log(`[${pathId.current}] Starting path drawing animation for ${type} flight (leg ${legIndex}/${totalLegs})`);
     
     currentIndexRef.current = 1;
     const totalPoints = points.length;
@@ -319,7 +319,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
         
         drawingTimerRef.current = setTimeout(drawNextSegment, pointDelay);
       } else {
-        console.log(`[${pathId.current}] Path drawing complete for ${type} flight (leg ${legIndex}/${totalLegs})`);
+        // console.log(`[${pathId.current}] Path drawing complete for ${type} flight (leg ${legIndex}/${totalLegs})`);
         setLineDrawingComplete(true);
       }
     };
@@ -331,7 +331,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
     const points = arcPointsRef.current;
     if (points.length < 2) return;
     
-    console.log(`[${pathId.current}] Starting flight animation for ${type} flight (leg ${legIndex}/${totalLegs})`);
+    // console.log(`[${pathId.current}] Starting flight animation for ${type} flight (leg ${legIndex}/${totalLegs})`);
     
     currentIndexRef.current = 0;
     const totalPoints = points.length;
@@ -354,7 +354,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
         
         drawingTimerRef.current = setTimeout(animateNextStep, pointDelay);
       } else {
-        console.log(`[${pathId.current}] Flight animation complete for ${type} flight (leg ${legIndex}/${totalLegs})`);
+        // console.log(`[${pathId.current}] Flight animation complete for ${type} flight (leg ${legIndex}/${totalLegs})`);
         setAnimationComplete(true);
         
         const finalPosition = points[points.length - 1];
@@ -362,7 +362,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
         
         // Signal that this leg is complete so the next leg can start
         if (onLegComplete) {
-          console.log(`[${pathId.current}] Notifying leg completion for connection (leg ${legIndex}/${totalLegs})`);
+          // console.log(`[${pathId.current}] Notifying leg completion for connection (leg ${legIndex}/${totalLegs})`);
           onLegComplete();
         }
       }
