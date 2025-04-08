@@ -12,47 +12,29 @@ export const getDayOfWeek = (dateString: string): string => {
 /**
  * Group flights by day of week, used to concatenate multiple days
  */
-export const groupFlightsByDay = <T extends { departureTime: string }>(
+export const groupFlightsByDay = <T extends { departureTime: string; airline: string; duration: string; arrivalTime: string }>(
   flights: T[]
-): Array<{
-  airline: string;
-  duration: string;
-  days: string;
-  departureTime: string;
-  arrivalTime: string;
-}> => {
-  const flightMap = new Map<string, Set<string>>();
-  
+): Array<T & { days: string }> => {
+  const flightMap = new Map<string, { base: T; daysSet: Set<string> }>();
+
   flights.forEach(flight => {
-    // Create a unique key for each flight schedule
-    const flightKey = `${(flight as any).airline}-${(flight as any).duration}-${flight.departureTime.split('T')[1]?.substring(0, 5)}-${(flight as any).arrivalTime.split('T')[1]?.substring(0, 5)}`;
-    
-    if (!flightMap.has(flightKey)) {
-      flightMap.set(flightKey, new Set());
+    const key = `${flight.airline}-${flight.duration}-${flight.departureTime.split('T')[1]?.substring(0, 5)}-${flight.arrivalTime.split('T')[1]?.substring(0, 5)}`;
+
+    if (!flightMap.has(key)) {
+      flightMap.set(key, {
+        base: flight,
+        daysSet: new Set<string>()
+      });
     }
-    
-    const dayOfWeek = getDayOfWeek(flight.departureTime);
-    flightMap.get(flightKey)?.add(dayOfWeek);
+
+    flightMap.get(key)?.daysSet.add(getDayOfWeek(flight.departureTime));
   });
-  
-  return Array.from(flightMap.entries()).map(([key, days]) => {
-    // Parse the key back into flight details
-    const [airline, duration, departureTime, arrivalTime] = key.split('-');
-    
-    // Format days string
-    let daysString;
-    if (days.size === 7) {
-      daysString = "Daily";
-    } else {
-      daysString = Array.from(days).join(', ');
-    }
-    
+
+  return Array.from(flightMap.values()).map(({ base, daysSet }) => {
+    const days = daysSet.size === 7 ? 'Daily' : Array.from(daysSet).join(', ');
     return {
-      airline,
-      duration,
-      days: daysString,
-      departureTime,
-      arrivalTime
+      ...base,
+      days
     };
   });
 };

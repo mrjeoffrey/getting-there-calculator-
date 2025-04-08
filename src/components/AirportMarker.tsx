@@ -176,6 +176,7 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
                     flights={departureFlights} 
                     connectionFlights={connectingFlights}
                     title="All Flights to Destination"
+                    type="origin"
                   />
                 </div>
               )}
@@ -186,6 +187,7 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
                     connectionFlights={connectingFlights}
                     flights={arrivalFlights} 
                     title="Arriving Flights"
+                    type = 'destination'
                   />
                 </div>
               )}
@@ -195,6 +197,7 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
                   <FlightScheduleTable
                     flights={departureFlights}
                     title="Connecting Flights"
+                    type = 'connection'
                   />
                 </div>
               )}

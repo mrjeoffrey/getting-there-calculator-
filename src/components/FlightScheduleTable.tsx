@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Flight, ConnectionFlight } from '../types/flightTypes';
 import { groupFlightsByDay } from '../utils/dateFormatUtils';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from './ui/table';
@@ -20,14 +20,44 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
   title,
   type = 'origin'
 }) => {
-  const groupedDirectFlights = flights && flights.length > 0 ? groupFlightsByDay(flights.filter(f => f.direct)) : [];
+  const log = (label: string, data: any) => {
+    console.log(`[FlightScheduleTable] ${label}:`, data);
+  };
 
-  const groupedConnectingFlights = connectionFlights && connectionFlights.length > 0 ? 
+  // Log initial props
+  useEffect(() => {
+    log('Props - flights', flights);
+    log('Props - connectionFlights', connectionFlights);
+    log('Props - selectedFlightId', selectedFlightId);
+    log('Props - type', type);
+  }, [flights, connectionFlights, selectedFlightId, type]);
+
+  const groupedDirectFlights = flights && flights.length > 0 ? groupFlightsByDay(flights.filter(f => f.direct)) : [];
+  const formatToTimeOnly = (isoString: string): string => {
+    const date = new Date(isoString);
+    return date.toLocaleTimeString(undefined, {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false // change to true for AM/PM format
+    });
+  };
+
+  const calculateDuration = (departureISO: string, arrivalISO: string): string => {
+    const departure = new Date(departureISO);
+    const arrival = new Date(arrivalISO);
+    const diffMs = arrival.getTime() - departure.getTime();
+    const diffMin = Math.floor(diffMs / (1000 * 60));
+    const hours = Math.floor(diffMin / 60);
+    const minutes = diffMin % 60;
+    return `${hours}h ${minutes}m`;
+  };
+  
+  
+  const groupedConnectingFlights = connectionFlights && connectionFlights.length > 0 ?
     groupFlightsByDay(connectionFlights.map(cf => {
       const firstFlight = cf.flights[0];
       const lastFlight = cf.flights[cf.flights.length - 1];
-
-      return {
+      const connectionSummary = {
         id: cf.id,
         departureTime: firstFlight.departureTime,
         arrivalTime: lastFlight.arrivalTime,
@@ -38,9 +68,12 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
         stops: cf.flights.length - 1,
         originalConnection: cf
       };
+      log('Mapped connection flight', connectionSummary);
+      return connectionSummary;
     })) : [];
 
   const handleFlightSelect = (flight: Flight | ConnectionFlight) => {
+    log('Flight selected', flight);
     if (onFlightSelect) {
       onFlightSelect(flight);
     }
@@ -104,10 +137,10 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
                     }}
                   >
                     <TableCell className="py-2 px-3 text-centre w-1/6">{flight.airline}</TableCell>
-                    <TableCell className="py-2 px-3 text-centre w-1/6">{flight.duration}</TableCell>
+                    <TableCell className="py-2 px-3 text-centre w-1/6"> {calculateDuration(flight.departureTime, flight.arrivalTime)}</TableCell>
                     <TableCell className="py-2 px-3 text-centre w-1/6">{flight.days}</TableCell>
-                    <TableCell className="py-2 px-3 text-centre w-1/6">{flight.departureTime}</TableCell>
-                    <TableCell className="py-2 px-3 text-centre w-1/6">{flight.arrivalTime}</TableCell>
+                    <TableCell className="py-2 px-3 text-centre w-1/6">{formatToTimeOnly(flight.departureTime)}</TableCell>
+                    <TableCell className="py-2 px-3 text-centre w-1/6">{formatToTimeOnly(flight.arrivalTime)}</TableCell>
                     {type === 'origin' && (
                       <TableCell className="py-2 px-3 text-centre w-1/6 text-green-600 font-medium">Direct</TableCell>
                     )}
@@ -117,6 +150,22 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
 
               {groupedConnectingFlights.map((flight, index) => {
                 const originalConnection = connectionFlights.find(cf => cf.id === flight.id);
+                const stopCount = originalConnection?.flights?.length ? originalConnection.flights.length - 1 : null;
+                console.log('🚨 Rendering Connecting Flight Row');
+                console.log('↪ index:', index);
+                console.log('↪ flight object:', flight);
+                console.log('↪ flight.id:', flight.id);
+                console.log('↪ flight.airline:', flight.airline);
+                console.log('↪ flight.departureTime:', flight.departureTime);
+                console.log('↪ flight.arrivalTime:', flight.arrivalTime);
+                console.log('↪ flight.days:', flight.days);
+                console.log('↪ flight.stops:', flight.stops);
+                console.log('↪ originalConnection:', originalConnection);
+                log('Rendering connection row', {
+                  flightId: flight.id,
+                  stopCount,
+                  originalConnection
+                });
 
                 return (
                   <TableRow
@@ -125,15 +174,13 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
                     onClick={() => originalConnection && handleFlightSelect(originalConnection)}
                   >
                     <TableCell className="py-2 px-3 text-centre w-1/6">{flight.airline}</TableCell>
-                    <TableCell className="py-2 px-3 text-centre w-1/6">{flight.duration}</TableCell>
+                    <TableCell className="py-2 px-3 text-centre w-1/6"> {calculateDuration(flight.departureTime, flight.arrivalTime)}</TableCell>
                     <TableCell className="py-2 px-3 text-centre w-1/6">{flight.days}</TableCell>
-                    <TableCell className="py-2 px-3 text-centre w-1/6">{flight.departureTime}</TableCell>
-                    <TableCell className="py-2 px-3 text-centre w-1/6">{flight.arrivalTime}</TableCell>
+                    <TableCell className="py-2 px-3 text-centre w-1/6">{formatToTimeOnly(flight.departureTime)}</TableCell>
+                    <TableCell className="py-2 px-3 text-centre w-1/6">{formatToTimeOnly(flight.arrivalTime)}</TableCell>
                     {type === 'origin' && (
                       <TableCell className="py-2 px-3 text-centre w-1/6 text-amber-600">
-                        {originalConnection?.flights.length > 1 &&
-  `${originalConnection.flights.length - 1} ${originalConnection.flights.length - 1 === 1 ? 'stop' : 'stops'}`}
-
+                        {flight.stops}
                       </TableCell>
                     )}
                   </TableRow>
