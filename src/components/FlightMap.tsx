@@ -90,6 +90,7 @@ const FlightMap: React.FC<FlightMapProps> = ({
   
   const completedLinesCount = useRef<number>(0);
   const totalConnections = useRef<number>(0);
+  const zoomSequenceComplete = useRef<boolean>(false);
   
   const handlePopupOpen = (airportCode: string | null) => {
     console.log(`Setting active popup to ${airportCode}`);
@@ -106,6 +107,7 @@ const FlightMap: React.FC<FlightMapProps> = ({
       
       totalConnections.current = connectingFlights.length;
       completedLinesCount.current = 0;
+      zoomSequenceComplete.current = false;
       
       connectingFlights.forEach(connection => {
         initialPlanesStatus[connection.id] = 0;
@@ -304,32 +306,27 @@ const FlightMap: React.FC<FlightMapProps> = ({
 
   const MapZoomController: React.FC<{
     originAirport: any;
+    destinationAirport: any;
     allConnectionsLinesCompleted: boolean;
-  }> = ({ originAirport, allConnectionsLinesCompleted }) => {
+  }> = ({ originAirport, destinationAirport, allConnectionsLinesCompleted }) => {
     const map = useMap();
     const initialZoomCompleted = useRef(false);
     const finalZoomCompleted = useRef(false);
     
     useEffect(() => {
-      if (originAirport && !allConnectionsLinesCompleted && !initialZoomCompleted.current) {
+      if (originAirport && !initialZoomCompleted.current) {
         map.setView(
           [originAirport.lat, originAirport.lng],
           6,
           { animate: true, duration: 1.5 }
         );
         initialZoomCompleted.current = true;
-      }
-      
-      if (allConnectionsLinesCompleted && !finalZoomCompleted.current && initialZoomCompleted.current) {
+        
         setTimeout(() => {
           const bounds = L.latLngBounds([]);
           
           if (originAirport) bounds.extend([originAirport.lat, originAirport.lng]);
           if (destinationAirport) bounds.extend([destinationAirport.lat, destinationAirport.lng]);
-          
-          connectionAirports.forEach(airport => {
-            bounds.extend([airport.lat, airport.lng]);
-          });
           
           if (bounds.isValid()) {
             map.fitBounds(bounds, { 
@@ -339,10 +336,11 @@ const FlightMap: React.FC<FlightMapProps> = ({
             });
           }
           
+          zoomSequenceComplete.current = true;
           finalZoomCompleted.current = true;
-        }, 1000);
+        }, 2000);
       }
-    }, [map, originAirport, allConnectionsLinesCompleted]);
+    }, [map, originAirport, destinationAirport]);
     
     return null;
   };
@@ -443,9 +441,10 @@ const FlightMap: React.FC<FlightMapProps> = ({
           onMapReady={() => setMapReady(true)}
         />
         
-        {showContent && originAirport && (
+        {showContent && originAirport && destinationAirport && (
           <MapZoomController 
             originAirport={originAirport}
+            destinationAirport={destinationAirport}
             allConnectionsLinesCompleted={allConnectionsLinesCompleted}
           />
         )}
@@ -479,23 +478,22 @@ const FlightMap: React.FC<FlightMapProps> = ({
                     price: 250
                   }]}
                   onFlightSelect={() => onFlightSelect && onFlightSelect(flight)}
-                  showPlane={showPlane}
-                  autoAnimate={true}
+                  showPlane={showPlane && allConnectionsLinesCompleted}
+                  autoAnimate={zoomSequenceComplete.current}
                 />
               );
             })}
 
             {connectingFlights.map((connection) => (
               connection.flights.map((flight, legIndex) => {
-                const shouldStartAnimating = legIndex === 0 || 
+                const shouldStartAnimating = (legIndex === 0 || 
                   connectionLegsStatus.find(
                     status => status.connectionId === connection.id && 
                              status.legIndex === legIndex &&
                              status.nextLegStarted
-                  ) !== undefined;
+                  ) !== undefined) && zoomSequenceComplete.current;
                 
                 const showPlaneForLeg = shouldShowPlane(connection.id, legIndex);
-                
                 const legDelay = legIndex === 0 ? 100 : 500;
                 
                 return (
