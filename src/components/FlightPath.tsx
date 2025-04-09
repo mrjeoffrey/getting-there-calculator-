@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useRef } from 'react';
 import { Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -42,6 +43,9 @@ interface FlightPathProps {
   connectionId?: string;
   onLegComplete?: () => void;
   allLinesDrawn?: boolean;
+  startPlaneAnimation?: boolean;
+  planeAnimationOrder?: number;
+  onPlaneAnimationComplete?: () => void;
 }
 
 const FlightPath: React.FC<FlightPathProps> = ({ 
@@ -65,7 +69,10 @@ const FlightPath: React.FC<FlightPathProps> = ({
   legDelay = 0,
   connectionId = '',
   onLegComplete,
-  allLinesDrawn = false
+  allLinesDrawn = false,
+  startPlaneAnimation = false,
+  planeAnimationOrder = 0,
+  onPlaneAnimationComplete
 }) => {
   const arcPointsRef = useRef<[number, number][]>([]);
   const [arcPoints, setArcPoints] = useState<[number, number][]>([]);
@@ -121,18 +128,24 @@ const FlightPath: React.FC<FlightPathProps> = ({
       
       setTimeout(() => {
         drawLineThenStartPlane();
-      }, 200);
+      }, 100);
     }
   }, [autoAnimate, animationStarted]);
   
   useEffect(() => {
-    if (allLinesDrawn && lineDrawingComplete && !planeAnimationStarted && showPlane) {
-      console.log(`[${pathId.current}] All lines drawn, starting plane animation for leg ${legIndex}`);
-      createPlaneMarker();
-      setPlaneAnimationStarted(true);
-      startFlightAnimation();
+    if (allLinesDrawn && lineDrawingComplete && startPlaneAnimation && showPlane && !planeAnimationStarted) {
+      console.log(`[${pathId.current}] Starting plane animation for leg ${legIndex} with animation order ${planeAnimationOrder}`);
+      
+      // Delayed plane animation based on order
+      const planeAnimationDelay = planeAnimationOrder * 500; // 500ms delay between each plane
+      
+      setTimeout(() => {
+        createPlaneMarker();
+        setPlaneAnimationStarted(true);
+        startFlightAnimation();
+      }, planeAnimationDelay);
     }
-  }, [allLinesDrawn, lineDrawingComplete, planeAnimationStarted, showPlane]);
+  }, [allLinesDrawn, lineDrawingComplete, planeAnimationStarted, startPlaneAnimation, showPlane]);
   
   const cleanup = () => {
     if (drawingTimerRef.current) {
@@ -362,6 +375,11 @@ const FlightPath: React.FC<FlightPathProps> = ({
         
         const finalPosition = points[points.length - 1];
         updatePlanePosition(finalPosition, null);
+        
+        if (onPlaneAnimationComplete) {
+          console.log(`[${pathId.current}] Plane animation complete for leg ${legIndex}`);
+          onPlaneAnimationComplete();
+        }
       }
     };
     

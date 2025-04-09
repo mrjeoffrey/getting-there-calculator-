@@ -63,5 +63,5 @@ export interface ConnectionLegStatus {
   connectionId: string;
   legIndex: number;
   isComplete: boolean;
-  nextLegStarted: boolean; // Added flag to track whether next leg started
+  nextLegStarted: boolean;
 }
