@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useRef } from 'react';
 import { MapContainer, TileLayer, useMap, ZoomControl, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -179,6 +180,7 @@ const FlightMap: React.FC<FlightMapProps> = ({
         );
         
         if (nextLegIndex >= 0) {
+          // Start next leg almost immediately
           setTimeout(() => {
             setConnectionLegsStatus(current => {
               const updated = [...current];
@@ -193,7 +195,7 @@ const FlightMap: React.FC<FlightMapProps> = ({
               }
               return updated;
             });
-          }, 1500);
+          }, 300); // Reduced from 1500ms to 300ms
         }
       }
       
@@ -421,7 +423,8 @@ const FlightMap: React.FC<FlightMapProps> = ({
               connection.flights.map((flight, legIndex) => {
                 const showPlane = shouldShowConnectionLegPlane(connection.id, legIndex);
                 
-                const legDelay = legIndex === 0 ? 500 : 0;
+                // Minimal delay between legs
+                const legDelay = legIndex === 0 ? 100 : 0; // Reduced from 500ms to 100ms
                 
                 const shouldStartAnimating = legIndex === 0 || 
                   connectionLegsStatus.find(
@@ -429,8 +432,6 @@ const FlightMap: React.FC<FlightMapProps> = ({
                              status.legIndex === legIndex &&
                              status.nextLegStarted
                   ) !== undefined;
-                
-                console.log(`Leg ${legIndex} of ${connection.id} - shouldStartAnimating: ${shouldStartAnimating}`);
                 
                 return (
                   <FlightPath
