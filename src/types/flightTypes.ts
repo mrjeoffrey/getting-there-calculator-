@@ -65,3 +65,11 @@ export interface ConnectionLegStatus {
   isComplete: boolean;
   nextLegStarted: boolean;
 }
+
+// New interface to track animation states for planes
+export interface PlaneAnimationState {
+  connectionId: string;
+  animationInProgress: boolean;
+  currentLegIndex: number;
+  allLinesDrawn: boolean;
+}

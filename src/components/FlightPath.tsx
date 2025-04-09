@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import { Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -136,8 +135,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
     if (allLinesDrawn && lineDrawingComplete && startPlaneAnimation && showPlane && !planeAnimationStarted) {
       console.log(`[${pathId.current}] Starting plane animation for leg ${legIndex} with animation order ${planeAnimationOrder}`);
       
-      // Delayed plane animation based on order
-      const planeAnimationDelay = planeAnimationOrder * 500; // 500ms delay between each plane
+      const planeAnimationDelay = planeAnimationOrder * 500;
       
       setTimeout(() => {
         createPlaneMarker();
