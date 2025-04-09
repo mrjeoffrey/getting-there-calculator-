@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import { MapContainer, TileLayer, useMap, ZoomControl, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -60,7 +59,7 @@ interface FlightMapProps {
   loading?: boolean;
   onFlightSelect?: (flight: any) => void;
   autoAnimateConnections?: boolean;
-  showInstructions?: boolean;  // We'll keep the prop but not use it
+  showInstructions?: boolean;
   activePopup?: string | null;
   onPopupOpen?: (airportCode: string | null) => void;
 }
@@ -72,7 +71,7 @@ const FlightMap: React.FC<FlightMapProps> = ({
   loading = false,
   onFlightSelect,
   autoAnimateConnections = true,
-  showInstructions = false,  // We'll keep the prop but not use it
+  showInstructions = false,
   activePopup,
   onPopupOpen
 }) => {
@@ -101,7 +100,7 @@ const FlightMap: React.FC<FlightMapProps> = ({
             connectionId: connection.id,
             legIndex: index,
             isComplete: false,
-            nextLegStarted: index === 0 // Only the first leg starts automatically now
+            nextLegStarted: index === 0 
           });
         });
       });
@@ -160,6 +159,8 @@ const FlightMap: React.FC<FlightMapProps> = ({
   const uniqueRoutes = new Map<string, boolean>();
   
   const handleLegComplete = (connectionId: string, legIndex: number) => {
+    console.log(`Leg ${legIndex} of connection ${connectionId} completed`);
+    
     setConnectionLegsStatus(prevStatus => {
       const newStatus = [...prevStatus];
       
@@ -182,6 +183,7 @@ const FlightMap: React.FC<FlightMapProps> = ({
             ...newStatus[nextLegIndex],
             nextLegStarted: true
           };
+          console.log(`Starting next leg ${legIndex + 1} of connection ${connectionId}`);
         }
       }
       
@@ -191,19 +193,6 @@ const FlightMap: React.FC<FlightMapProps> = ({
 
   const shouldShowConnectionLegPlane = (connectionId: string, legIndex: number): boolean => {
     if (legIndex === 0) {
-      const connection = connectingFlights.find(c => c.id === connectionId);
-      if (!connection || !connection.flights || !connection.flights[0]) return false;
-      
-      const flight = connection.flights[0];
-      if (!flight.departureAirport || !flight.arrivalAirport) return false;
-      
-      const routeKey = `${flight.departureAirport.code}-${flight.arrivalAirport.code}`;
-      
-      if (uniqueRoutes.has(routeKey)) {
-        return false;
-      }
-      
-      uniqueRoutes.set(routeKey, true);
       return true;
     }
     
@@ -215,24 +204,7 @@ const FlightMap: React.FC<FlightMapProps> = ({
       status => status.connectionId === connectionId && status.legIndex === legIndex - 1
     );
     
-    if (prevLegStatus?.isComplete && legStatus?.nextLegStarted) {
-      const connection = connectingFlights.find(c => c.id === connectionId);
-      if (!connection || !connection.flights || !connection.flights[legIndex]) return false;
-      
-      const flight = connection.flights[legIndex];
-      if (!flight.departureAirport || !flight.arrivalAirport) return false;
-      
-      const routeKey = `${flight.departureAirport.code}-${flight.arrivalAirport.code}`;
-      
-      if (uniqueRoutes.has(routeKey)) {
-        return false;
-      }
-      
-      uniqueRoutes.set(routeKey, true);
-      return true;
-    }
-    
-    return false;
+    return prevLegStatus?.isComplete === true && legStatus?.nextLegStarted === true;
   };
 
   if (showContent) {
@@ -405,13 +377,12 @@ const FlightMap: React.FC<FlightMapProps> = ({
               );
             })}
 
+            {/* Connecting flight paths with sequential animation */}
             {connectingFlights.map((connection) => (
               connection.flights.map((flight, legIndex) => {
-                const showPlane = shouldShowConnectionLegPlane(connection.id, legIndex);
+                const shouldShowPlane = shouldShowConnectionLegPlane(connection.id, legIndex);
                 
-                // Delay for first leg remains minimal
-                // For subsequent legs, we rely on the completion of previous leg
-                const legDelay = legIndex === 0 ? 500 : legIndex * 1000;
+                const legDelay = legIndex === 0 ? 100 : 0;
                 
                 const shouldStartAnimating = legIndex === 0 || 
                   connectionLegsStatus.find(
@@ -441,7 +412,7 @@ const FlightMap: React.FC<FlightMapProps> = ({
                       price: connection.price / connection.flights.length
                     }))}
                     onFlightSelect={() => onFlightSelect && onFlightSelect(connection)}
-                    showPlane={showPlane}
+                    showPlane={shouldShowPlane}
                     autoAnimate={shouldStartAnimating}
                     legIndex={legIndex}
                     totalLegs={connection.flights.length}
@@ -498,8 +469,8 @@ const FlightMap: React.FC<FlightMapProps> = ({
       arrivalFlights={airportArrivalFlights.get(airport.code) || []}
       connectingFlights={
         type === 'origin' || type === 'destination'
-          ? connectingFlights // ✅ pass all for origin/destination
-          : airportConnectionFlights.get(airport.code) || [] // only partial for connections
+          ? connectingFlights 
+          : airportConnectionFlights.get(airport.code) || []
       }
       type={type}
       onPopupOpen={handlePopupOpen}

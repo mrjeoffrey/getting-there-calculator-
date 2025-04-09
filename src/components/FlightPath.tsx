@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import { Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -98,7 +97,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
     cleanup();
     
     if (!departure || !arrival || !departure.lat || !departure.lng || !arrival.lat || !arrival.lng) {
-      console.error(`[${pathId.current}] Invalid departure or arrival data:`, { departure, arrival });
+      console.log(`[${pathId.current}] Invalid departure or arrival data:`, { departure, arrival });
       return;
     }
     
@@ -106,7 +105,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
     
     const initTimer = setTimeout(() => {
       initializeFlightPath();
-    }, type === 'connecting' ? legDelay : 0);
+    }, type === 'connecting' ? Math.min(300, legDelay) : 0);
     
     return () => {
       clearTimeout(initTimer);
@@ -118,10 +117,9 @@ const FlightPath: React.FC<FlightPathProps> = ({
     if (autoAnimate && !animationStarted) {
       setAnimationStarted(true);
       
-      // First draw the complete line
       setTimeout(() => {
         drawLineThenStartPlane();
-      }, 500);
+      }, 200);
     }
   }, [autoAnimate, animationStarted]);
   
@@ -149,7 +147,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
   
   const initializeFlightPath = () => {
     if (!departure || !arrival || !departure.lat || !departure.lng || !arrival.lat || !arrival.lng) {
-      console.error(`[${pathId.current}] Missing required airport data for flight path`);
+      console.log(`[${pathId.current}] Missing required airport data for flight path`);
       return;
     }
     
@@ -165,7 +163,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
       );
       
       if (!points || points.length < 2) {
-        console.error(`[${pathId.current}] ERROR: calculateArcPoints returned insufficient points!`);
+        console.log(`[${pathId.current}] ERROR: calculateArcPoints returned insufficient points!`);
         return;
       }
       
@@ -174,11 +172,10 @@ const FlightPath: React.FC<FlightPathProps> = ({
       
       calculateInitialRotation(points);
       
-      // Initially just show the departure point
       setDisplayedPoints([points[0]]);
       
     } catch (error) {
-      console.error(`[${pathId.current}] Error initializing flight path:`, error);
+      console.log(`[${pathId.current}] Error initializing flight path:`, error);
     }
   };
   
@@ -242,7 +239,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
     
     const marker = L.marker(position, {
       icon: planeIcon,
-      zIndexOffset: 500
+      zIndexOffset: 2000
     }).addTo(map);
     
     marker.options.title = flight.flightNumber;
@@ -284,19 +281,17 @@ const FlightPath: React.FC<FlightPathProps> = ({
     }
   };
   
-  // New function to draw the line first, then start the plane
   const drawLineThenStartPlane = () => {
     const points = arcPointsRef.current;
     if (points.length < 2) return;
     
     const totalPoints = points.length;
     
-    // Calculate total time for drawing the line (faster than plane animation)
     const durationInMinutes = getDurationInMinutes();
     const lineDrawTime = Math.min(4000, Math.max(2000, durationInMinutes * 10));
     const pointDelay = lineDrawTime / totalPoints;
     
-    let currentDrawIndex = 1; // Start with the second point
+    let currentDrawIndex = 1;
     
     const drawNextSegment = () => {
       if (currentDrawIndex < totalPoints) {
@@ -306,16 +301,14 @@ const FlightPath: React.FC<FlightPathProps> = ({
       } else {
         setLineDrawingComplete(true);
         
-        // Line drawing is complete, now start the plane animation after a short delay
         setTimeout(() => {
           createPlaneMarker();
           setPlaneAnimationStarted(true);
           startFlightAnimation();
-        }, 500);
+        }, 300);
       }
     };
     
-    // Start drawing from first point
     setDisplayedPoints([points[0]]);
     drawNextSegment();
   };
@@ -382,11 +375,11 @@ const FlightPath: React.FC<FlightPathProps> = ({
       {displayedPoints.length >= 2 && (
         <Polyline
           positions={displayedPoints}
-          interactive={false} 
           pathOptions={{
             color,
             weight,
             opacity,
+            dashArray,
             className: `flight-path ${type} ${animationComplete ? 'animation-complete' : ''}`
           }}
           eventHandlers={{
@@ -397,22 +390,30 @@ const FlightPath: React.FC<FlightPathProps> = ({
       <style>
         {`
           .plane-icon-marker {
-            z-index: 500;
+            z-index: 2000;
             cursor: pointer;
+            visibility: visible !important;
+            opacity: 1 !important;
           }
           
           .plane-marker svg {
             transition: transform 0.3s ease-in-out;
             transform-origin: center;
+            visibility: visible !important;
+            opacity: 1 !important;
           }
           
           .flight-path {
             cursor: pointer;
             z-index: 400;
+            visibility: visible !important;
+            opacity: 1 !important;
           }
           
           .leaflet-marker-icon {
             transition: transform 0.3s cubic-bezier(0.45, 0, 0.55, 1);
+            visibility: visible !important;
+            opacity: 1 !important;
           }
         `}
       </style>
