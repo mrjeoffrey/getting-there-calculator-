@@ -155,60 +155,60 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
       </Tooltip>
       
       <Popup 
-  className="flight-popup between-airports"
-        minWidth={450}  // Decreased from 550 to 450
-        maxWidth={500}  // Decreased from 650 to 500
-  autoPan={true}
-  autoPanPaddingTopLeft={[50, 50]}
-  autoPanPaddingBottomRight={[50, 50]}
-  keepInView={true}
-  closeButton={true}
-  offset={getPopupOffset()}
->
-        <div className="p-1 max-h-[350px] overflow-auto"> {/* Decreased padding from p-2 to p-1 and height from 400px to 350px */}
-          <h3 className="text-base font-semibold mb-1">{airport.city || airport.name} ({airport.code})</h3> {/* Reduced text size and margin */}
-
-    {hasFlights ? (
-            <div className="mt-1"> {/* Reduced margin from mt-2 to mt-1 */}
-        {type === 'origin' && (
-                <div className="mb-2"> {/* Reduced margin from mb-3 to mb-2 */}
-            <FlightScheduleTable 
-              flights={departureFlights} 
-              connectionFlights={connectingFlights}
-              title="All Flights to Destination"
-              type="origin"
-            />
-          </div>
-        )}
-
-        {type === 'destination' && arrivalFlights.length > 0 && (
-          <div>
-            <FlightScheduleTable
-              connectionFlights={connectingFlights}
-              flights={arrivalFlights} 
-              title="Arriving Flights"
-              type="destination"
-            />
-          </div>
-        )}
-
-        {type === 'connection' && connectingFlights.length > 0 && (
-          <div>
-            <FlightScheduleTable
-              flights={departureFlights}
-              title="Connecting Flights"
-              type="connection"
-            />
-          </div>
-        )}
-      </div>
-    ) : (
-      <p className="text-xs text-muted-foreground italic">
-        No flight information available for this airport.
-      </p>
-    )}
-  </div>
-</Popup>
+        className="flight-popup between-airports"
+        minWidth={450}  
+        maxWidth={500}  
+        autoPan={true}
+        autoPanPaddingTopLeft={[50, 50]}
+        autoPanPaddingBottomRight={[50, 50]}
+        keepInView={true}
+        closeButton={true}
+        offset={getPopupOffset()}
+      >
+        <div className="p-1 max-h-[350px] overflow-auto">
+          <h3 className="text-base font-semibold mb-1">{airport.city || airport.name} ({airport.code})</h3>
+          
+          {hasFlights ? (
+            <div className="mt-1">
+              {type === 'origin' && (
+                <div className="mb-2">
+                  <FlightScheduleTable 
+                    flights={departureFlights} 
+                    connectionFlights={connectingFlights}
+                    title="All Flights to Destination"
+                    type="origin"
+                  />
+                </div>
+              )}
+              
+              {type === 'destination' && arrivalFlights.length > 0 && (
+                <div>
+                  <FlightScheduleTable
+                    connectionFlights={connectingFlights}
+                    flights={arrivalFlights} 
+                    title="Arriving Flights"
+                    type="destination"
+                  />
+                </div>
+              )}
+              
+              {type === 'connection' && connectingFlights.length > 0 && (
+                <div>
+                  <FlightScheduleTable
+                    flights={departureFlights}
+                    title="Connecting Flights"
+                    type="connection"
+                  />
+                </div>
+              )}
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground italic">
+              No flight information available for this airport.
+            </p>
+          )}
+        </div>
+      </Popup>
 
       <style>{`
         .flight-popup.between-airports {

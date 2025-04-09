@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import { MapContainer, TileLayer, useMap, ZoomControl, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -160,6 +159,8 @@ const FlightMap: React.FC<FlightMapProps> = ({
   const uniqueRoutes = new Map<string, boolean>();
   
   const handleLegComplete = (connectionId: string, legIndex: number) => {
+    console.log(`Leg ${legIndex} of connection ${connectionId} completed`);
+    
     setConnectionLegsStatus(prevStatus => {
       const newStatus = [...prevStatus];
       
@@ -178,10 +179,21 @@ const FlightMap: React.FC<FlightMapProps> = ({
         );
         
         if (nextLegIndex >= 0) {
-          newStatus[nextLegIndex] = {
-            ...newStatus[nextLegIndex],
-            nextLegStarted: true
-          };
+          setTimeout(() => {
+            setConnectionLegsStatus(current => {
+              const updated = [...current];
+              const idx = updated.findIndex(
+                s => s.connectionId === connectionId && s.legIndex === legIndex + 1
+              );
+              if (idx >= 0) {
+                updated[idx] = {
+                  ...updated[idx],
+                  nextLegStarted: true
+                };
+              }
+              return updated;
+            });
+          }, 1500);
         }
       }
       
@@ -409,9 +421,7 @@ const FlightMap: React.FC<FlightMapProps> = ({
               connection.flights.map((flight, legIndex) => {
                 const showPlane = shouldShowConnectionLegPlane(connection.id, legIndex);
                 
-                // Delay for first leg remains minimal
-                // For subsequent legs, we rely on the completion of previous leg
-                const legDelay = legIndex === 0 ? 500 : legIndex * 1000;
+                const legDelay = legIndex === 0 ? 500 : 0;
                 
                 const shouldStartAnimating = legIndex === 0 || 
                   connectionLegsStatus.find(
@@ -419,6 +429,8 @@ const FlightMap: React.FC<FlightMapProps> = ({
                              status.legIndex === legIndex &&
                              status.nextLegStarted
                   ) !== undefined;
+                
+                console.log(`Leg ${legIndex} of ${connection.id} - shouldStartAnimating: ${shouldStartAnimating}`);
                 
                 return (
                   <FlightPath
