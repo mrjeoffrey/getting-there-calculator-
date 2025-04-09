@@ -261,7 +261,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
     
     const marker = L.marker(position, {
       icon: planeIcon,
-      zIndexOffset: 2000
+      zIndexOffset: 1000
     }).addTo(map);
     
     marker.options.title = flight.flightNumber;
@@ -411,7 +411,6 @@ const FlightPath: React.FC<FlightPathProps> = ({
             color,
             weight,
             opacity,
-            dashArray,
             className: `flight-path ${type} ${animationComplete ? 'animation-complete' : ''}`
           }}
           eventHandlers={{
