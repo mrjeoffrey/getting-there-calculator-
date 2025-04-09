@@ -483,19 +483,19 @@ const FlightMap: React.FC<FlightMapProps> = ({
               })
             ))}
 
-            {connectionAirports.map(airport => (
+            {/* {connectionAirports.map(airport => (
               <Marker 
                 key={`connection-point-${airport.code}`}
-                position={[airport.lat, airport.lng]} 
-                icon={createCityIcon(airport.city || airport.name, 'connection')}
+                // position={[airport.lat, airport.lng]} 
+                // icon={createCityIcon(airport.city || airport.name, 'connection')}
                 zIndexOffset={800}
               />
-            ))}
+            ))} */}
 
             {originAirport && (
               <Marker 
                 position={[originAirport.lat, originAirport.lng]} 
-                icon={createCityIcon(originAirport.city || originAirport.name, 'departure')}
+               icon={createCityIcon(originAirport.city || originAirport.name, 'departure')}
                 zIndexOffset={1000}
               />
             )}
