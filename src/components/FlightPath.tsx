@@ -74,12 +74,9 @@ const FlightPath: React.FC<FlightPathProps> = ({
   const [lineDrawingComplete, setLineDrawingComplete] = useState(false);
   const [animationStarted, setAnimationStarted] = useState(false);
   const [planeAnimationStarted, setPlaneAnimationStarted] = useState(false);
-  const [planeVisible, setPlaneVisible] = useState(false);
   const drawingTimerRef = useRef<NodeJS.Timeout | null>(null);
   const popupRef = useRef<L.Popup | null>(null);
   const planeMarkerRef = useRef<L.Marker | null>(null);
-  const departureMarkerRef = useRef<L.Marker | null>(null);
-  const arrivalMarkerRef = useRef<L.Marker | null>(null);
   const currentIndexRef = useRef<number>(1);
   const isInitializedRef = useRef<boolean>(false);
   const map = useMap();
@@ -107,10 +104,9 @@ const FlightPath: React.FC<FlightPathProps> = ({
     
     isInitializedRef.current = true;
     
-    // Reduced initialization delay to almost immediate
     const initTimer = setTimeout(() => {
       initializeFlightPath();
-    }, type === 'connecting' ? 100 : 0); // Reduced from legDelay to 100ms max
+    }, type === 'connecting' ? legDelay : 0);
     
     return () => {
       clearTimeout(initTimer);
@@ -122,8 +118,10 @@ const FlightPath: React.FC<FlightPathProps> = ({
     if (autoAnimate && !animationStarted) {
       setAnimationStarted(true);
       
-      // Draw line and start plane immediately
-      drawLineThenStartPlane();
+      // First draw the complete line
+      setTimeout(() => {
+        drawLineThenStartPlane();
+      }, 500);
     }
   }, [autoAnimate, animationStarted]);
   
@@ -143,21 +141,10 @@ const FlightPath: React.FC<FlightPathProps> = ({
       planeMarkerRef.current = null;
     }
     
-    if (departureMarkerRef.current) {
-      departureMarkerRef.current.remove();
-      departureMarkerRef.current = null;
-    }
-    
-    if (arrivalMarkerRef.current) {
-      arrivalMarkerRef.current.remove();
-      arrivalMarkerRef.current = null;
-    }
-    
     currentIndexRef.current = 1;
     setLineDrawingComplete(false);
     setAnimationStarted(false);
     setPlaneAnimationStarted(false);
-    setPlaneVisible(false);
   };
   
   const initializeFlightPath = () => {
@@ -187,8 +174,8 @@ const FlightPath: React.FC<FlightPathProps> = ({
       
       calculateInitialRotation(points);
       
-      // Show entire path immediately instead of just departure point
-      setDisplayedPoints(points);
+      // Initially just show the departure point
+      setDisplayedPoints([points[0]]);
       
     } catch (error) {
       console.error(`[${pathId.current}] Error initializing flight path:`, error);
@@ -202,47 +189,6 @@ const FlightPath: React.FC<FlightPathProps> = ({
     const nextPoint = points[1];
     const initialBearing = getBearing(startPoint[0], startPoint[1], nextPoint[0], nextPoint[1]);
     setPlaneRotation(initialBearing);
-  };
-  
-  // Create minimal event markers for takeoff/landing
-  const createEventMarker = (position: [number, number], eventType: 'takeoff' | 'landing' | 'connection') => {
-    if (!map) return null;
-    
-    const color = eventType === 'takeoff' ? '#4CAF50' : 
-                  eventType === 'landing' ? '#F44336' : '#FFC107';
-    
-    // Simplified marker with no animation
-    const dotHtml = `
-      <div class="event-marker ${eventType}">
-        <div class="dot" style="
-          width: 10px;
-          height: 10px;
-          background-color: ${color};
-          border: 2px solid white;
-          border-radius: 50%;
-          box-shadow: 0 0 4px rgba(0,0,0,0.3);
-        "></div>
-      </div>
-    `;
-    
-    const icon = L.divIcon({
-      html: dotHtml,
-      className: `${eventType}-event-marker`,
-      iconSize: [10, 10],
-      iconAnchor: [5, 5]
-    });
-    
-    const marker = L.marker(position, {
-      icon: icon,
-      zIndexOffset: 1000
-    }).addTo(map);
-    
-    // Remove marker after shorter duration
-    setTimeout(() => {
-      marker.remove();
-    }, eventType === 'connection' ? 4000 : 3000); // Shorter display times
-    
-    return marker;
   };
   
   const createPlaneMarker = () => {
@@ -264,37 +210,29 @@ const FlightPath: React.FC<FlightPathProps> = ({
           price: price || Math.floor(Math.random() * 500) + 200
         };
     
-    // Create takeoff point with minimal delay
     const startPoint = arcPointsRef.current[0];
-    createEventMarker(startPoint, legIndex === 0 ? 'takeoff' : 'connection');
-    
-    // Show plane almost immediately
-    setTimeout(() => {
-      planeMarkerRef.current = createSinglePlaneMarker(startPoint, planeRotation, flight);
-      setPlaneVisible(true);
-    }, 200); // Reduced from 1000ms to 200ms
+    planeMarkerRef.current = createSinglePlaneMarker(startPoint, planeRotation, flight);
   };
   
   const createSinglePlaneMarker = (position: [number, number], rotation: number, flight: any) => {
     if (!map) return null;
     
-    // Make plane more visible
     const planeIconHtml = ReactDOMServer.renderToString(
       <div className="plane-marker">
         <Plane 
-          size={20} // Increased from 18 to 20
+          size={18}
           fill={type === 'direct' ? '#4CAF50' : '#FFC107'}
           stroke={isDarkMode ? 'white' : 'black'} 
           strokeWidth={1.5}
           style={{ 
             transform: `rotate(${rotation}deg)`, 
-            filter: 'drop-shadow(0px 2px 3px rgba(0,0,0,0.6))'
+            filter: 'drop-shadow(0px 2px 3px rgba(0,0,0,0.4))'
           }}
         />
       </div>
     );
     
-    const planeSize = 20; // Increased from 18
+    const planeSize = 18;
     const planeIcon = L.divIcon({
       html: planeIconHtml,
       className: 'plane-icon-marker',
@@ -304,7 +242,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
     
     const marker = L.marker(position, {
       icon: planeIcon,
-      zIndexOffset: 1500 // Increased from 500 to make sure planes are above everything
+      zIndexOffset: 500
     }).addTo(map);
     
     marker.options.title = flight.flightNumber;
@@ -327,7 +265,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
   };
   
   const updatePlanePosition = (position: [number, number], nextPosition: [number, number] | null) => {
-    if (!planeMarkerRef.current || !planeVisible) return;
+    if (!planeMarkerRef.current) return;
     
     planeMarkerRef.current.setLatLng(position);
     
@@ -346,21 +284,40 @@ const FlightPath: React.FC<FlightPathProps> = ({
     }
   };
   
-  // Draw line immediately then start plane
+  // New function to draw the line first, then start the plane
   const drawLineThenStartPlane = () => {
     const points = arcPointsRef.current;
     if (points.length < 2) return;
     
-    // Skip the line animation and show full path immediately
-    setDisplayedPoints(points);
-    setLineDrawingComplete(true);
+    const totalPoints = points.length;
     
-    // Start plane animation with minimal delay
-    setTimeout(() => {
-      createPlaneMarker();
-      setPlaneAnimationStarted(true);
-      startFlightAnimation();
-    }, 100); // Reduced from 500ms to 100ms
+    // Calculate total time for drawing the line (faster than plane animation)
+    const durationInMinutes = getDurationInMinutes();
+    const lineDrawTime = Math.min(4000, Math.max(2000, durationInMinutes * 10));
+    const pointDelay = lineDrawTime / totalPoints;
+    
+    let currentDrawIndex = 1; // Start with the second point
+    
+    const drawNextSegment = () => {
+      if (currentDrawIndex < totalPoints) {
+        setDisplayedPoints(points.slice(0, currentDrawIndex + 1));
+        currentDrawIndex++;
+        drawingTimerRef.current = setTimeout(drawNextSegment, pointDelay);
+      } else {
+        setLineDrawingComplete(true);
+        
+        // Line drawing is complete, now start the plane animation after a short delay
+        setTimeout(() => {
+          createPlaneMarker();
+          setPlaneAnimationStarted(true);
+          startFlightAnimation();
+        }, 500);
+      }
+    };
+    
+    // Start drawing from first point
+    setDisplayedPoints([points[0]]);
+    drawNextSegment();
   };
   
   const startFlightAnimation = () => {
@@ -372,8 +329,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
     
     const durationInMinutes = getDurationInMinutes();
     
-    // Speed up animation significantly (30-50% faster)
-    const totalAnimationTime = Math.min(12000, Math.max(5000, durationInMinutes * 20));
+    const totalAnimationTime = Math.min(18000, Math.max(8000, durationInMinutes * 35));
     const pointDelay = totalAnimationTime / totalPoints;
     
     const animateNextStep = () => {
@@ -394,21 +350,9 @@ const FlightPath: React.FC<FlightPathProps> = ({
         const finalPosition = points[points.length - 1];
         updatePlanePosition(finalPosition, null);
         
-        // Create landing/connection marker
-        const eventType = legIndex < totalLegs - 1 ? 'connection' : 'landing';
-        createEventMarker(finalPosition, eventType);
-        
-        // Reduced delay before removing plane and triggering next leg
-        setTimeout(() => {
-          if (planeMarkerRef.current) {
-            planeMarkerRef.current.remove();
-            planeMarkerRef.current = null;
-          }
-          
-          if (onLegComplete) {
-            onLegComplete();
-          }
-        }, 800); // Reduced from 2000ms to 800ms
+        if (onLegComplete) {
+          onLegComplete();
+        }
       }
     };
     
@@ -438,7 +382,7 @@ const FlightPath: React.FC<FlightPathProps> = ({
       {displayedPoints.length >= 2 && (
         <Polyline
           positions={displayedPoints}
-          interactive={false}
+          interactive={false} 
           pathOptions={{
             color,
             weight,
@@ -450,41 +394,28 @@ const FlightPath: React.FC<FlightPathProps> = ({
           }}
         />
       )}
-      <style>{`
-        .plane-icon-marker {
-          z-index: 1500 !important;
-          cursor: pointer;
-          pointer-events: auto !important;
-          visibility: visible !important;
-        }
-        
-        .plane-marker svg {
-          transition: transform 0.2s ease-in-out;
-          transform-origin: center;
-          visibility: visible !important;
-        }
-        
-        .flight-path {
-          cursor: pointer;
-          z-index: 400;
-          visibility: visible !important;
-        }
-        
-        .leaflet-marker-icon {
-          transition: transform 0.2s cubic-bezier(0.45, 0, 0.55, 1);
-          visibility: visible !important;
-        }
-        
-        .event-marker .dot {
-          z-index: 1000;
-        }
-        
-        .takeoff-event-marker, .landing-event-marker, .connection-event-marker {
-          z-index: 1000 !important;
-          visibility: visible !important;
-          pointer-events: none;
-        }
-      `}</style>
+      <style>
+        {`
+          .plane-icon-marker {
+            z-index: 500;
+            cursor: pointer;
+          }
+          
+          .plane-marker svg {
+            transition: transform 0.3s ease-in-out;
+            transform-origin: center;
+          }
+          
+          .flight-path {
+            cursor: pointer;
+            z-index: 400;
+          }
+          
+          .leaflet-marker-icon {
+            transition: transform 0.3s cubic-bezier(0.45, 0, 0.55, 1);
+          }
+        `}
+      </style>
     </>
   );
 };

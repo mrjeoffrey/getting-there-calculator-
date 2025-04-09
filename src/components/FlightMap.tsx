@@ -160,8 +160,6 @@ const FlightMap: React.FC<FlightMapProps> = ({
   const uniqueRoutes = new Map<string, boolean>();
   
   const handleLegComplete = (connectionId: string, legIndex: number) => {
-    console.log(`Leg ${legIndex} of connection ${connectionId} completed`);
-    
     setConnectionLegsStatus(prevStatus => {
       const newStatus = [...prevStatus];
       
@@ -180,22 +178,10 @@ const FlightMap: React.FC<FlightMapProps> = ({
         );
         
         if (nextLegIndex >= 0) {
-          // Start next leg almost immediately
-          setTimeout(() => {
-            setConnectionLegsStatus(current => {
-              const updated = [...current];
-              const idx = updated.findIndex(
-                s => s.connectionId === connectionId && s.legIndex === legIndex + 1
-              );
-              if (idx >= 0) {
-                updated[idx] = {
-                  ...updated[idx],
-                  nextLegStarted: true
-                };
-              }
-              return updated;
-            });
-          }, 300); // Reduced from 1500ms to 300ms
+          newStatus[nextLegIndex] = {
+            ...newStatus[nextLegIndex],
+            nextLegStarted: true
+          };
         }
       }
       
@@ -423,8 +409,9 @@ const FlightMap: React.FC<FlightMapProps> = ({
               connection.flights.map((flight, legIndex) => {
                 const showPlane = shouldShowConnectionLegPlane(connection.id, legIndex);
                 
-                // Minimal delay between legs
-                const legDelay = legIndex === 0 ? 100 : 0; // Reduced from 500ms to 100ms
+                // Delay for first leg remains minimal
+                // For subsequent legs, we rely on the completion of previous leg
+                const legDelay = legIndex === 0 ? 500 : legIndex * 1000;
                 
                 const shouldStartAnimating = legIndex === 0 || 
                   connectionLegsStatus.find(
