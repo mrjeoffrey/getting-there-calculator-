@@ -41,6 +41,7 @@ interface FlightPathProps {
   legDelay?: number;
   connectionId?: string;
   onLegComplete?: () => void;
+  allLinesDrawn?: boolean;
 }
 
 const FlightPath: React.FC<FlightPathProps> = ({ 
@@ -63,7 +64,8 @@ const FlightPath: React.FC<FlightPathProps> = ({
   totalLegs = 1,
   legDelay = 0,
   connectionId = '',
-  onLegComplete
+  onLegComplete,
+  allLinesDrawn = false
 }) => {
   const arcPointsRef = useRef<[number, number][]>([]);
   const [arcPoints, setArcPoints] = useState<[number, number][]>([]);
@@ -122,6 +124,15 @@ const FlightPath: React.FC<FlightPathProps> = ({
       }, 200);
     }
   }, [autoAnimate, animationStarted]);
+  
+  useEffect(() => {
+    if (allLinesDrawn && lineDrawingComplete && !planeAnimationStarted && showPlane) {
+      console.log(`[${pathId.current}] All lines drawn, starting plane animation for leg ${legIndex}`);
+      createPlaneMarker();
+      setPlaneAnimationStarted(true);
+      startFlightAnimation();
+    }
+  }, [allLinesDrawn, lineDrawingComplete, planeAnimationStarted, showPlane]);
   
   const cleanup = () => {
     if (drawingTimerRef.current) {
@@ -288,7 +299,9 @@ const FlightPath: React.FC<FlightPathProps> = ({
     const totalPoints = points.length;
     
     const durationInMinutes = getDurationInMinutes();
-    const lineDrawTime = Math.min(4000, Math.max(2000, durationInMinutes * 10));
+    const lineDrawTime = type === 'connecting' ? 
+      Math.min(2000, Math.max(1000, durationInMinutes * 5)) : 
+      Math.min(3000, Math.max(1500, durationInMinutes * 8));
     const pointDelay = lineDrawTime / totalPoints;
     
     let currentDrawIndex = 1;
@@ -301,11 +314,18 @@ const FlightPath: React.FC<FlightPathProps> = ({
       } else {
         setLineDrawingComplete(true);
         
-        setTimeout(() => {
-          createPlaneMarker();
-          setPlaneAnimationStarted(true);
-          startFlightAnimation();
-        }, 300);
+        if (onLegComplete) {
+          console.log(`[${pathId.current}] Leg ${legIndex} line drawing complete, notifying parent`);
+          onLegComplete();
+        }
+        
+        if (type === 'direct') {
+          setTimeout(() => {
+            createPlaneMarker();
+            setPlaneAnimationStarted(true);
+            startFlightAnimation();
+          }, 300);
+        }
       }
     };
     
@@ -342,10 +362,6 @@ const FlightPath: React.FC<FlightPathProps> = ({
         
         const finalPosition = points[points.length - 1];
         updatePlanePosition(finalPosition, null);
-        
-        if (onLegComplete) {
-          onLegComplete();
-        }
       }
     };
     

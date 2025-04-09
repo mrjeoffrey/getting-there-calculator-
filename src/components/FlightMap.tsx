@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useRef } from 'react';
 import { MapContainer, TileLayer, useMap, ZoomControl, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -78,6 +79,7 @@ const FlightMap: React.FC<FlightMapProps> = ({
   const [mapReady, setMapReady] = useState(false);
   const flightPathRefs = useRef<Map<string, React.RefObject<any>>>(new Map());
   const [connectionLegsStatus, setConnectionLegsStatus] = useState<ConnectionLegStatus[]>([]);
+  const [allConnectionLinesDrawn, setAllConnectionLinesDrawn] = useState<Record<string, boolean>>({});
   
   const [originAirport, setOriginAirport] = useState<any>(null);
   const [destinationAirport, setDestinationAirport] = useState<any>(null);
@@ -106,6 +108,13 @@ const FlightMap: React.FC<FlightMapProps> = ({
       });
       
       setConnectionLegsStatus(initialLegsStatus);
+      
+      // Initialize the allConnectionLinesDrawn state
+      const initialLinesDrawnState: Record<string, boolean> = {};
+      connectingFlights.forEach(connection => {
+        initialLinesDrawnState[connection.id] = false;
+      });
+      setAllConnectionLinesDrawn(initialLinesDrawnState);
     }
   }, [connectingFlights]);
   
@@ -184,6 +193,20 @@ const FlightMap: React.FC<FlightMapProps> = ({
             nextLegStarted: true
           };
           console.log(`Starting next leg ${legIndex + 1} of connection ${connectionId}`);
+        } else {
+          // This was the last leg - check if all legs for this connection are complete
+          const allLegsComplete = newStatus.filter(
+            status => status.connectionId === connectionId
+          ).every(status => status.isComplete);
+          
+          if (allLegsComplete) {
+            console.log(`All legs for connection ${connectionId} are complete, starting plane animations`);
+            // Update the allConnectionLinesDrawn state
+            setAllConnectionLinesDrawn(prev => ({
+              ...prev,
+              [connectionId]: true
+            }));
+          }
         }
       }
       
@@ -192,19 +215,8 @@ const FlightMap: React.FC<FlightMapProps> = ({
   };
 
   const shouldShowConnectionLegPlane = (connectionId: string, legIndex: number): boolean => {
-    if (legIndex === 0) {
-      return true;
-    }
-    
-    const legStatus = connectionLegsStatus.find(
-      status => status.connectionId === connectionId && status.legIndex === legIndex
-    );
-    
-    const prevLegStatus = connectionLegsStatus.find(
-      status => status.connectionId === connectionId && status.legIndex === legIndex - 1
-    );
-    
-    return prevLegStatus?.isComplete === true && legStatus?.nextLegStarted === true;
+    // Only show planes when all lines for this connection are drawn
+    return allConnectionLinesDrawn[connectionId] === true;
   };
 
   if (showContent) {
@@ -343,7 +355,7 @@ const FlightMap: React.FC<FlightMapProps> = ({
 
         {showContent && (
           <>
-            {/* Flight paths */}
+            {/* Direct flight paths */}
             {directFlights.map((flight, index) => {
               const showPlane = shouldShowPlane(
                 flight.departureAirport?.code || 'unknown', 
@@ -419,6 +431,7 @@ const FlightMap: React.FC<FlightMapProps> = ({
                     legDelay={legDelay}
                     connectionId={connection.id}
                     onLegComplete={() => handleLegComplete(connection.id, legIndex)}
+                    allLinesDrawn={allConnectionLinesDrawn[connection.id]}
                   />
                 );
               })
@@ -453,36 +466,36 @@ const FlightMap: React.FC<FlightMapProps> = ({
 
             {/* Airport Markers */}
             {Array.from(airports.values()).map(airport => {
-  const airportCode = airport.code;
+              const airportCode = airport.code;
 
-  const type = airportCode === originAirport?.code
-    ? 'origin'
-    : airportCode === destinationAirport?.code
-      ? 'destination'
-      : 'connection';
+              const type = airportCode === originAirport?.code
+                ? 'origin'
+                : airportCode === destinationAirport?.code
+                  ? 'destination'
+                  : 'connection';
 
-  return (
-    <AirportMarker
-      key={`airport-${airport.code}`}
-      airport={airport}
-      departureFlights={airportDepartureFlights.get(airport.code) || []}
-      arrivalFlights={airportArrivalFlights.get(airport.code) || []}
-      connectingFlights={
-        type === 'origin' || type === 'destination'
-          ? connectingFlights 
-          : airportConnectionFlights.get(airport.code) || []
-      }
-      type={type}
-      onPopupOpen={handlePopupOpen}
-      activePopup={activePopup}
-      destinationAirport={
-        airport.code === originAirport?.code ? destinationAirport
-        : airport.code === destinationAirport?.code ? originAirport
-        : null
-      }
-    />
-  );
-})}
+              return (
+                <AirportMarker
+                  key={`airport-${airport.code}`}
+                  airport={airport}
+                  departureFlights={airportDepartureFlights.get(airport.code) || []}
+                  arrivalFlights={airportArrivalFlights.get(airport.code) || []}
+                  connectingFlights={
+                    type === 'origin' || type === 'destination'
+                      ? connectingFlights 
+                      : airportConnectionFlights.get(airport.code) || []
+                  }
+                  type={type}
+                  onPopupOpen={handlePopupOpen}
+                  activePopup={activePopup}
+                  destinationAirport={
+                    airport.code === originAirport?.code ? destinationAirport
+                    : airport.code === destinationAirport?.code ? originAirport
+                    : null
+                  }
+                />
+              );
+            })}
 
           </>
         )}
