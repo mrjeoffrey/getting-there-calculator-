@@ -264,6 +264,100 @@ const FlightMap: React.FC<FlightMapProps> = ({
     return allConnectionsLinesCompleted && connectionPlanesStatus[connectionId] === legIndex;
   };
 
+  const ResetMapView: React.FC<{ 
+    directFlights: Flight[], 
+    connectingFlights: ConnectionFlight[], 
+    onMapReady: () => void 
+  }> = ({ directFlights, connectingFlights, onMapReady }) => {
+    const map = useMap();
+  
+    useEffect(() => {
+      const bounds = L.latLngBounds([]);
+  
+      directFlights.forEach(f => {
+        if (f.departureAirport) bounds.extend([f.departureAirport.lat, f.departureAirport.lng]);
+        if (f.arrivalAirport) bounds.extend([f.arrivalAirport.lat, f.arrivalAirport.lng]);
+      });
+  
+      connectingFlights.forEach(c => {
+        c.flights.forEach(f => {
+          if (f.departureAirport) bounds.extend([f.departureAirport.lat, f.departureAirport.lng]);
+          if (f.arrivalAirport) bounds.extend([f.arrivalAirport.lat, f.arrivalAirport.lng]);
+        });
+      });
+  
+      if (bounds.isValid()) {
+        map.fitBounds(bounds, { padding: [60, 60] });
+      } else {
+        map.setView([20, 0], 2); // fallback
+      }
+  
+      onMapReady();
+  
+      const handleResize = () => map.invalidateSize();
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+    }, [map, directFlights, connectingFlights, onMapReady]);
+  
+    return null;
+  };
+
+  const MapZoomController: React.FC<{
+    originAirport: any;
+    allConnectionsLinesCompleted: boolean;
+  }> = ({ originAirport, allConnectionsLinesCompleted }) => {
+    const map = useMap();
+    const initialZoomCompleted = useRef(false);
+    const finalZoomCompleted = useRef(false);
+    
+    useEffect(() => {
+      if (originAirport && !allConnectionsLinesCompleted && !initialZoomCompleted.current) {
+        map.setView(
+          [originAirport.lat, originAirport.lng],
+          6,
+          { animate: true, duration: 1.5 }
+        );
+        initialZoomCompleted.current = true;
+      }
+      
+      if (allConnectionsLinesCompleted && !finalZoomCompleted.current && initialZoomCompleted.current) {
+        setTimeout(() => {
+          const bounds = L.latLngBounds([]);
+          
+          if (originAirport) bounds.extend([originAirport.lat, originAirport.lng]);
+          if (destinationAirport) bounds.extend([destinationAirport.lat, destinationAirport.lng]);
+          
+          connectionAirports.forEach(airport => {
+            bounds.extend([airport.lat, airport.lng]);
+          });
+          
+          if (bounds.isValid()) {
+            map.fitBounds(bounds, { 
+              padding: [80, 80],
+              animate: true,
+              duration: 1.5
+            });
+          }
+          
+          finalZoomCompleted.current = true;
+        }, 1000);
+      }
+    }, [map, originAirport, allConnectionsLinesCompleted]);
+    
+    return null;
+  };
+
+  const shouldShowDirectPlane = (departure: string, arrival: string): boolean => {
+    const routeKey = `${departure}-${arrival}`;
+    
+    if (uniqueRoutes.has(routeKey)) {
+      return false;
+    }
+    
+    uniqueRoutes.set(routeKey, true);
+    return true;
+  };
+
   if (showContent) {
     uniqueRoutes.clear();
     directFlights.forEach(flight => {
@@ -326,55 +420,6 @@ const FlightMap: React.FC<FlightMapProps> = ({
     });
   }
 
-  const ResetMapView: React.FC<{ 
-    directFlights: Flight[], 
-    connectingFlights: ConnectionFlight[], 
-    onMapReady: () => void 
-  }> = ({ directFlights, connectingFlights, onMapReady }) => {
-    const map = useMap();
-  
-    useEffect(() => {
-      const bounds = L.latLngBounds([]);
-  
-      directFlights.forEach(f => {
-        if (f.departureAirport) bounds.extend([f.departureAirport.lat, f.departureAirport.lng]);
-        if (f.arrivalAirport) bounds.extend([f.arrivalAirport.lat, f.arrivalAirport.lng]);
-      });
-  
-      connectingFlights.forEach(c => {
-        c.flights.forEach(f => {
-          if (f.departureAirport) bounds.extend([f.departureAirport.lat, f.departureAirport.lng]);
-          if (f.arrivalAirport) bounds.extend([f.arrivalAirport.lat, f.arrivalAirport.lng]);
-        });
-      });
-  
-      if (bounds.isValid()) {
-        map.fitBounds(bounds, { padding: [60, 60] });
-      } else {
-        map.setView([20, 0], 2); // fallback
-      }
-  
-      onMapReady();
-  
-      const handleResize = () => map.invalidateSize();
-      window.addEventListener('resize', handleResize);
-      return () => window.removeEventListener('resize', handleResize);
-    }, [map, directFlights, connectingFlights, onMapReady]);
-  
-    return null;
-  };
-
-  const shouldShowDirectPlane = (departure: string, arrival: string): boolean => {
-    const routeKey = `${departure}-${arrival}`;
-    
-    if (uniqueRoutes.has(routeKey)) {
-      return false;
-    }
-    
-    uniqueRoutes.set(routeKey, true);
-    return true;
-  };
-
   return (
     <>
      <MapContainer
@@ -397,6 +442,13 @@ const FlightMap: React.FC<FlightMapProps> = ({
           connectingFlights={connectingFlights}
           onMapReady={() => setMapReady(true)}
         />
+        
+        {showContent && originAirport && (
+          <MapZoomController 
+            originAirport={originAirport}
+            allConnectionsLinesCompleted={allConnectionsLinesCompleted}
+          />
+        )}
 
         {showContent && (
           <>
@@ -539,7 +591,6 @@ const FlightMap: React.FC<FlightMapProps> = ({
                 />
               );
             })}
-
           </>
         )}
         
