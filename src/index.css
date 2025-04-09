@@ -421,9 +421,7 @@ svg.leaflet-zoom-animated {
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2) !important;
 }
 
-.leaflet-popup-tip {
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2) !important;
-}
+
 
 /* Prevent popups from closing on click */
 .leaflet-popup-close-button {
@@ -605,14 +603,12 @@ svg.leaflet-zoom-animated {
   border-radius: 8px;
 }
 
-.leaflet-popup-tip {
-  background: #1e1e1e !important;
+
+
+.flight-popup .leaflet-popup-tip-container {
+  display: none !important;
 }
 
-/* Make sure popup tip matches */
-.leaflet-popup-tip-container {
-  filter: none !important;
-}
 
 
 /* Force all text inside popup to be visible */

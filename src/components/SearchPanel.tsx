@@ -42,22 +42,23 @@ const SearchPanel: React.FC<SearchPanelProps> = ({
 
   return (
     <div className="animate-scale-in w-full">
-      <div className="flex items-center gap-2">
-      <div className="flex-1 [&_*]:text-blue-100">
-          <AirportSelector 
-            value={from} 
-            onChange={setFrom} 
-            placeholder="Select departure airport" 
-            exclude={to ? [to] : []}
-            className="text-blue-600"
-          />
-        </div>
-        
-        <Button 
-          className="bg-primary hover:bg-primary/90 text-primary-foreground"
-          onClick={handleSearch}
-          disabled={!from || loading}
-        >
+      <div className="flex items-stretch gap-2">
+  <div className="flex-1 [&_*]:text-blue-100">
+    <AirportSelector 
+      value={from} 
+      onChange={setFrom} 
+      placeholder="Select departure airport" 
+      exclude={to ? [to] : []}
+      className="text-blue-600 h-full"
+    />
+  </div>
+
+  <Button 
+    className="bg-primary hover:bg-primary/90 text-primary-foreground h-full px-8 py-4"
+    onClick={handleSearch}
+    disabled={!from || loading}
+  >
+
           {loading ? (
             <div className="flex items-center">
               <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />

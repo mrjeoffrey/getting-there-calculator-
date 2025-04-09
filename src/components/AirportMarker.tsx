@@ -45,28 +45,28 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
   // Updated to move popup higher up from marker
   const getPopupOffset = () => {
     if (!destinationAirport) {
-      return [0, -45] as [number, number]; // Moved higher from -40 to -45
+      return [-200, type === 'origin' ? 60 : 0] as [number, number]; // default: left & maybe down
     }
-    
+  
     const dx = destinationAirport.lng - airport.lng;
     const dy = destinationAirport.lat - airport.lat;
     const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-    
-    let xOffset = 0;
-    let yOffset = -45; // Moved higher from -40 to -45
-    
+  
+    let xOffset = 180;
+    let yOffset = 100;
+  
     if (type === 'origin') {
-      xOffset = Math.cos(angle * Math.PI / 180) * 20;
-    } 
-    else if (type === 'destination') {
-      xOffset = Math.cos((angle + 180) * Math.PI / 180) * 20;
-    } 
-    else {
-      return [0, -45] as [number, number]; // Moved higher from -40 to -45
+      xOffset = Math.cos(angle * Math.PI / 180) * -160;
+      yOffset = 100; // 👈 only move down if it's the origin airport
+    } else if (type === 'destination') {
+      xOffset = Math.cos((angle + 180) * Math.PI / 180) * -160;
+      yOffset = 0;
     }
-    
+  
     return [xOffset, yOffset] as [number, number];
   };
+  
+  
   
   const getTooltipContent = () => {
     switch(type) {
@@ -159,13 +159,13 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
         minWidth={450}
         maxWidth={500}
         autoPan={true}
-        autoPanPaddingTopLeft={[50, 50]}
-        autoPanPaddingBottomRight={[50, 50]}
+        autoPanPaddingTopLeft={[5, 5]}
+        autoPanPaddingBottomRight={[5, 5]}
         keepInView={true}
         closeButton={true}
         offset={getPopupOffset()}
       >
-        <div className="p-1 max-h-[350px] overflow-auto">
+        <div className="p-1 max-h-[200px] overflow-auto">
           <h3 className="text-base font-semibold mb-1">{airport.city || airport.name} ({airport.code})</h3>
 
           {hasFlights ? (

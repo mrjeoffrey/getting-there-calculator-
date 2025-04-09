@@ -149,11 +149,11 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
                     f.arrivalTime.includes(flight.arrivalTime)
                   )!)}
                 >
-                  <TableCell className="py-0 px-1 text-center">{flight.airline}</TableCell> {/* Reduced padding */}
-                  <TableCell className="py-0 px-1 text-center">{calculateDuration(flight.departureTime, flight.arrivalTime)}</TableCell>
-                  <TableCell className="py-0 px-1 text-center">{flight.days}</TableCell>
-                  <TableCell className="py-0 px-1 text-center">{formatToTimeOnly(flight.departureTime)}</TableCell>
-                  <TableCell className="py-0 px-1 text-center">{formatToTimeOnly(flight.arrivalTime)}</TableCell>
+                  <TableCell className="py-1 px-1 text-center">{flight.airline}</TableCell> {/* Reduced padding */}
+                  <TableCell className="py-1 px-1 text-center">{calculateDuration(flight.departureTime, flight.arrivalTime)}</TableCell>
+                  <TableCell className="py-1 px-1 text-center">{flight.days}</TableCell>
+                  <TableCell className="py-1 px-1 text-center">{formatToTimeOnly(flight.departureTime)}</TableCell>
+                  <TableCell className="py-1 px-1 text-center">{formatToTimeOnly(flight.arrivalTime)}</TableCell>
                   {type === 'origin' && (
                     <TableCell className="py-0 px-1 text-green-600 font-medium text-center">Direct</TableCell>
                   )}
@@ -168,11 +168,11 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
                     className={`h-4 ${(index + groupedDirectFlights.length) % 2 === 0 ? 'bg-background hover:bg-muted/40' : 'bg-muted/20 hover:bg-muted/40'}`} 
                     onClick={() => originalConnection && handleFlightSelect(originalConnection)}
                   >
-                    <TableCell className="py-0 px-1 text-center">{flight.airline}</TableCell> 
-                    <TableCell className="py-0 px-1 text-center">{calculateDuration(flight.departureTime, flight.arrivalTime)}</TableCell>
-                    <TableCell className="py-0 px-1 text-center">{flight.days}</TableCell>
-                    <TableCell className="py-0 px-1 text-center">{formatToTimeOnly(flight.departureTime)}</TableCell>
-                    <TableCell className="py-0 px-1 text-center">{formatToTimeOnly(flight.arrivalTime)}</TableCell>
+                    <TableCell className="py-1 px-1 text-center">{flight.airline}</TableCell> 
+                    <TableCell className="py-1 px-1 text-center">{calculateDuration(flight.departureTime, flight.arrivalTime)}</TableCell>
+                    <TableCell className="py-1 px-1 text-center">{flight.days}</TableCell>
+                    <TableCell className="py-1 px-1 text-center">{formatToTimeOnly(flight.departureTime)}</TableCell>
+                    <TableCell className="py-1 px-1 text-center">{formatToTimeOnly(flight.arrivalTime)}</TableCell>
                     {type === 'origin' && (
                       <TableCell className="py-1 px-1 text-amber-600 text-center">
                         {flight.stops}
