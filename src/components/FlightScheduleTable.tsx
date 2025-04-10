@@ -112,8 +112,8 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
     if (originAirport) {
       routeHeader =
         type === 'origin'
-          ? `Flights from ${originAirport.code} to ${destinationAirportCode}`
-          : `Connections from ${originAirport.code}`;
+        ? `flights from ${originAirport.city}, ${originAirport.country} (${originAirport.code}) to ${destinationCity}, ${destinationCountry} (${destinationAirportCode})`
+        : `Connecting flights from ${originAirport.city}, ${originAirport.country} (${originAirport.code})`;
     }
   }
 
