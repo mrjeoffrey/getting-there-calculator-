@@ -1,0 +1,3842 @@
+{
+    "context": {
+        "status": "complete",
+        "sessionId": "CjcIARIzCigKJDYyOWQwMWIxLWJiNTktNGI2YS1hZGUwLWU1NWJiM2ZlMTRmYxABEL-unK7iMhgBEih1c3NfOTVjMDk3NjAtOTFkYS00ZDgwLTkzMDctMzJkNWQ1Nzk1ODI1IgJVUw==",
+        "totalResults": 17
+    },
+    "itineraries": [
+        {
+            "id": "15062-2504111917--32573-1-11886-2504121401",
+            "price": {
+                "raw": 561.4,
+                "formatted": "$562",
+                "pricingOptionId": "YGXnU-1nRwx_"
+            },
+            "legs": [
+                {
+                    "id": "15062-2504111917--32573-1-11886-2504121401",
+                    "origin": {
+                        "id": "ORD",
+                        "entityId": "95673392",
+                        "name": "Chicago O'Hare International",
+                        "displayCode": "ORD",
+                        "city": "Chicago",
+                        "country": "United States",
+                        "isHighlighted": false
+                    },
+                    "destination": {
+                        "id": "GND",
+                        "entityId": "128667998",
+                        "name": "Maurice Bishop International",
+                        "displayCode": "GND",
+                        "city": "St. George's",
+                        "country": "Grenada",
+                        "isHighlighted": false
+                    },
+                    "durationInMinutes": 1064,
+                    "stopCount": 1,
+                    "isSmallestStops": false,
+                    "departure": "2025-04-11T19:17:00",
+                    "arrival": "2025-04-12T14:01:00",
+                    "timeDeltaInDays": 1,
+                    "carriers": {
+                        "marketing": [
+                            {
+                                "id": -32573,
+                                "alternateId": "AA",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/AA.png",
+                                "name": "American Airlines"
+                            }
+                        ],
+                        "operationType": "fully_operated"
+                    },
+                    "segments": [
+                        {
+                            "id": "15062-14074-2504111917-2504112329--32573",
+                            "origin": {
+                                "flightPlaceId": "ORD",
+                                "displayCode": "ORD",
+                                "parent": {
+                                    "flightPlaceId": "CHIA",
+                                    "displayCode": "CHI",
+                                    "name": "Chicago",
+                                    "type": "City"
+                                },
+                                "name": "Chicago O'Hare International",
+                                "type": "Airport",
+                                "country": "United States"
+                            },
+                            "destination": {
+                                "flightPlaceId": "MIA",
+                                "displayCode": "MIA",
+                                "parent": {
+                                    "flightPlaceId": "MIAA",
+                                    "displayCode": "MIA",
+                                    "name": "Miami",
+                                    "type": "City"
+                                },
+                                "name": "Miami International",
+                                "type": "Airport",
+                                "country": "United States"
+                            },
+                            "departure": "2025-04-11T19:17:00",
+                            "arrival": "2025-04-11T23:29:00",
+                            "durationInMinutes": 192,
+                            "flightNumber": "1277",
+                            "marketingCarrier": {
+                                "id": -32573,
+                                "name": "American Airlines",
+                                "alternateId": "AA",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -32573,
+                                "name": "American Airlines",
+                                "alternateId": "AA",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        },
+                        {
+                            "id": "14074-11886-2504121022-2504121401--32573",
+                            "origin": {
+                                "flightPlaceId": "MIA",
+                                "displayCode": "MIA",
+                                "parent": {
+                                    "flightPlaceId": "MIAA",
+                                    "displayCode": "MIA",
+                                    "name": "Miami",
+                                    "type": "City"
+                                },
+                                "name": "Miami International",
+                                "type": "Airport",
+                                "country": "United States"
+                            },
+                            "destination": {
+                                "flightPlaceId": "GND",
+                                "displayCode": "GND",
+                                "parent": {
+                                    "flightPlaceId": "GNDB",
+                                    "displayCode": "GND",
+                                    "name": "St. George's",
+                                    "type": "City"
+                                },
+                                "name": "Maurice Bishop International",
+                                "type": "Airport",
+                                "country": "Grenada"
+                            },
+                            "departure": "2025-04-12T10:22:00",
+                            "arrival": "2025-04-12T14:01:00",
+                            "durationInMinutes": 219,
+                            "flightNumber": "1546",
+                            "marketingCarrier": {
+                                "id": -32573,
+                                "name": "American Airlines",
+                                "alternateId": "AA",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -32573,
+                                "name": "American Airlines",
+                                "alternateId": "AA",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        }
+                    ]
+                }
+            ],
+            "isSelfTransfer": false,
+            "isProtectedSelfTransfer": false,
+            "farePolicy": {
+                "isChangeAllowed": false,
+                "isPartiallyChangeable": false,
+                "isCancellationAllowed": false,
+                "isPartiallyRefundable": false
+            },
+            "fareAttributes": [],
+            "tags": [
+                "cheapest",
+                "second_shortest"
+            ],
+            "isMashUp": false,
+            "hasFlexibleOptions": false,
+            "score": 0.999
+        },
+        {
+            "id": "15062-2504111645--32573-1-11886-2504121440",
+            "price": {
+                "raw": 581,
+                "formatted": "$581",
+                "pricingOptionId": "-Z38BG_kBzp8"
+            },
+            "legs": [
+                {
+                    "id": "15062-2504111645--32573-1-11886-2504121440",
+                    "origin": {
+                        "id": "ORD",
+                        "entityId": "95673392",
+                        "name": "Chicago O'Hare International",
+                        "displayCode": "ORD",
+                        "city": "Chicago",
+                        "country": "United States",
+                        "isHighlighted": false
+                    },
+                    "destination": {
+                        "id": "GND",
+                        "entityId": "128667998",
+                        "name": "Maurice Bishop International",
+                        "displayCode": "GND",
+                        "city": "St. George's",
+                        "country": "Grenada",
+                        "isHighlighted": false
+                    },
+                    "durationInMinutes": 1255,
+                    "stopCount": 1,
+                    "isSmallestStops": false,
+                    "departure": "2025-04-11T16:45:00",
+                    "arrival": "2025-04-12T14:40:00",
+                    "timeDeltaInDays": 1,
+                    "carriers": {
+                        "marketing": [
+                            {
+                                "id": -32573,
+                                "alternateId": "AA",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/AA.png",
+                                "name": "American Airlines"
+                            }
+                        ],
+                        "operationType": "fully_operated"
+                    },
+                    "segments": [
+                        {
+                            "id": "15062-10602-2504111645-2504111945--32573",
+                            "origin": {
+                                "flightPlaceId": "ORD",
+                                "displayCode": "ORD",
+                                "parent": {
+                                    "flightPlaceId": "CHIA",
+                                    "displayCode": "CHI",
+                                    "name": "Chicago",
+                                    "type": "City"
+                                },
+                                "name": "Chicago O'Hare International",
+                                "type": "Airport",
+                                "country": "United States"
+                            },
+                            "destination": {
+                                "flightPlaceId": "CLT",
+                                "displayCode": "CLT",
+                                "parent": {
+                                    "flightPlaceId": "CLTA",
+                                    "displayCode": "CLT",
+                                    "name": "Charlotte",
+                                    "type": "City"
+                                },
+                                "name": "Charlotte Douglas",
+                                "type": "Airport",
+                                "country": "United States"
+                            },
+                            "departure": "2025-04-11T16:45:00",
+                            "arrival": "2025-04-11T19:45:00",
+                            "durationInMinutes": 120,
+                            "flightNumber": "2946",
+                            "marketingCarrier": {
+                                "id": -32573,
+                                "name": "American Airlines",
+                                "alternateId": "AA",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -32573,
+                                "name": "American Airlines",
+                                "alternateId": "AA",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        },
+                        {
+                            "id": "10602-11886-2504121020-2504121440--32573",
+                            "origin": {
+                                "flightPlaceId": "CLT",
+                                "displayCode": "CLT",
+                                "parent": {
+                                    "flightPlaceId": "CLTA",
+                                    "displayCode": "CLT",
+                                    "name": "Charlotte",
+                                    "type": "City"
+                                },
+                                "name": "Charlotte Douglas",
+                                "type": "Airport",
+                                "country": "United States"
+                            },
+                            "destination": {
+                                "flightPlaceId": "GND",
+                                "displayCode": "GND",
+                                "parent": {
+                                    "flightPlaceId": "GNDB",
+                                    "displayCode": "GND",
+                                    "name": "St. George's",
+                                    "type": "City"
+                                },
+                                "name": "Maurice Bishop International",
+                                "type": "Airport",
+                                "country": "Grenada"
+                            },
+                            "departure": "2025-04-12T10:20:00",
+                            "arrival": "2025-04-12T14:40:00",
+                            "durationInMinutes": 260,
+                            "flightNumber": "3275",
+                            "marketingCarrier": {
+                                "id": -32573,
+                                "name": "American Airlines",
+                                "alternateId": "AA",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -32573,
+                                "name": "American Airlines",
+                                "alternateId": "AA",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        }
+                    ]
+                }
+            ],
+            "isSelfTransfer": false,
+            "isProtectedSelfTransfer": false,
+            "farePolicy": {
+                "isChangeAllowed": false,
+                "isPartiallyChangeable": false,
+                "isCancellationAllowed": false,
+                "isPartiallyRefundable": false
+            },
+            "fareAttributes": [],
+            "tags": [
+                "second_cheapest",
+                "third_shortest"
+            ],
+            "isMashUp": false,
+            "hasFlexibleOptions": false,
+            "score": 0.676023
+        },
+        {
+            "id": "15062-2504112029--32171-1-11886-2504121459",
+            "price": {
+                "raw": 756.4,
+                "formatted": "$757",
+                "pricingOptionId": "Hzvb3jxq1uqR"
+            },
+            "legs": [
+                {
+                    "id": "15062-2504112029--32171-1-11886-2504121459",
+                    "origin": {
+                        "id": "ORD",
+                        "entityId": "95673392",
+                        "name": "Chicago O'Hare International",
+                        "displayCode": "ORD",
+                        "city": "Chicago",
+                        "country": "United States",
+                        "isHighlighted": false
+                    },
+                    "destination": {
+                        "id": "GND",
+                        "entityId": "128667998",
+                        "name": "Maurice Bishop International",
+                        "displayCode": "GND",
+                        "city": "St. George's",
+                        "country": "Grenada",
+                        "isHighlighted": false
+                    },
+                    "durationInMinutes": 1050,
+                    "stopCount": 1,
+                    "isSmallestStops": false,
+                    "departure": "2025-04-11T20:29:00",
+                    "arrival": "2025-04-12T14:59:00",
+                    "timeDeltaInDays": 1,
+                    "carriers": {
+                        "marketing": [
+                            {
+                                "id": -32171,
+                                "alternateId": "B6",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/B6.png",
+                                "name": "jetBlue"
+                            }
+                        ],
+                        "operationType": "fully_operated"
+                    },
+                    "segments": [
+                        {
+                            "id": "15062-10081-2504112029-2504112358--32171",
+                            "origin": {
+                                "flightPlaceId": "ORD",
+                                "displayCode": "ORD",
+                                "parent": {
+                                    "flightPlaceId": "CHIA",
+                                    "displayCode": "CHI",
+                                    "name": "Chicago",
+                                    "type": "City"
+                                },
+                                "name": "Chicago O'Hare International",
+                                "type": "Airport",
+                                "country": "United States"
+                            },
+                            "destination": {
+                                "flightPlaceId": "BOS",
+                                "displayCode": "BOS",
+                                "parent": {
+                                    "flightPlaceId": "BOSA",
+                                    "displayCode": "BOS",
+                                    "name": "Boston",
+                                    "type": "City"
+                                },
+                                "name": "Boston Logan International",
+                                "type": "Airport",
+                                "country": "United States"
+                            },
+                            "departure": "2025-04-11T20:29:00",
+                            "arrival": "2025-04-11T23:58:00",
+                            "durationInMinutes": 149,
+                            "flightNumber": "612",
+                            "marketingCarrier": {
+                                "id": -32171,
+                                "name": "jetBlue",
+                                "alternateId": "B6",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -32171,
+                                "name": "jetBlue",
+                                "alternateId": "B6",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        },
+                        {
+                            "id": "10081-11886-2504121009-2504121459--32171",
+                            "origin": {
+                                "flightPlaceId": "BOS",
+                                "displayCode": "BOS",
+                                "parent": {
+                                    "flightPlaceId": "BOSA",
+                                    "displayCode": "BOS",
+                                    "name": "Boston",
+                                    "type": "City"
+                                },
+                                "name": "Boston Logan International",
+                                "type": "Airport",
+                                "country": "United States"
+                            },
+                            "destination": {
+                                "flightPlaceId": "GND",
+                                "displayCode": "GND",
+                                "parent": {
+                                    "flightPlaceId": "GNDB",
+                                    "displayCode": "GND",
+                                    "name": "St. George's",
+                                    "type": "City"
+                                },
+                                "name": "Maurice Bishop International",
+                                "type": "Airport",
+                                "country": "Grenada"
+                            },
+                            "departure": "2025-04-12T10:09:00",
+                            "arrival": "2025-04-12T14:59:00",
+                            "durationInMinutes": 290,
+                            "flightNumber": "573",
+                            "marketingCarrier": {
+                                "id": -32171,
+                                "name": "jetBlue",
+                                "alternateId": "B6",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -32171,
+                                "name": "jetBlue",
+                                "alternateId": "B6",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        }
+                    ]
+                }
+            ],
+            "isSelfTransfer": false,
+            "isProtectedSelfTransfer": false,
+            "farePolicy": {
+                "isChangeAllowed": false,
+                "isPartiallyChangeable": false,
+                "isCancellationAllowed": false,
+                "isPartiallyRefundable": false
+            },
+            "fareAttributes": [],
+            "tags": [
+                "shortest"
+            ],
+            "isMashUp": false,
+            "hasFlexibleOptions": false,
+            "score": 0.554142
+        },
+        {
+            "id": "15062-2504111510--32573-1-11886-2504121440",
+            "price": {
+                "raw": 581,
+                "formatted": "$581",
+                "pricingOptionId": "62Qn7NiXZo41"
+            },
+            "legs": [
+                {
+                    "id": "15062-2504111510--32573-1-11886-2504121440",
+                    "origin": {
+                        "id": "ORD",
+                        "entityId": "95673392",
+                        "name": "Chicago O'Hare International",
+                        "displayCode": "ORD",
+                        "city": "Chicago",
+                        "country": "United States",
+                        "isHighlighted": false
+                    },
+                    "destination": {
+                        "id": "GND",
+                        "entityId": "128667998",
+                        "name": "Maurice Bishop International",
+                        "displayCode": "GND",
+                        "city": "St. George's",
+                        "country": "Grenada",
+                        "isHighlighted": false
+                    },
+                    "durationInMinutes": 1350,
+                    "stopCount": 1,
+                    "isSmallestStops": false,
+                    "departure": "2025-04-11T15:10:00",
+                    "arrival": "2025-04-12T14:40:00",
+                    "timeDeltaInDays": 1,
+                    "carriers": {
+                        "marketing": [
+                            {
+                                "id": -32573,
+                                "alternateId": "AA",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/AA.png",
+                                "name": "American Airlines"
+                            }
+                        ],
+                        "operationType": "fully_operated"
+                    },
+                    "segments": [
+                        {
+                            "id": "15062-10602-2504111510-2504111810--32573",
+                            "origin": {
+                                "flightPlaceId": "ORD",
+                                "displayCode": "ORD",
+                                "parent": {
+                                    "flightPlaceId": "CHIA",
+                                    "displayCode": "CHI",
+                                    "name": "Chicago",
+                                    "type": "City"
+                                },
+                                "name": "Chicago O'Hare International",
+                                "type": "Airport",
+                                "country": "United States"
+                            },
+                            "destination": {
+                                "flightPlaceId": "CLT",
+                                "displayCode": "CLT",
+                                "parent": {
+                                    "flightPlaceId": "CLTA",
+                                    "displayCode": "CLT",
+                                    "name": "Charlotte",
+                                    "type": "City"
+                                },
+                                "name": "Charlotte Douglas",
+                                "type": "Airport",
+                                "country": "United States"
+                            },
+                            "departure": "2025-04-11T15:10:00",
+                            "arrival": "2025-04-11T18:10:00",
+                            "durationInMinutes": 120,
+                            "flightNumber": "627",
+                            "marketingCarrier": {
+                                "id": -32573,
+                                "name": "American Airlines",
+                                "alternateId": "AA",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -32573,
+                                "name": "American Airlines",
+                                "alternateId": "AA",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        },
+                        {
+                            "id": "10602-11886-2504121020-2504121440--32573",
+                            "origin": {
+                                "flightPlaceId": "CLT",
+                                "displayCode": "CLT",
+                                "parent": {
+                                    "flightPlaceId": "CLTA",
+                                    "displayCode": "CLT",
+                                    "name": "Charlotte",
+                                    "type": "City"
+                                },
+                                "name": "Charlotte Douglas",
+                                "type": "Airport",
+                                "country": "United States"
+                            },
+                            "destination": {
+                                "flightPlaceId": "GND",
+                                "displayCode": "GND",
+                                "parent": {
+                                    "flightPlaceId": "GNDB",
+                                    "displayCode": "GND",
+                                    "name": "St. George's",
+                                    "type": "City"
+                                },
+                                "name": "Maurice Bishop International",
+                                "type": "Airport",
+                                "country": "Grenada"
+                            },
+                            "departure": "2025-04-12T10:20:00",
+                            "arrival": "2025-04-12T14:40:00",
+                            "durationInMinutes": 260,
+                            "flightNumber": "3275",
+                            "marketingCarrier": {
+                                "id": -32573,
+                                "name": "American Airlines",
+                                "alternateId": "AA",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -32573,
+                                "name": "American Airlines",
+                                "alternateId": "AA",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        }
+                    ]
+                }
+            ],
+            "isSelfTransfer": false,
+            "isProtectedSelfTransfer": false,
+            "farePolicy": {
+                "isChangeAllowed": false,
+                "isPartiallyChangeable": false,
+                "isCancellationAllowed": false,
+                "isPartiallyRefundable": false
+            },
+            "fareAttributes": [],
+            "tags": [
+                "third_cheapest"
+            ],
+            "isMashUp": false,
+            "hasFlexibleOptions": false,
+            "score": 0.368748
+        },
+        {
+            "id": "15062-2504111450--32573-1-11886-2504121401",
+            "price": {
+                "raw": 588.93,
+                "formatted": "$589",
+                "pricingOptionId": "UI21O8OXIQQ0"
+            },
+            "legs": [
+                {
+                    "id": "15062-2504111450--32573-1-11886-2504121401",
+                    "origin": {
+                        "id": "ORD",
+                        "entityId": "95673392",
+                        "name": "Chicago O'Hare International",
+                        "displayCode": "ORD",
+                        "city": "Chicago",
+                        "country": "United States",
+                        "isHighlighted": false
+                    },
+                    "destination": {
+                        "id": "GND",
+                        "entityId": "128667998",
+                        "name": "Maurice Bishop International",
+                        "displayCode": "GND",
+                        "city": "St. George's",
+                        "country": "Grenada",
+                        "isHighlighted": false
+                    },
+                    "durationInMinutes": 1331,
+                    "stopCount": 1,
+                    "isSmallestStops": false,
+                    "departure": "2025-04-11T14:50:00",
+                    "arrival": "2025-04-12T14:01:00",
+                    "timeDeltaInDays": 1,
+                    "carriers": {
+                        "marketing": [
+                            {
+                                "id": -32573,
+                                "alternateId": "AA",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/AA.png",
+                                "name": "American Airlines"
+                            }
+                        ],
+                        "operationType": "fully_operated"
+                    },
+                    "segments": [
+                        {
+                            "id": "15062-14074-2504111450-2504111859--32573",
+                            "origin": {
+                                "flightPlaceId": "ORD",
+                                "displayCode": "ORD",
+                                "parent": {
+                                    "flightPlaceId": "CHIA",
+                                    "displayCode": "CHI",
+                                    "name": "Chicago",
+                                    "type": "City"
+                                },
+                                "name": "Chicago O'Hare International",
+                                "type": "Airport",
+                                "country": "United States"
+                            },
+                            "destination": {
+                                "flightPlaceId": "MIA",
+                                "displayCode": "MIA",
+                                "parent": {
+                                    "flightPlaceId": "MIAA",
+                                    "displayCode": "MIA",
+                                    "name": "Miami",
+                                    "type": "City"
+                                },
+                                "name": "Miami International",
+                                "type": "Airport",
+                                "country": "United States"
+                            },
+                            "departure": "2025-04-11T14:50:00",
+                            "arrival": "2025-04-11T18:59:00",
+                            "durationInMinutes": 189,
+                            "flightNumber": "818",
+                            "marketingCarrier": {
+                                "id": -32573,
+                                "name": "American Airlines",
+                                "alternateId": "AA",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -32573,
+                                "name": "American Airlines",
+                                "alternateId": "AA",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        },
+                        {
+                            "id": "14074-11886-2504121022-2504121401--32573",
+                            "origin": {
+                                "flightPlaceId": "MIA",
+                                "displayCode": "MIA",
+                                "parent": {
+                                    "flightPlaceId": "MIAA",
+                                    "displayCode": "MIA",
+                                    "name": "Miami",
+                                    "type": "City"
+                                },
+                                "name": "Miami International",
+                                "type": "Airport",
+                                "country": "United States"
+                            },
+                            "destination": {
+                                "flightPlaceId": "GND",
+                                "displayCode": "GND",
+                                "parent": {
+                                    "flightPlaceId": "GNDB",
+                                    "displayCode": "GND",
+                                    "name": "St. George's",
+                                    "type": "City"
+                                },
+                                "name": "Maurice Bishop International",
+                                "type": "Airport",
+                                "country": "Grenada"
+                            },
+                            "departure": "2025-04-12T10:22:00",
+                            "arrival": "2025-04-12T14:01:00",
+                            "durationInMinutes": 219,
+                            "flightNumber": "1546",
+                            "marketingCarrier": {
+                                "id": -32573,
+                                "name": "American Airlines",
+                                "alternateId": "AA",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -32573,
+                                "name": "American Airlines",
+                                "alternateId": "AA",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        }
+                    ]
+                }
+            ],
+            "isSelfTransfer": false,
+            "isProtectedSelfTransfer": false,
+            "farePolicy": {
+                "isChangeAllowed": false,
+                "isPartiallyChangeable": false,
+                "isCancellationAllowed": false,
+                "isPartiallyRefundable": false
+            },
+            "fareAttributes": [],
+            "isMashUp": false,
+            "hasFlexibleOptions": false,
+            "score": 0.365325
+        },
+        {
+            "id": "15062-2504112025--32695,-32621-4-11886-2504122025",
+            "price": {
+                "raw": 724.99,
+                "formatted": "$725",
+                "pricingOptionId": "6TXC7l-7wNyu"
+            },
+            "legs": [
+                {
+                    "id": "15062-2504112025--32695,-32621-4-11886-2504122025",
+                    "origin": {
+                        "id": "ORD",
+                        "entityId": "95673392",
+                        "name": "Chicago O'Hare International",
+                        "displayCode": "ORD",
+                        "city": "Chicago",
+                        "country": "United States",
+                        "isHighlighted": false
+                    },
+                    "destination": {
+                        "id": "GND",
+                        "entityId": "128667998",
+                        "name": "Maurice Bishop International",
+                        "displayCode": "GND",
+                        "city": "St. George's",
+                        "country": "Grenada",
+                        "isHighlighted": false
+                    },
+                    "durationInMinutes": 1380,
+                    "stopCount": 4,
+                    "isSmallestStops": false,
+                    "departure": "2025-04-11T20:25:00",
+                    "arrival": "2025-04-12T20:25:00",
+                    "timeDeltaInDays": 1,
+                    "carriers": {
+                        "marketing": [
+                            {
+                                "id": -32695,
+                                "alternateId": "AC",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/AC.png",
+                                "name": "Air Canada"
+                            },
+                            {
+                                "id": -32621,
+                                "alternateId": "JY",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/JY.png",
+                                "name": "interCaribbean Airways"
+                            }
+                        ],
+                        "operating": [
+                            {
+                                "id": -31606,
+                                "alternateId": "ZD",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/ZD.png",
+                                "name": "Air Canada Rouge"
+                            },
+                            {
+                                "id": -32621,
+                                "alternateId": "JY",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/JY.png",
+                                "name": "interCaribbean Airways"
+                            }
+                        ],
+                        "operationType": "partially_operated"
+                    },
+                    "segments": [
+                        {
+                            "id": "15062-18467-2504112025-2504112307--32695",
+                            "origin": {
+                                "flightPlaceId": "ORD",
+                                "displayCode": "ORD",
+                                "parent": {
+                                    "flightPlaceId": "CHIA",
+                                    "displayCode": "CHI",
+                                    "name": "Chicago",
+                                    "type": "City"
+                                },
+                                "name": "Chicago O'Hare International",
+                                "type": "Airport",
+                                "country": "United States"
+                            },
+                            "destination": {
+                                "flightPlaceId": "YYZ",
+                                "displayCode": "YYZ",
+                                "parent": {
+                                    "flightPlaceId": "YTOA",
+                                    "displayCode": "YTO",
+                                    "name": "Toronto",
+                                    "type": "City"
+                                },
+                                "name": "Toronto Pearson International",
+                                "type": "Airport",
+                                "country": "Canada"
+                            },
+                            "departure": "2025-04-11T20:25:00",
+                            "arrival": "2025-04-11T23:07:00",
+                            "durationInMinutes": 102,
+                            "flightNumber": "510",
+                            "marketingCarrier": {
+                                "id": -32695,
+                                "name": "Air Canada",
+                                "alternateId": "AC",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -32695,
+                                "name": "Air Canada",
+                                "alternateId": "AC",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        },
+                        {
+                            "id": "18467-9479-2504121000-2504121450--32695",
+                            "origin": {
+                                "flightPlaceId": "YYZ",
+                                "displayCode": "YYZ",
+                                "parent": {
+                                    "flightPlaceId": "YTOA",
+                                    "displayCode": "YTO",
+                                    "name": "Toronto",
+                                    "type": "City"
+                                },
+                                "name": "Toronto Pearson International",
+                                "type": "Airport",
+                                "country": "Canada"
+                            },
+                            "destination": {
+                                "flightPlaceId": "ANU",
+                                "displayCode": "ANU",
+                                "parent": {
+                                    "flightPlaceId": "ANUA",
+                                    "displayCode": "ANU",
+                                    "name": "Saint John's",
+                                    "type": "City"
+                                },
+                                "name": "Saint John's",
+                                "type": "Airport",
+                                "country": "Antigua and Barbuda"
+                            },
+                            "departure": "2025-04-12T10:00:00",
+                            "arrival": "2025-04-12T14:50:00",
+                            "durationInMinutes": 290,
+                            "flightNumber": "1832",
+                            "marketingCarrier": {
+                                "id": -32695,
+                                "name": "Air Canada",
+                                "alternateId": "AC",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -31606,
+                                "name": "Air Canada Rouge",
+                                "alternateId": "ZD",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        },
+                        {
+                            "id": "9479-9868-2504121630-2504121735--32621",
+                            "origin": {
+                                "flightPlaceId": "ANU",
+                                "displayCode": "ANU",
+                                "parent": {
+                                    "flightPlaceId": "ANUA",
+                                    "displayCode": "ANU",
+                                    "name": "Saint John's",
+                                    "type": "City"
+                                },
+                                "name": "Saint John's",
+                                "type": "Airport",
+                                "country": "Antigua and Barbuda"
+                            },
+                            "destination": {
+                                "flightPlaceId": "BGI",
+                                "displayCode": "BGI",
+                                "parent": {
+                                    "flightPlaceId": "BGIA",
+                                    "displayCode": "BGI",
+                                    "name": "Bridgetown",
+                                    "type": "City"
+                                },
+                                "name": "Bridgetown",
+                                "type": "Airport",
+                                "country": "Barbados"
+                            },
+                            "departure": "2025-04-12T16:30:00",
+                            "arrival": "2025-04-12T17:35:00",
+                            "durationInMinutes": 65,
+                            "flightNumber": "797",
+                            "marketingCarrier": {
+                                "id": -32621,
+                                "name": "interCaribbean Airways",
+                                "alternateId": "JY",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -32621,
+                                "name": "interCaribbean Airways",
+                                "alternateId": "JY",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        },
+                        {
+                            "id": "9868-16615-2504121825-2504121910--32621",
+                            "origin": {
+                                "flightPlaceId": "BGI",
+                                "displayCode": "BGI",
+                                "parent": {
+                                    "flightPlaceId": "BGIA",
+                                    "displayCode": "BGI",
+                                    "name": "Bridgetown",
+                                    "type": "City"
+                                },
+                                "name": "Bridgetown",
+                                "type": "Airport",
+                                "country": "Barbados"
+                            },
+                            "destination": {
+                                "flightPlaceId": "SVD",
+                                "displayCode": "SVD",
+                                "parent": {
+                                    "flightPlaceId": "SVDA",
+                                    "displayCode": "SVD",
+                                    "name": "Kingstown",
+                                    "type": "City"
+                                },
+                                "name": "Kingstown",
+                                "type": "Airport",
+                                "country": "Saint Vincent and the Grenadines"
+                            },
+                            "departure": "2025-04-12T18:25:00",
+                            "arrival": "2025-04-12T19:10:00",
+                            "durationInMinutes": 45,
+                            "flightNumber": "764",
+                            "marketingCarrier": {
+                                "id": -32621,
+                                "name": "interCaribbean Airways",
+                                "alternateId": "JY",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -32621,
+                                "name": "interCaribbean Airways",
+                                "alternateId": "JY",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        },
+                        {
+                            "id": "16615-11886-2504121940-2504122025--32621",
+                            "origin": {
+                                "flightPlaceId": "SVD",
+                                "displayCode": "SVD",
+                                "parent": {
+                                    "flightPlaceId": "SVDA",
+                                    "displayCode": "SVD",
+                                    "name": "Kingstown",
+                                    "type": "City"
+                                },
+                                "name": "Kingstown",
+                                "type": "Airport",
+                                "country": "Saint Vincent and the Grenadines"
+                            },
+                            "destination": {
+                                "flightPlaceId": "GND",
+                                "displayCode": "GND",
+                                "parent": {
+                                    "flightPlaceId": "GNDB",
+                                    "displayCode": "GND",
+                                    "name": "St. George's",
+                                    "type": "City"
+                                },
+                                "name": "Maurice Bishop International",
+                                "type": "Airport",
+                                "country": "Grenada"
+                            },
+                            "departure": "2025-04-12T19:40:00",
+                            "arrival": "2025-04-12T20:25:00",
+                            "durationInMinutes": 45,
+                            "flightNumber": "764",
+                            "marketingCarrier": {
+                                "id": -32621,
+                                "name": "interCaribbean Airways",
+                                "alternateId": "JY",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -32621,
+                                "name": "interCaribbean Airways",
+                                "alternateId": "JY",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        }
+                    ]
+                }
+            ],
+            "isSelfTransfer": false,
+            "isProtectedSelfTransfer": true,
+            "farePolicy": {
+                "isChangeAllowed": false,
+                "isPartiallyChangeable": false,
+                "isCancellationAllowed": false,
+                "isPartiallyRefundable": false
+            },
+            "fareAttributes": [],
+            "isMashUp": false,
+            "hasFlexibleOptions": false,
+            "score": 0.317657
+        },
+        {
+            "id": "15062-2504112105--32695,-32621-4-11886-2504122025",
+            "price": {
+                "raw": 936.99,
+                "formatted": "$937",
+                "pricingOptionId": "_4zQ7V-55MQp"
+            },
+            "legs": [
+                {
+                    "id": "15062-2504112105--32695,-32621-4-11886-2504122025",
+                    "origin": {
+                        "id": "ORD",
+                        "entityId": "95673392",
+                        "name": "Chicago O'Hare International",
+                        "displayCode": "ORD",
+                        "city": "Chicago",
+                        "country": "United States",
+                        "isHighlighted": false
+                    },
+                    "destination": {
+                        "id": "GND",
+                        "entityId": "128667998",
+                        "name": "Maurice Bishop International",
+                        "displayCode": "GND",
+                        "city": "St. George's",
+                        "country": "Grenada",
+                        "isHighlighted": false
+                    },
+                    "durationInMinutes": 1340,
+                    "stopCount": 4,
+                    "isSmallestStops": false,
+                    "departure": "2025-04-11T21:05:00",
+                    "arrival": "2025-04-12T20:25:00",
+                    "timeDeltaInDays": 1,
+                    "carriers": {
+                        "marketing": [
+                            {
+                                "id": -32695,
+                                "alternateId": "AC",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/AC.png",
+                                "name": "Air Canada"
+                            },
+                            {
+                                "id": -32621,
+                                "alternateId": "JY",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/JY.png",
+                                "name": "interCaribbean Airways"
+                            }
+                        ],
+                        "operating": [
+                            {
+                                "id": -31525,
+                                "alternateId": "!ˆ",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/%21%CB%86.png",
+                                "name": "Republic Airways DBA United Express"
+                            },
+                            {
+                                "id": -31606,
+                                "alternateId": "ZD",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/ZD.png",
+                                "name": "Air Canada Rouge"
+                            },
+                            {
+                                "id": -32621,
+                                "alternateId": "JY",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/JY.png",
+                                "name": "interCaribbean Airways"
+                            }
+                        ],
+                        "operationType": "partially_operated"
+                    },
+                    "segments": [
+                        {
+                            "id": "15062-18467-2504112105-2504112358--32695",
+                            "origin": {
+                                "flightPlaceId": "ORD",
+                                "displayCode": "ORD",
+                                "parent": {
+                                    "flightPlaceId": "CHIA",
+                                    "displayCode": "CHI",
+                                    "name": "Chicago",
+                                    "type": "City"
+                                },
+                                "name": "Chicago O'Hare International",
+                                "type": "Airport",
+                                "country": "United States"
+                            },
+                            "destination": {
+                                "flightPlaceId": "YYZ",
+                                "displayCode": "YYZ",
+                                "parent": {
+                                    "flightPlaceId": "YTOA",
+                                    "displayCode": "YTO",
+                                    "name": "Toronto",
+                                    "type": "City"
+                                },
+                                "name": "Toronto Pearson International",
+                                "type": "Airport",
+                                "country": "Canada"
+                            },
+                            "departure": "2025-04-11T21:05:00",
+                            "arrival": "2025-04-11T23:58:00",
+                            "durationInMinutes": 113,
+                            "flightNumber": "5138",
+                            "marketingCarrier": {
+                                "id": -32695,
+                                "name": "Air Canada",
+                                "alternateId": "AC",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -31525,
+                                "name": "Republic Airways DBA United Express",
+                                "alternateId": "!ˆ",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        },
+                        {
+                            "id": "18467-9479-2504121000-2504121450--32695",
+                            "origin": {
+                                "flightPlaceId": "YYZ",
+                                "displayCode": "YYZ",
+                                "parent": {
+                                    "flightPlaceId": "YTOA",
+                                    "displayCode": "YTO",
+                                    "name": "Toronto",
+                                    "type": "City"
+                                },
+                                "name": "Toronto Pearson International",
+                                "type": "Airport",
+                                "country": "Canada"
+                            },
+                            "destination": {
+                                "flightPlaceId": "ANU",
+                                "displayCode": "ANU",
+                                "parent": {
+                                    "flightPlaceId": "ANUA",
+                                    "displayCode": "ANU",
+                                    "name": "Saint John's",
+                                    "type": "City"
+                                },
+                                "name": "Saint John's",
+                                "type": "Airport",
+                                "country": "Antigua and Barbuda"
+                            },
+                            "departure": "2025-04-12T10:00:00",
+                            "arrival": "2025-04-12T14:50:00",
+                            "durationInMinutes": 290,
+                            "flightNumber": "1832",
+                            "marketingCarrier": {
+                                "id": -32695,
+                                "name": "Air Canada",
+                                "alternateId": "AC",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -31606,
+                                "name": "Air Canada Rouge",
+                                "alternateId": "ZD",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        },
+                        {
+                            "id": "9479-9868-2504121630-2504121735--32621",
+                            "origin": {
+                                "flightPlaceId": "ANU",
+                                "displayCode": "ANU",
+                                "parent": {
+                                    "flightPlaceId": "ANUA",
+                                    "displayCode": "ANU",
+                                    "name": "Saint John's",
+                                    "type": "City"
+                                },
+                                "name": "Saint John's",
+                                "type": "Airport",
+                                "country": "Antigua and Barbuda"
+                            },
+                            "destination": {
+                                "flightPlaceId": "BGI",
+                                "displayCode": "BGI",
+                                "parent": {
+                                    "flightPlaceId": "BGIA",
+                                    "displayCode": "BGI",
+                                    "name": "Bridgetown",
+                                    "type": "City"
+                                },
+                                "name": "Bridgetown",
+                                "type": "Airport",
+                                "country": "Barbados"
+                            },
+                            "departure": "2025-04-12T16:30:00",
+                            "arrival": "2025-04-12T17:35:00",
+                            "durationInMinutes": 65,
+                            "flightNumber": "797",
+                            "marketingCarrier": {
+                                "id": -32621,
+                                "name": "interCaribbean Airways",
+                                "alternateId": "JY",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -32621,
+                                "name": "interCaribbean Airways",
+                                "alternateId": "JY",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        },
+                        {
+                            "id": "9868-16615-2504121825-2504121910--32621",
+                            "origin": {
+                                "flightPlaceId": "BGI",
+                                "displayCode": "BGI",
+                                "parent": {
+                                    "flightPlaceId": "BGIA",
+                                    "displayCode": "BGI",
+                                    "name": "Bridgetown",
+                                    "type": "City"
+                                },
+                                "name": "Bridgetown",
+                                "type": "Airport",
+                                "country": "Barbados"
+                            },
+                            "destination": {
+                                "flightPlaceId": "SVD",
+                                "displayCode": "SVD",
+                                "parent": {
+                                    "flightPlaceId": "SVDA",
+                                    "displayCode": "SVD",
+                                    "name": "Kingstown",
+                                    "type": "City"
+                                },
+                                "name": "Kingstown",
+                                "type": "Airport",
+                                "country": "Saint Vincent and the Grenadines"
+                            },
+                            "departure": "2025-04-12T18:25:00",
+                            "arrival": "2025-04-12T19:10:00",
+                            "durationInMinutes": 45,
+                            "flightNumber": "764",
+                            "marketingCarrier": {
+                                "id": -32621,
+                                "name": "interCaribbean Airways",
+                                "alternateId": "JY",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -32621,
+                                "name": "interCaribbean Airways",
+                                "alternateId": "JY",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        },
+                        {
+                            "id": "16615-11886-2504121940-2504122025--32621",
+                            "origin": {
+                                "flightPlaceId": "SVD",
+                                "displayCode": "SVD",
+                                "parent": {
+                                    "flightPlaceId": "SVDA",
+                                    "displayCode": "SVD",
+                                    "name": "Kingstown",
+                                    "type": "City"
+                                },
+                                "name": "Kingstown",
+                                "type": "Airport",
+                                "country": "Saint Vincent and the Grenadines"
+                            },
+                            "destination": {
+                                "flightPlaceId": "GND",
+                                "displayCode": "GND",
+                                "parent": {
+                                    "flightPlaceId": "GNDB",
+                                    "displayCode": "GND",
+                                    "name": "St. George's",
+                                    "type": "City"
+                                },
+                                "name": "Maurice Bishop International",
+                                "type": "Airport",
+                                "country": "Grenada"
+                            },
+                            "departure": "2025-04-12T19:40:00",
+                            "arrival": "2025-04-12T20:25:00",
+                            "durationInMinutes": 45,
+                            "flightNumber": "764",
+                            "marketingCarrier": {
+                                "id": -32621,
+                                "name": "interCaribbean Airways",
+                                "alternateId": "JY",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -32621,
+                                "name": "interCaribbean Airways",
+                                "alternateId": "JY",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        }
+                    ]
+                }
+            ],
+            "isSelfTransfer": false,
+            "isProtectedSelfTransfer": true,
+            "farePolicy": {
+                "isChangeAllowed": false,
+                "isPartiallyChangeable": false,
+                "isCancellationAllowed": false,
+                "isPartiallyRefundable": false
+            },
+            "fareAttributes": [],
+            "isMashUp": false,
+            "hasFlexibleOptions": false,
+            "score": 0.31231
+        },
+        {
+            "id": "13967-2504111735--31954,-31679,-32621-3-11886-2504122025",
+            "price": {
+                "raw": 792,
+                "formatted": "$792",
+                "pricingOptionId": "JXCsIhZpb1Pk"
+            },
+            "legs": [
+                {
+                    "id": "13967-2504111735--31954,-31679,-32621-3-11886-2504122025",
+                    "origin": {
+                        "id": "MDW",
+                        "entityId": "95673391",
+                        "name": "Chicago Midway",
+                        "displayCode": "MDW",
+                        "city": "Chicago",
+                        "country": "United States",
+                        "isHighlighted": false
+                    },
+                    "destination": {
+                        "id": "GND",
+                        "entityId": "128667998",
+                        "name": "Maurice Bishop International",
+                        "displayCode": "GND",
+                        "city": "St. George's",
+                        "country": "Grenada",
+                        "isHighlighted": false
+                    },
+                    "durationInMinutes": 1550,
+                    "stopCount": 3,
+                    "isSmallestStops": false,
+                    "departure": "2025-04-11T17:35:00",
+                    "arrival": "2025-04-12T20:25:00",
+                    "timeDeltaInDays": 1,
+                    "carriers": {
+                        "marketing": [
+                            {
+                                "id": -31954,
+                                "alternateId": "PD",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/PD.png",
+                                "name": "Porter Airlines (Canada) Ltd"
+                            },
+                            {
+                                "id": -31679,
+                                "alternateId": "WS",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/WS.png",
+                                "name": "WestJet"
+                            },
+                            {
+                                "id": -32621,
+                                "alternateId": "JY",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/JY.png",
+                                "name": "interCaribbean Airways"
+                            }
+                        ],
+                        "operating": [
+                            {
+                                "id": -30583,
+                                "alternateId": "38",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/38.png",
+                                "name": "Porter Airlines Inc"
+                            },
+                            {
+                                "id": -31679,
+                                "alternateId": "WS",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/WS.png",
+                                "name": "WestJet"
+                            },
+                            {
+                                "id": -32621,
+                                "alternateId": "JY",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/JY.png",
+                                "name": "interCaribbean Airways"
+                            }
+                        ],
+                        "operationType": "partially_operated"
+                    },
+                    "airportChangesIn": [
+                        "Toronto"
+                    ],
+                    "segments": [
+                        {
+                            "id": "13967-18390-2504111735-2504112017--31954",
+                            "origin": {
+                                "flightPlaceId": "MDW",
+                                "displayCode": "MDW",
+                                "parent": {
+                                    "flightPlaceId": "CHIA",
+                                    "displayCode": "CHI",
+                                    "name": "Chicago",
+                                    "type": "City"
+                                },
+                                "name": "Chicago Midway",
+                                "type": "Airport",
+                                "country": "United States"
+                            },
+                            "destination": {
+                                "flightPlaceId": "YTZ",
+                                "displayCode": "YTZ",
+                                "parent": {
+                                    "flightPlaceId": "YTOA",
+                                    "displayCode": "YTO",
+                                    "name": "Toronto",
+                                    "type": "City"
+                                },
+                                "name": "Toronto Island",
+                                "type": "Airport",
+                                "country": "Canada"
+                            },
+                            "departure": "2025-04-11T17:35:00",
+                            "arrival": "2025-04-11T20:17:00",
+                            "durationInMinutes": 102,
+                            "flightNumber": "2394",
+                            "marketingCarrier": {
+                                "id": -31954,
+                                "name": "Porter Airlines (Canada) Ltd",
+                                "alternateId": "PD",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -30583,
+                                "name": "Porter Airlines Inc",
+                                "alternateId": "38",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        },
+                        {
+                            "id": "18467-9868-2504120830-2504121353--31679",
+                            "origin": {
+                                "flightPlaceId": "YYZ",
+                                "displayCode": "YYZ",
+                                "parent": {
+                                    "flightPlaceId": "YTOA",
+                                    "displayCode": "YTO",
+                                    "name": "Toronto",
+                                    "type": "City"
+                                },
+                                "name": "Toronto Pearson International",
+                                "type": "Airport",
+                                "country": "Canada"
+                            },
+                            "destination": {
+                                "flightPlaceId": "BGI",
+                                "displayCode": "BGI",
+                                "parent": {
+                                    "flightPlaceId": "BGIA",
+                                    "displayCode": "BGI",
+                                    "name": "Bridgetown",
+                                    "type": "City"
+                                },
+                                "name": "Bridgetown",
+                                "type": "Airport",
+                                "country": "Barbados"
+                            },
+                            "departure": "2025-04-12T08:30:00",
+                            "arrival": "2025-04-12T13:53:00",
+                            "durationInMinutes": 323,
+                            "flightNumber": "2512",
+                            "marketingCarrier": {
+                                "id": -31679,
+                                "name": "WestJet",
+                                "alternateId": "WS",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -31679,
+                                "name": "WestJet",
+                                "alternateId": "WS",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        },
+                        {
+                            "id": "9868-16615-2504121825-2504121910--32621",
+                            "origin": {
+                                "flightPlaceId": "BGI",
+                                "displayCode": "BGI",
+                                "parent": {
+                                    "flightPlaceId": "BGIA",
+                                    "displayCode": "BGI",
+                                    "name": "Bridgetown",
+                                    "type": "City"
+                                },
+                                "name": "Bridgetown",
+                                "type": "Airport",
+                                "country": "Barbados"
+                            },
+                            "destination": {
+                                "flightPlaceId": "SVD",
+                                "displayCode": "SVD",
+                                "parent": {
+                                    "flightPlaceId": "SVDA",
+                                    "displayCode": "SVD",
+                                    "name": "Kingstown",
+                                    "type": "City"
+                                },
+                                "name": "Kingstown",
+                                "type": "Airport",
+                                "country": "Saint Vincent and the Grenadines"
+                            },
+                            "departure": "2025-04-12T18:25:00",
+                            "arrival": "2025-04-12T19:10:00",
+                            "durationInMinutes": 45,
+                            "flightNumber": "764",
+                            "marketingCarrier": {
+                                "id": -32621,
+                                "name": "interCaribbean Airways",
+                                "alternateId": "JY",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -32621,
+                                "name": "interCaribbean Airways",
+                                "alternateId": "JY",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        },
+                        {
+                            "id": "16615-11886-2504121940-2504122025--32621",
+                            "origin": {
+                                "flightPlaceId": "SVD",
+                                "displayCode": "SVD",
+                                "parent": {
+                                    "flightPlaceId": "SVDA",
+                                    "displayCode": "SVD",
+                                    "name": "Kingstown",
+                                    "type": "City"
+                                },
+                                "name": "Kingstown",
+                                "type": "Airport",
+                                "country": "Saint Vincent and the Grenadines"
+                            },
+                            "destination": {
+                                "flightPlaceId": "GND",
+                                "displayCode": "GND",
+                                "parent": {
+                                    "flightPlaceId": "GNDB",
+                                    "displayCode": "GND",
+                                    "name": "St. George's",
+                                    "type": "City"
+                                },
+                                "name": "Maurice Bishop International",
+                                "type": "Airport",
+                                "country": "Grenada"
+                            },
+                            "departure": "2025-04-12T19:40:00",
+                            "arrival": "2025-04-12T20:25:00",
+                            "durationInMinutes": 45,
+                            "flightNumber": "764",
+                            "marketingCarrier": {
+                                "id": -32621,
+                                "name": "interCaribbean Airways",
+                                "alternateId": "JY",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -32621,
+                                "name": "interCaribbean Airways",
+                                "alternateId": "JY",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        }
+                    ]
+                }
+            ],
+            "isSelfTransfer": false,
+            "isProtectedSelfTransfer": true,
+            "farePolicy": {
+                "isChangeAllowed": false,
+                "isPartiallyChangeable": false,
+                "isCancellationAllowed": false,
+                "isPartiallyRefundable": false
+            },
+            "fareAttributes": [],
+            "isMashUp": false,
+            "hasFlexibleOptions": false,
+            "score": 0.288733
+        },
+        {
+            "id": "15062-2504111836--31825,-32459,-32621-2-11886-2504122025",
+            "price": {
+                "raw": 941.99,
+                "formatted": "$942",
+                "pricingOptionId": "HCy1wZI6mBFm"
+            },
+            "legs": [
+                {
+                    "id": "15062-2504111836--31825,-32459,-32621-2-11886-2504122025",
+                    "origin": {
+                        "id": "ORD",
+                        "entityId": "95673392",
+                        "name": "Chicago O'Hare International",
+                        "displayCode": "ORD",
+                        "city": "Chicago",
+                        "country": "United States",
+                        "isHighlighted": false
+                    },
+                    "destination": {
+                        "id": "GND",
+                        "entityId": "128667998",
+                        "name": "Maurice Bishop International",
+                        "displayCode": "GND",
+                        "city": "St. George's",
+                        "country": "Grenada",
+                        "isHighlighted": false
+                    },
+                    "durationInMinutes": 1489,
+                    "stopCount": 2,
+                    "isSmallestStops": false,
+                    "departure": "2025-04-11T18:36:00",
+                    "arrival": "2025-04-12T20:25:00",
+                    "timeDeltaInDays": 1,
+                    "carriers": {
+                        "marketing": [
+                            {
+                                "id": -31825,
+                                "alternateId": "NK",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/NK.png",
+                                "name": "Spirit Airlines"
+                            },
+                            {
+                                "id": -32459,
+                                "alternateId": "BW",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/BW.png",
+                                "name": "Caribbean Airlines"
+                            },
+                            {
+                                "id": -32621,
+                                "alternateId": "JY",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/JY.png",
+                                "name": "interCaribbean Airways"
+                            }
+                        ],
+                        "operationType": "fully_operated"
+                    },
+                    "airportChangesIn": [
+                        "New York"
+                    ],
+                    "segments": [
+                        {
+                            "id": "15062-11442-2504111836-2504112200--31825",
+                            "origin": {
+                                "flightPlaceId": "ORD",
+                                "displayCode": "ORD",
+                                "parent": {
+                                    "flightPlaceId": "CHIA",
+                                    "displayCode": "CHI",
+                                    "name": "Chicago",
+                                    "type": "City"
+                                },
+                                "name": "Chicago O'Hare International",
+                                "type": "Airport",
+                                "country": "United States"
+                            },
+                            "destination": {
+                                "flightPlaceId": "EWR",
+                                "displayCode": "EWR",
+                                "parent": {
+                                    "flightPlaceId": "NYCA",
+                                    "displayCode": "NYC",
+                                    "name": "New York",
+                                    "type": "City"
+                                },
+                                "name": "New York Newark",
+                                "type": "Airport",
+                                "country": "United States"
+                            },
+                            "departure": "2025-04-11T18:36:00",
+                            "arrival": "2025-04-11T22:00:00",
+                            "durationInMinutes": 144,
+                            "flightNumber": "283",
+                            "marketingCarrier": {
+                                "id": -31825,
+                                "name": "Spirit Airlines",
+                                "alternateId": "NK",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -31825,
+                                "name": "Spirit Airlines",
+                                "alternateId": "NK",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        },
+                        {
+                            "id": "12712-16615-2504120730-2504121215--32459",
+                            "origin": {
+                                "flightPlaceId": "JFK",
+                                "displayCode": "JFK",
+                                "parent": {
+                                    "flightPlaceId": "NYCA",
+                                    "displayCode": "NYC",
+                                    "name": "New York",
+                                    "type": "City"
+                                },
+                                "name": "New York John F. Kennedy",
+                                "type": "Airport",
+                                "country": "United States"
+                            },
+                            "destination": {
+                                "flightPlaceId": "SVD",
+                                "displayCode": "SVD",
+                                "parent": {
+                                    "flightPlaceId": "SVDA",
+                                    "displayCode": "SVD",
+                                    "name": "Kingstown",
+                                    "type": "City"
+                                },
+                                "name": "Kingstown",
+                                "type": "Airport",
+                                "country": "Saint Vincent and the Grenadines"
+                            },
+                            "departure": "2025-04-12T07:30:00",
+                            "arrival": "2025-04-12T12:15:00",
+                            "durationInMinutes": 285,
+                            "flightNumber": "553",
+                            "marketingCarrier": {
+                                "id": -32459,
+                                "name": "Caribbean Airlines",
+                                "alternateId": "BW",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -32459,
+                                "name": "Caribbean Airlines",
+                                "alternateId": "BW",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        },
+                        {
+                            "id": "16615-11886-2504121940-2504122025--32621",
+                            "origin": {
+                                "flightPlaceId": "SVD",
+                                "displayCode": "SVD",
+                                "parent": {
+                                    "flightPlaceId": "SVDA",
+                                    "displayCode": "SVD",
+                                    "name": "Kingstown",
+                                    "type": "City"
+                                },
+                                "name": "Kingstown",
+                                "type": "Airport",
+                                "country": "Saint Vincent and the Grenadines"
+                            },
+                            "destination": {
+                                "flightPlaceId": "GND",
+                                "displayCode": "GND",
+                                "parent": {
+                                    "flightPlaceId": "GNDB",
+                                    "displayCode": "GND",
+                                    "name": "St. George's",
+                                    "type": "City"
+                                },
+                                "name": "Maurice Bishop International",
+                                "type": "Airport",
+                                "country": "Grenada"
+                            },
+                            "departure": "2025-04-12T19:40:00",
+                            "arrival": "2025-04-12T20:25:00",
+                            "durationInMinutes": 45,
+                            "flightNumber": "764",
+                            "marketingCarrier": {
+                                "id": -32621,
+                                "name": "interCaribbean Airways",
+                                "alternateId": "JY",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -32621,
+                                "name": "interCaribbean Airways",
+                                "alternateId": "JY",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        }
+                    ]
+                }
+            ],
+            "isSelfTransfer": false,
+            "isProtectedSelfTransfer": true,
+            "farePolicy": {
+                "isChangeAllowed": false,
+                "isPartiallyChangeable": false,
+                "isCancellationAllowed": false,
+                "isPartiallyRefundable": false
+            },
+            "fareAttributes": [],
+            "isMashUp": false,
+            "hasFlexibleOptions": false,
+            "score": 0.280222
+        },
+        {
+            "id": "15062-2504111356--32695-2-11886-2504131450",
+            "price": {
+                "raw": 731.23,
+                "formatted": "$732",
+                "pricingOptionId": "S1XxPF2zesaM"
+            },
+            "legs": [
+                {
+                    "id": "15062-2504111356--32695-2-11886-2504131450",
+                    "origin": {
+                        "id": "ORD",
+                        "entityId": "95673392",
+                        "name": "Chicago O'Hare International",
+                        "displayCode": "ORD",
+                        "city": "Chicago",
+                        "country": "United States",
+                        "isHighlighted": false
+                    },
+                    "destination": {
+                        "id": "GND",
+                        "entityId": "128667998",
+                        "name": "Maurice Bishop International",
+                        "displayCode": "GND",
+                        "city": "St. George's",
+                        "country": "Grenada",
+                        "isHighlighted": false
+                    },
+                    "durationInMinutes": 2874,
+                    "stopCount": 2,
+                    "isSmallestStops": false,
+                    "departure": "2025-04-11T13:56:00",
+                    "arrival": "2025-04-13T14:50:00",
+                    "timeDeltaInDays": 2,
+                    "carriers": {
+                        "marketing": [
+                            {
+                                "id": -32695,
+                                "alternateId": "AC",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/AC.png",
+                                "name": "Air Canada"
+                            }
+                        ],
+                        "operating": [
+                            {
+                                "id": -31525,
+                                "alternateId": "!ˆ",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/%21%CB%86.png",
+                                "name": "Republic Airways DBA United Express"
+                            }
+                        ],
+                        "operationType": "partially_operated"
+                    },
+                    "segments": [
+                        {
+                            "id": "15062-18279-2504111356-2504111706--32695",
+                            "origin": {
+                                "flightPlaceId": "ORD",
+                                "displayCode": "ORD",
+                                "parent": {
+                                    "flightPlaceId": "CHIA",
+                                    "displayCode": "CHI",
+                                    "name": "Chicago",
+                                    "type": "City"
+                                },
+                                "name": "Chicago O'Hare International",
+                                "type": "Airport",
+                                "country": "United States"
+                            },
+                            "destination": {
+                                "flightPlaceId": "YOW",
+                                "displayCode": "YOW",
+                                "parent": {
+                                    "flightPlaceId": "YOWA",
+                                    "displayCode": "YOW",
+                                    "name": "Ottawa",
+                                    "type": "City"
+                                },
+                                "name": "Ottawa International",
+                                "type": "Airport",
+                                "country": "Canada"
+                            },
+                            "departure": "2025-04-11T13:56:00",
+                            "arrival": "2025-04-11T17:06:00",
+                            "durationInMinutes": 130,
+                            "flightNumber": "4106",
+                            "marketingCarrier": {
+                                "id": -32695,
+                                "name": "Air Canada",
+                                "alternateId": "AC",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -31525,
+                                "name": "Republic Airways DBA United Express",
+                                "alternateId": "!ˆ",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        },
+                        {
+                            "id": "18279-18467-2504120825-2504120932--32695",
+                            "origin": {
+                                "flightPlaceId": "YOW",
+                                "displayCode": "YOW",
+                                "parent": {
+                                    "flightPlaceId": "YOWA",
+                                    "displayCode": "YOW",
+                                    "name": "Ottawa",
+                                    "type": "City"
+                                },
+                                "name": "Ottawa International",
+                                "type": "Airport",
+                                "country": "Canada"
+                            },
+                            "destination": {
+                                "flightPlaceId": "YYZ",
+                                "displayCode": "YYZ",
+                                "parent": {
+                                    "flightPlaceId": "YTOA",
+                                    "displayCode": "YTO",
+                                    "name": "Toronto",
+                                    "type": "City"
+                                },
+                                "name": "Toronto Pearson International",
+                                "type": "Airport",
+                                "country": "Canada"
+                            },
+                            "departure": "2025-04-12T08:25:00",
+                            "arrival": "2025-04-12T09:32:00",
+                            "durationInMinutes": 67,
+                            "flightNumber": "447",
+                            "marketingCarrier": {
+                                "id": -32695,
+                                "name": "Air Canada",
+                                "alternateId": "AC",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -32695,
+                                "name": "Air Canada",
+                                "alternateId": "AC",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        },
+                        {
+                            "id": "18467-11886-2504130930-2504131450--32695",
+                            "origin": {
+                                "flightPlaceId": "YYZ",
+                                "displayCode": "YYZ",
+                                "parent": {
+                                    "flightPlaceId": "YTOA",
+                                    "displayCode": "YTO",
+                                    "name": "Toronto",
+                                    "type": "City"
+                                },
+                                "name": "Toronto Pearson International",
+                                "type": "Airport",
+                                "country": "Canada"
+                            },
+                            "destination": {
+                                "flightPlaceId": "GND",
+                                "displayCode": "GND",
+                                "parent": {
+                                    "flightPlaceId": "GNDB",
+                                    "displayCode": "GND",
+                                    "name": "St. George's",
+                                    "type": "City"
+                                },
+                                "name": "Maurice Bishop International",
+                                "type": "Airport",
+                                "country": "Grenada"
+                            },
+                            "departure": "2025-04-13T09:30:00",
+                            "arrival": "2025-04-13T14:50:00",
+                            "durationInMinutes": 320,
+                            "flightNumber": "1336",
+                            "marketingCarrier": {
+                                "id": -32695,
+                                "name": "Air Canada",
+                                "alternateId": "AC",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -32695,
+                                "name": "Air Canada",
+                                "alternateId": "AC",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        }
+                    ]
+                }
+            ],
+            "isSelfTransfer": false,
+            "isProtectedSelfTransfer": false,
+            "farePolicy": {
+                "isChangeAllowed": false,
+                "isPartiallyChangeable": false,
+                "isCancellationAllowed": false,
+                "isPartiallyRefundable": false
+            },
+            "fareAttributes": [],
+            "isMashUp": false,
+            "hasFlexibleOptions": false,
+            "score": 0.270675
+        },
+        {
+            "id": "13967-2504111735--31954,-31679,-32459,-32621-3-11886-2504122025",
+            "price": {
+                "raw": 929,
+                "formatted": "$929",
+                "pricingOptionId": "5a8GzZ6ctKna"
+            },
+            "legs": [
+                {
+                    "id": "13967-2504111735--31954,-31679,-32459,-32621-3-11886-2504122025",
+                    "origin": {
+                        "id": "MDW",
+                        "entityId": "95673391",
+                        "name": "Chicago Midway",
+                        "displayCode": "MDW",
+                        "city": "Chicago",
+                        "country": "United States",
+                        "isHighlighted": false
+                    },
+                    "destination": {
+                        "id": "GND",
+                        "entityId": "128667998",
+                        "name": "Maurice Bishop International",
+                        "displayCode": "GND",
+                        "city": "St. George's",
+                        "country": "Grenada",
+                        "isHighlighted": false
+                    },
+                    "durationInMinutes": 1550,
+                    "stopCount": 3,
+                    "isSmallestStops": false,
+                    "departure": "2025-04-11T17:35:00",
+                    "arrival": "2025-04-12T20:25:00",
+                    "timeDeltaInDays": 1,
+                    "carriers": {
+                        "marketing": [
+                            {
+                                "id": -31954,
+                                "alternateId": "PD",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/PD.png",
+                                "name": "Porter Airlines (Canada) Ltd"
+                            },
+                            {
+                                "id": -31679,
+                                "alternateId": "WS",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/WS.png",
+                                "name": "WestJet"
+                            },
+                            {
+                                "id": -32459,
+                                "alternateId": "BW",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/BW.png",
+                                "name": "Caribbean Airlines"
+                            },
+                            {
+                                "id": -32621,
+                                "alternateId": "JY",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/JY.png",
+                                "name": "interCaribbean Airways"
+                            }
+                        ],
+                        "operating": [
+                            {
+                                "id": -30583,
+                                "alternateId": "38",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/38.png",
+                                "name": "Porter Airlines Inc"
+                            },
+                            {
+                                "id": -31679,
+                                "alternateId": "WS",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/WS.png",
+                                "name": "WestJet"
+                            },
+                            {
+                                "id": -32459,
+                                "alternateId": "BW",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/BW.png",
+                                "name": "Caribbean Airlines"
+                            },
+                            {
+                                "id": -32621,
+                                "alternateId": "JY",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/JY.png",
+                                "name": "interCaribbean Airways"
+                            }
+                        ],
+                        "operationType": "partially_operated"
+                    },
+                    "airportChangesIn": [
+                        "Toronto"
+                    ],
+                    "segments": [
+                        {
+                            "id": "13967-18390-2504111735-2504112017--31954",
+                            "origin": {
+                                "flightPlaceId": "MDW",
+                                "displayCode": "MDW",
+                                "parent": {
+                                    "flightPlaceId": "CHIA",
+                                    "displayCode": "CHI",
+                                    "name": "Chicago",
+                                    "type": "City"
+                                },
+                                "name": "Chicago Midway",
+                                "type": "Airport",
+                                "country": "United States"
+                            },
+                            "destination": {
+                                "flightPlaceId": "YTZ",
+                                "displayCode": "YTZ",
+                                "parent": {
+                                    "flightPlaceId": "YTOA",
+                                    "displayCode": "YTO",
+                                    "name": "Toronto",
+                                    "type": "City"
+                                },
+                                "name": "Toronto Island",
+                                "type": "Airport",
+                                "country": "Canada"
+                            },
+                            "departure": "2025-04-11T17:35:00",
+                            "arrival": "2025-04-11T20:17:00",
+                            "durationInMinutes": 102,
+                            "flightNumber": "2394",
+                            "marketingCarrier": {
+                                "id": -31954,
+                                "name": "Porter Airlines (Canada) Ltd",
+                                "alternateId": "PD",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -30583,
+                                "name": "Porter Airlines Inc",
+                                "alternateId": "38",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        },
+                        {
+                            "id": "18467-9868-2504120830-2504121353--31679",
+                            "origin": {
+                                "flightPlaceId": "YYZ",
+                                "displayCode": "YYZ",
+                                "parent": {
+                                    "flightPlaceId": "YTOA",
+                                    "displayCode": "YTO",
+                                    "name": "Toronto",
+                                    "type": "City"
+                                },
+                                "name": "Toronto Pearson International",
+                                "type": "Airport",
+                                "country": "Canada"
+                            },
+                            "destination": {
+                                "flightPlaceId": "BGI",
+                                "displayCode": "BGI",
+                                "parent": {
+                                    "flightPlaceId": "BGIA",
+                                    "displayCode": "BGI",
+                                    "name": "Bridgetown",
+                                    "type": "City"
+                                },
+                                "name": "Bridgetown",
+                                "type": "Airport",
+                                "country": "Barbados"
+                            },
+                            "departure": "2025-04-12T08:30:00",
+                            "arrival": "2025-04-12T13:53:00",
+                            "durationInMinutes": 323,
+                            "flightNumber": "2512",
+                            "marketingCarrier": {
+                                "id": -31679,
+                                "name": "WestJet",
+                                "alternateId": "WS",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -31679,
+                                "name": "WestJet",
+                                "alternateId": "WS",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        },
+                        {
+                            "id": "9868-16615-2504121745-2504121830--32459",
+                            "origin": {
+                                "flightPlaceId": "BGI",
+                                "displayCode": "BGI",
+                                "parent": {
+                                    "flightPlaceId": "BGIA",
+                                    "displayCode": "BGI",
+                                    "name": "Bridgetown",
+                                    "type": "City"
+                                },
+                                "name": "Bridgetown",
+                                "type": "Airport",
+                                "country": "Barbados"
+                            },
+                            "destination": {
+                                "flightPlaceId": "SVD",
+                                "displayCode": "SVD",
+                                "parent": {
+                                    "flightPlaceId": "SVDA",
+                                    "displayCode": "SVD",
+                                    "name": "Kingstown",
+                                    "type": "City"
+                                },
+                                "name": "Kingstown",
+                                "type": "Airport",
+                                "country": "Saint Vincent and the Grenadines"
+                            },
+                            "departure": "2025-04-12T17:45:00",
+                            "arrival": "2025-04-12T18:30:00",
+                            "durationInMinutes": 45,
+                            "flightNumber": "236",
+                            "marketingCarrier": {
+                                "id": -32459,
+                                "name": "Caribbean Airlines",
+                                "alternateId": "BW",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -32459,
+                                "name": "Caribbean Airlines",
+                                "alternateId": "BW",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        },
+                        {
+                            "id": "16615-11886-2504121940-2504122025--32621",
+                            "origin": {
+                                "flightPlaceId": "SVD",
+                                "displayCode": "SVD",
+                                "parent": {
+                                    "flightPlaceId": "SVDA",
+                                    "displayCode": "SVD",
+                                    "name": "Kingstown",
+                                    "type": "City"
+                                },
+                                "name": "Kingstown",
+                                "type": "Airport",
+                                "country": "Saint Vincent and the Grenadines"
+                            },
+                            "destination": {
+                                "flightPlaceId": "GND",
+                                "displayCode": "GND",
+                                "parent": {
+                                    "flightPlaceId": "GNDB",
+                                    "displayCode": "GND",
+                                    "name": "St. George's",
+                                    "type": "City"
+                                },
+                                "name": "Maurice Bishop International",
+                                "type": "Airport",
+                                "country": "Grenada"
+                            },
+                            "departure": "2025-04-12T19:40:00",
+                            "arrival": "2025-04-12T20:25:00",
+                            "durationInMinutes": 45,
+                            "flightNumber": "764",
+                            "marketingCarrier": {
+                                "id": -32621,
+                                "name": "interCaribbean Airways",
+                                "alternateId": "JY",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -32621,
+                                "name": "interCaribbean Airways",
+                                "alternateId": "JY",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        }
+                    ]
+                }
+            ],
+            "isSelfTransfer": false,
+            "isProtectedSelfTransfer": true,
+            "farePolicy": {
+                "isChangeAllowed": false,
+                "isPartiallyChangeable": false,
+                "isCancellationAllowed": false,
+                "isPartiallyRefundable": false
+            },
+            "fareAttributes": [],
+            "isMashUp": false,
+            "hasFlexibleOptions": false,
+            "score": 0.243802
+        },
+        {
+            "id": "15062-2504111905--31812,-32695-3-11886-2504131450",
+            "price": {
+                "raw": 701.99,
+                "formatted": "$702",
+                "pricingOptionId": "E1ef_fN4swWH"
+            },
+            "legs": [
+                {
+                    "id": "15062-2504111905--31812,-32695-3-11886-2504131450",
+                    "origin": {
+                        "id": "ORD",
+                        "entityId": "95673392",
+                        "name": "Chicago O'Hare International",
+                        "displayCode": "ORD",
+                        "city": "Chicago",
+                        "country": "United States",
+                        "isHighlighted": false
+                    },
+                    "destination": {
+                        "id": "GND",
+                        "entityId": "128667998",
+                        "name": "Maurice Bishop International",
+                        "displayCode": "GND",
+                        "city": "St. George's",
+                        "country": "Grenada",
+                        "isHighlighted": false
+                    },
+                    "durationInMinutes": 2565,
+                    "stopCount": 3,
+                    "isSmallestStops": false,
+                    "departure": "2025-04-11T19:05:00",
+                    "arrival": "2025-04-13T14:50:00",
+                    "timeDeltaInDays": 2,
+                    "carriers": {
+                        "marketing": [
+                            {
+                                "id": -31812,
+                                "alternateId": "SY",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/SY.png",
+                                "name": "Sun Country Airlines"
+                            },
+                            {
+                                "id": -32695,
+                                "alternateId": "AC",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/AC.png",
+                                "name": "Air Canada"
+                            }
+                        ],
+                        "operating": [
+                            {
+                                "id": -31606,
+                                "alternateId": "ZD",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/ZD.png",
+                                "name": "Air Canada Rouge"
+                            },
+                            {
+                                "id": -32695,
+                                "alternateId": "AC",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/AC.png",
+                                "name": "Air Canada"
+                            }
+                        ],
+                        "operationType": "partially_operated"
+                    },
+                    "segments": [
+                        {
+                            "id": "15062-14346-2504111905-2504112049--31812",
+                            "origin": {
+                                "flightPlaceId": "ORD",
+                                "displayCode": "ORD",
+                                "parent": {
+                                    "flightPlaceId": "CHIA",
+                                    "displayCode": "CHI",
+                                    "name": "Chicago",
+                                    "type": "City"
+                                },
+                                "name": "Chicago O'Hare International",
+                                "type": "Airport",
+                                "country": "United States"
+                            },
+                            "destination": {
+                                "flightPlaceId": "MSP",
+                                "displayCode": "MSP",
+                                "parent": {
+                                    "flightPlaceId": "MSPA",
+                                    "displayCode": "MSP",
+                                    "name": "Minneapolis",
+                                    "type": "City"
+                                },
+                                "name": "Minneapolis St Paul",
+                                "type": "Airport",
+                                "country": "United States"
+                            },
+                            "departure": "2025-04-11T19:05:00",
+                            "arrival": "2025-04-11T20:49:00",
+                            "durationInMinutes": 104,
+                            "flightNumber": "262",
+                            "marketingCarrier": {
+                                "id": -31812,
+                                "name": "Sun Country Airlines",
+                                "alternateId": "SY",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -31812,
+                                "name": "Sun Country Airlines",
+                                "alternateId": "SY",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        },
+                        {
+                            "id": "14346-17073-2504120740-2504121150--31812",
+                            "origin": {
+                                "flightPlaceId": "MSP",
+                                "displayCode": "MSP",
+                                "parent": {
+                                    "flightPlaceId": "MSPA",
+                                    "displayCode": "MSP",
+                                    "name": "Minneapolis",
+                                    "type": "City"
+                                },
+                                "name": "Minneapolis St Paul",
+                                "type": "Airport",
+                                "country": "United States"
+                            },
+                            "destination": {
+                                "flightPlaceId": "TPA",
+                                "displayCode": "TPA",
+                                "parent": {
+                                    "flightPlaceId": "TPAA",
+                                    "displayCode": "TPA",
+                                    "name": "Tampa",
+                                    "type": "City"
+                                },
+                                "name": "Tampa International",
+                                "type": "Airport",
+                                "country": "United States"
+                            },
+                            "departure": "2025-04-12T07:40:00",
+                            "arrival": "2025-04-12T11:50:00",
+                            "durationInMinutes": 190,
+                            "flightNumber": "215",
+                            "marketingCarrier": {
+                                "id": -31812,
+                                "name": "Sun Country Airlines",
+                                "alternateId": "SY",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -31812,
+                                "name": "Sun Country Airlines",
+                                "alternateId": "SY",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        },
+                        {
+                            "id": "17073-18467-2504122035-2504122332--32695",
+                            "origin": {
+                                "flightPlaceId": "TPA",
+                                "displayCode": "TPA",
+                                "parent": {
+                                    "flightPlaceId": "TPAA",
+                                    "displayCode": "TPA",
+                                    "name": "Tampa",
+                                    "type": "City"
+                                },
+                                "name": "Tampa International",
+                                "type": "Airport",
+                                "country": "United States"
+                            },
+                            "destination": {
+                                "flightPlaceId": "YYZ",
+                                "displayCode": "YYZ",
+                                "parent": {
+                                    "flightPlaceId": "YTOA",
+                                    "displayCode": "YTO",
+                                    "name": "Toronto",
+                                    "type": "City"
+                                },
+                                "name": "Toronto Pearson International",
+                                "type": "Airport",
+                                "country": "Canada"
+                            },
+                            "departure": "2025-04-12T20:35:00",
+                            "arrival": "2025-04-12T23:32:00",
+                            "durationInMinutes": 177,
+                            "flightNumber": "1661",
+                            "marketingCarrier": {
+                                "id": -32695,
+                                "name": "Air Canada",
+                                "alternateId": "AC",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -31606,
+                                "name": "Air Canada Rouge",
+                                "alternateId": "ZD",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        },
+                        {
+                            "id": "18467-11886-2504130930-2504131450--32695",
+                            "origin": {
+                                "flightPlaceId": "YYZ",
+                                "displayCode": "YYZ",
+                                "parent": {
+                                    "flightPlaceId": "YTOA",
+                                    "displayCode": "YTO",
+                                    "name": "Toronto",
+                                    "type": "City"
+                                },
+                                "name": "Toronto Pearson International",
+                                "type": "Airport",
+                                "country": "Canada"
+                            },
+                            "destination": {
+                                "flightPlaceId": "GND",
+                                "displayCode": "GND",
+                                "parent": {
+                                    "flightPlaceId": "GNDB",
+                                    "displayCode": "GND",
+                                    "name": "St. George's",
+                                    "type": "City"
+                                },
+                                "name": "Maurice Bishop International",
+                                "type": "Airport",
+                                "country": "Grenada"
+                            },
+                            "departure": "2025-04-13T09:30:00",
+                            "arrival": "2025-04-13T14:50:00",
+                            "durationInMinutes": 320,
+                            "flightNumber": "1336",
+                            "marketingCarrier": {
+                                "id": -32695,
+                                "name": "Air Canada",
+                                "alternateId": "AC",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -32695,
+                                "name": "Air Canada",
+                                "alternateId": "AC",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        }
+                    ]
+                }
+            ],
+            "isSelfTransfer": false,
+            "isProtectedSelfTransfer": true,
+            "farePolicy": {
+                "isChangeAllowed": false,
+                "isPartiallyChangeable": false,
+                "isCancellationAllowed": false,
+                "isPartiallyRefundable": false
+            },
+            "fareAttributes": [],
+            "isMashUp": false,
+            "hasFlexibleOptions": false,
+            "score": 0.235367
+        },
+        {
+            "id": "15062-2504111655--32222,-32480-2-11886-2504121700",
+            "price": {
+                "raw": 1993.68,
+                "formatted": "$1,994",
+                "pricingOptionId": "-PIOrmQUBJs7"
+            },
+            "legs": [
+                {
+                    "id": "15062-2504111655--32222,-32480-2-11886-2504121700",
+                    "origin": {
+                        "id": "ORD",
+                        "entityId": "95673392",
+                        "name": "Chicago O'Hare International",
+                        "displayCode": "ORD",
+                        "city": "Chicago",
+                        "country": "United States",
+                        "isHighlighted": false
+                    },
+                    "destination": {
+                        "id": "GND",
+                        "entityId": "128667998",
+                        "name": "Maurice Bishop International",
+                        "displayCode": "GND",
+                        "city": "St. George's",
+                        "country": "Grenada",
+                        "isHighlighted": false
+                    },
+                    "durationInMinutes": 1385,
+                    "stopCount": 2,
+                    "isSmallestStops": false,
+                    "departure": "2025-04-11T16:55:00",
+                    "arrival": "2025-04-12T17:00:00",
+                    "timeDeltaInDays": 1,
+                    "carriers": {
+                        "marketing": [
+                            {
+                                "id": -32222,
+                                "alternateId": "IB",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/IB.png",
+                                "name": "Iberia"
+                            },
+                            {
+                                "id": -32480,
+                                "alternateId": "BA",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/BA.png",
+                                "name": "British Airways"
+                            }
+                        ],
+                        "operationType": "fully_operated"
+                    },
+                    "airportChangesIn": [
+                        "London"
+                    ],
+                    "segments": [
+                        {
+                            "id": "15062-13554-2504111655-2504120650--32222",
+                            "origin": {
+                                "flightPlaceId": "ORD",
+                                "displayCode": "ORD",
+                                "parent": {
+                                    "flightPlaceId": "CHIA",
+                                    "displayCode": "CHI",
+                                    "name": "Chicago",
+                                    "type": "City"
+                                },
+                                "name": "Chicago O'Hare International",
+                                "type": "Airport",
+                                "country": "United States"
+                            },
+                            "destination": {
+                                "flightPlaceId": "LHR",
+                                "displayCode": "LHR",
+                                "parent": {
+                                    "flightPlaceId": "LOND",
+                                    "displayCode": "LON",
+                                    "name": "London",
+                                    "type": "City"
+                                },
+                                "name": "London Heathrow",
+                                "type": "Airport",
+                                "country": "United Kingdom"
+                            },
+                            "departure": "2025-04-11T16:55:00",
+                            "arrival": "2025-04-12T06:50:00",
+                            "durationInMinutes": 475,
+                            "flightNumber": "3633",
+                            "marketingCarrier": {
+                                "id": -32222,
+                                "name": "Iberia",
+                                "alternateId": "IB",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -32480,
+                                "name": "British Airways",
+                                "alternateId": "BA",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        },
+                        {
+                            "id": "13542-17429-2504121115-2504121505--32480",
+                            "origin": {
+                                "flightPlaceId": "LGW",
+                                "displayCode": "LGW",
+                                "parent": {
+                                    "flightPlaceId": "LOND",
+                                    "displayCode": "LON",
+                                    "name": "London",
+                                    "type": "City"
+                                },
+                                "name": "London Gatwick",
+                                "type": "Airport",
+                                "country": "United Kingdom"
+                            },
+                            "destination": {
+                                "flightPlaceId": "UVF",
+                                "displayCode": "UVF",
+                                "parent": {
+                                    "flightPlaceId": "SLUA",
+                                    "displayCode": "SLU",
+                                    "name": "Castries",
+                                    "type": "City"
+                                },
+                                "name": "St Lucia Hewanorra",
+                                "type": "Airport",
+                                "country": "Saint Lucia"
+                            },
+                            "departure": "2025-04-12T11:15:00",
+                            "arrival": "2025-04-12T15:05:00",
+                            "durationInMinutes": 530,
+                            "flightNumber": "2159",
+                            "marketingCarrier": {
+                                "id": -32480,
+                                "name": "British Airways",
+                                "alternateId": "BA",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -32480,
+                                "name": "British Airways",
+                                "alternateId": "BA",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        },
+                        {
+                            "id": "17429-11886-2504121605-2504121700--32480",
+                            "origin": {
+                                "flightPlaceId": "UVF",
+                                "displayCode": "UVF",
+                                "parent": {
+                                    "flightPlaceId": "SLUA",
+                                    "displayCode": "SLU",
+                                    "name": "Castries",
+                                    "type": "City"
+                                },
+                                "name": "St Lucia Hewanorra",
+                                "type": "Airport",
+                                "country": "Saint Lucia"
+                            },
+                            "destination": {
+                                "flightPlaceId": "GND",
+                                "displayCode": "GND",
+                                "parent": {
+                                    "flightPlaceId": "GNDB",
+                                    "displayCode": "GND",
+                                    "name": "St. George's",
+                                    "type": "City"
+                                },
+                                "name": "Maurice Bishop International",
+                                "type": "Airport",
+                                "country": "Grenada"
+                            },
+                            "departure": "2025-04-12T16:05:00",
+                            "arrival": "2025-04-12T17:00:00",
+                            "durationInMinutes": 55,
+                            "flightNumber": "2159",
+                            "marketingCarrier": {
+                                "id": -32480,
+                                "name": "British Airways",
+                                "alternateId": "BA",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -32480,
+                                "name": "British Airways",
+                                "alternateId": "BA",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        }
+                    ]
+                }
+            ],
+            "isSelfTransfer": false,
+            "isProtectedSelfTransfer": false,
+            "farePolicy": {
+                "isChangeAllowed": false,
+                "isPartiallyChangeable": false,
+                "isCancellationAllowed": false,
+                "isPartiallyRefundable": false
+            },
+            "fareAttributes": [],
+            "isMashUp": false,
+            "hasFlexibleOptions": false,
+            "score": 0.21431
+        },
+        {
+            "id": "15062-2504111805--32695-2-11886-2504131450",
+            "price": {
+                "raw": 1079.99,
+                "formatted": "$1,080",
+                "pricingOptionId": "A-iH2qkMHwQv"
+            },
+            "legs": [
+                {
+                    "id": "15062-2504111805--32695-2-11886-2504131450",
+                    "origin": {
+                        "id": "ORD",
+                        "entityId": "95673392",
+                        "name": "Chicago O'Hare International",
+                        "displayCode": "ORD",
+                        "city": "Chicago",
+                        "country": "United States",
+                        "isHighlighted": false
+                    },
+                    "destination": {
+                        "id": "GND",
+                        "entityId": "128667998",
+                        "name": "Maurice Bishop International",
+                        "displayCode": "GND",
+                        "city": "St. George's",
+                        "country": "Grenada",
+                        "isHighlighted": false
+                    },
+                    "durationInMinutes": 2625,
+                    "stopCount": 2,
+                    "isSmallestStops": false,
+                    "departure": "2025-04-11T18:05:00",
+                    "arrival": "2025-04-13T14:50:00",
+                    "timeDeltaInDays": 2,
+                    "carriers": {
+                        "marketing": [
+                            {
+                                "id": -32695,
+                                "alternateId": "AC",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/AC.png",
+                                "name": "Air Canada"
+                            }
+                        ],
+                        "operating": [
+                            {
+                                "id": -31525,
+                                "alternateId": "!ˆ",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/%21%CB%86.png",
+                                "name": "Republic Airways DBA United Express"
+                            }
+                        ],
+                        "operationType": "partially_operated"
+                    },
+                    "segments": [
+                        {
+                            "id": "15062-18395-2504111805-2504112129--32695",
+                            "origin": {
+                                "flightPlaceId": "ORD",
+                                "displayCode": "ORD",
+                                "parent": {
+                                    "flightPlaceId": "CHIA",
+                                    "displayCode": "CHI",
+                                    "name": "Chicago",
+                                    "type": "City"
+                                },
+                                "name": "Chicago O'Hare International",
+                                "type": "Airport",
+                                "country": "United States"
+                            },
+                            "destination": {
+                                "flightPlaceId": "YUL",
+                                "displayCode": "YUL",
+                                "parent": {
+                                    "flightPlaceId": "YMQA",
+                                    "displayCode": "YMQ",
+                                    "name": "Montreal",
+                                    "type": "City"
+                                },
+                                "name": "Montreal Pierre Elliott Trudeau",
+                                "type": "Airport",
+                                "country": "Canada"
+                            },
+                            "departure": "2025-04-11T18:05:00",
+                            "arrival": "2025-04-11T21:29:00",
+                            "durationInMinutes": 144,
+                            "flightNumber": "3504",
+                            "marketingCarrier": {
+                                "id": -32695,
+                                "name": "Air Canada",
+                                "alternateId": "AC",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -31525,
+                                "name": "Republic Airways DBA United Express",
+                                "alternateId": "!ˆ",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        },
+                        {
+                            "id": "18395-18467-2504120815-2504120939--32695",
+                            "origin": {
+                                "flightPlaceId": "YUL",
+                                "displayCode": "YUL",
+                                "parent": {
+                                    "flightPlaceId": "YMQA",
+                                    "displayCode": "YMQ",
+                                    "name": "Montreal",
+                                    "type": "City"
+                                },
+                                "name": "Montreal Pierre Elliott Trudeau",
+                                "type": "Airport",
+                                "country": "Canada"
+                            },
+                            "destination": {
+                                "flightPlaceId": "YYZ",
+                                "displayCode": "YYZ",
+                                "parent": {
+                                    "flightPlaceId": "YTOA",
+                                    "displayCode": "YTO",
+                                    "name": "Toronto",
+                                    "type": "City"
+                                },
+                                "name": "Toronto Pearson International",
+                                "type": "Airport",
+                                "country": "Canada"
+                            },
+                            "departure": "2025-04-12T08:15:00",
+                            "arrival": "2025-04-12T09:39:00",
+                            "durationInMinutes": 84,
+                            "flightNumber": "403",
+                            "marketingCarrier": {
+                                "id": -32695,
+                                "name": "Air Canada",
+                                "alternateId": "AC",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -32695,
+                                "name": "Air Canada",
+                                "alternateId": "AC",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        },
+                        {
+                            "id": "18467-11886-2504130930-2504131450--32695",
+                            "origin": {
+                                "flightPlaceId": "YYZ",
+                                "displayCode": "YYZ",
+                                "parent": {
+                                    "flightPlaceId": "YTOA",
+                                    "displayCode": "YTO",
+                                    "name": "Toronto",
+                                    "type": "City"
+                                },
+                                "name": "Toronto Pearson International",
+                                "type": "Airport",
+                                "country": "Canada"
+                            },
+                            "destination": {
+                                "flightPlaceId": "GND",
+                                "displayCode": "GND",
+                                "parent": {
+                                    "flightPlaceId": "GNDB",
+                                    "displayCode": "GND",
+                                    "name": "St. George's",
+                                    "type": "City"
+                                },
+                                "name": "Maurice Bishop International",
+                                "type": "Airport",
+                                "country": "Grenada"
+                            },
+                            "departure": "2025-04-13T09:30:00",
+                            "arrival": "2025-04-13T14:50:00",
+                            "durationInMinutes": 320,
+                            "flightNumber": "1336",
+                            "marketingCarrier": {
+                                "id": -32695,
+                                "name": "Air Canada",
+                                "alternateId": "AC",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -32695,
+                                "name": "Air Canada",
+                                "alternateId": "AC",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        }
+                    ]
+                }
+            ],
+            "isSelfTransfer": false,
+            "isProtectedSelfTransfer": false,
+            "farePolicy": {
+                "isChangeAllowed": false,
+                "isPartiallyChangeable": false,
+                "isCancellationAllowed": false,
+                "isPartiallyRefundable": false
+            },
+            "fareAttributes": [],
+            "isMashUp": false,
+            "hasFlexibleOptions": false,
+            "score": 0.196998
+        },
+        {
+            "id": "15062-2504111655--32480-2-11886-2504121700",
+            "price": {
+                "raw": 2690,
+                "formatted": "$2,690",
+                "pricingOptionId": "x8d8k6gncMr7"
+            },
+            "legs": [
+                {
+                    "id": "15062-2504111655--32480-2-11886-2504121700",
+                    "origin": {
+                        "id": "ORD",
+                        "entityId": "95673392",
+                        "name": "Chicago O'Hare International",
+                        "displayCode": "ORD",
+                        "city": "Chicago",
+                        "country": "United States",
+                        "isHighlighted": false
+                    },
+                    "destination": {
+                        "id": "GND",
+                        "entityId": "128667998",
+                        "name": "Maurice Bishop International",
+                        "displayCode": "GND",
+                        "city": "St. George's",
+                        "country": "Grenada",
+                        "isHighlighted": false
+                    },
+                    "durationInMinutes": 1385,
+                    "stopCount": 2,
+                    "isSmallestStops": false,
+                    "departure": "2025-04-11T16:55:00",
+                    "arrival": "2025-04-12T17:00:00",
+                    "timeDeltaInDays": 1,
+                    "carriers": {
+                        "marketing": [
+                            {
+                                "id": -32480,
+                                "alternateId": "BA",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/BA.png",
+                                "name": "British Airways"
+                            }
+                        ],
+                        "operationType": "fully_operated"
+                    },
+                    "airportChangesIn": [
+                        "London"
+                    ],
+                    "segments": [
+                        {
+                            "id": "15062-13554-2504111655-2504120650--32480",
+                            "origin": {
+                                "flightPlaceId": "ORD",
+                                "displayCode": "ORD",
+                                "parent": {
+                                    "flightPlaceId": "CHIA",
+                                    "displayCode": "CHI",
+                                    "name": "Chicago",
+                                    "type": "City"
+                                },
+                                "name": "Chicago O'Hare International",
+                                "type": "Airport",
+                                "country": "United States"
+                            },
+                            "destination": {
+                                "flightPlaceId": "LHR",
+                                "displayCode": "LHR",
+                                "parent": {
+                                    "flightPlaceId": "LOND",
+                                    "displayCode": "LON",
+                                    "name": "London",
+                                    "type": "City"
+                                },
+                                "name": "London Heathrow",
+                                "type": "Airport",
+                                "country": "United Kingdom"
+                            },
+                            "departure": "2025-04-11T16:55:00",
+                            "arrival": "2025-04-12T06:50:00",
+                            "durationInMinutes": 475,
+                            "flightNumber": "294",
+                            "marketingCarrier": {
+                                "id": -32480,
+                                "name": "British Airways",
+                                "alternateId": "BA",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -32480,
+                                "name": "British Airways",
+                                "alternateId": "BA",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        },
+                        {
+                            "id": "13542-17429-2504121115-2504121505--32480",
+                            "origin": {
+                                "flightPlaceId": "LGW",
+                                "displayCode": "LGW",
+                                "parent": {
+                                    "flightPlaceId": "LOND",
+                                    "displayCode": "LON",
+                                    "name": "London",
+                                    "type": "City"
+                                },
+                                "name": "London Gatwick",
+                                "type": "Airport",
+                                "country": "United Kingdom"
+                            },
+                            "destination": {
+                                "flightPlaceId": "UVF",
+                                "displayCode": "UVF",
+                                "parent": {
+                                    "flightPlaceId": "SLUA",
+                                    "displayCode": "SLU",
+                                    "name": "Castries",
+                                    "type": "City"
+                                },
+                                "name": "St Lucia Hewanorra",
+                                "type": "Airport",
+                                "country": "Saint Lucia"
+                            },
+                            "departure": "2025-04-12T11:15:00",
+                            "arrival": "2025-04-12T15:05:00",
+                            "durationInMinutes": 530,
+                            "flightNumber": "2159",
+                            "marketingCarrier": {
+                                "id": -32480,
+                                "name": "British Airways",
+                                "alternateId": "BA",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -32480,
+                                "name": "British Airways",
+                                "alternateId": "BA",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        },
+                        {
+                            "id": "17429-11886-2504121605-2504121700--32480",
+                            "origin": {
+                                "flightPlaceId": "UVF",
+                                "displayCode": "UVF",
+                                "parent": {
+                                    "flightPlaceId": "SLUA",
+                                    "displayCode": "SLU",
+                                    "name": "Castries",
+                                    "type": "City"
+                                },
+                                "name": "St Lucia Hewanorra",
+                                "type": "Airport",
+                                "country": "Saint Lucia"
+                            },
+                            "destination": {
+                                "flightPlaceId": "GND",
+                                "displayCode": "GND",
+                                "parent": {
+                                    "flightPlaceId": "GNDB",
+                                    "displayCode": "GND",
+                                    "name": "St. George's",
+                                    "type": "City"
+                                },
+                                "name": "Maurice Bishop International",
+                                "type": "Airport",
+                                "country": "Grenada"
+                            },
+                            "departure": "2025-04-12T16:05:00",
+                            "arrival": "2025-04-12T17:00:00",
+                            "durationInMinutes": 55,
+                            "flightNumber": "2159",
+                            "marketingCarrier": {
+                                "id": -32480,
+                                "name": "British Airways",
+                                "alternateId": "BA",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -32480,
+                                "name": "British Airways",
+                                "alternateId": "BA",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        }
+                    ]
+                }
+            ],
+            "isSelfTransfer": false,
+            "isProtectedSelfTransfer": false,
+            "farePolicy": {
+                "isChangeAllowed": false,
+                "isPartiallyChangeable": false,
+                "isCancellationAllowed": false,
+                "isPartiallyRefundable": false
+            },
+            "fareAttributes": [],
+            "isMashUp": false,
+            "hasFlexibleOptions": false,
+            "score": 0.190514
+        },
+        {
+            "id": "15062-2504111819--32695-2-11886-2504131450",
+            "price": {
+                "raw": 1207.39,
+                "formatted": "$1,208",
+                "pricingOptionId": "2DVL6tSdR_H9"
+            },
+            "legs": [
+                {
+                    "id": "15062-2504111819--32695-2-11886-2504131450",
+                    "origin": {
+                        "id": "ORD",
+                        "entityId": "95673392",
+                        "name": "Chicago O'Hare International",
+                        "displayCode": "ORD",
+                        "city": "Chicago",
+                        "country": "United States",
+                        "isHighlighted": false
+                    },
+                    "destination": {
+                        "id": "GND",
+                        "entityId": "128667998",
+                        "name": "Maurice Bishop International",
+                        "displayCode": "GND",
+                        "city": "St. George's",
+                        "country": "Grenada",
+                        "isHighlighted": false
+                    },
+                    "durationInMinutes": 2611,
+                    "stopCount": 2,
+                    "isSmallestStops": false,
+                    "departure": "2025-04-11T18:19:00",
+                    "arrival": "2025-04-13T14:50:00",
+                    "timeDeltaInDays": 2,
+                    "carriers": {
+                        "marketing": [
+                            {
+                                "id": -32695,
+                                "alternateId": "AC",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/AC.png",
+                                "name": "Air Canada"
+                            }
+                        ],
+                        "operating": [
+                            {
+                                "id": -31525,
+                                "alternateId": "!ˆ",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/%21%CB%86.png",
+                                "name": "Republic Airways DBA United Express"
+                            },
+                            {
+                                "id": -31542,
+                                "alternateId": "!$",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/%21%24.png",
+                                "name": "Air Canada Express - Jazz"
+                            }
+                        ],
+                        "operationType": "partially_operated"
+                    },
+                    "airportChangesIn": [
+                        "Toronto"
+                    ],
+                    "segments": [
+                        {
+                            "id": "15062-18279-2504111819-2504112135--32695",
+                            "origin": {
+                                "flightPlaceId": "ORD",
+                                "displayCode": "ORD",
+                                "parent": {
+                                    "flightPlaceId": "CHIA",
+                                    "displayCode": "CHI",
+                                    "name": "Chicago",
+                                    "type": "City"
+                                },
+                                "name": "Chicago O'Hare International",
+                                "type": "Airport",
+                                "country": "United States"
+                            },
+                            "destination": {
+                                "flightPlaceId": "YOW",
+                                "displayCode": "YOW",
+                                "parent": {
+                                    "flightPlaceId": "YOWA",
+                                    "displayCode": "YOW",
+                                    "name": "Ottawa",
+                                    "type": "City"
+                                },
+                                "name": "Ottawa International",
+                                "type": "Airport",
+                                "country": "Canada"
+                            },
+                            "departure": "2025-04-11T18:19:00",
+                            "arrival": "2025-04-11T21:35:00",
+                            "durationInMinutes": 136,
+                            "flightNumber": "3579",
+                            "marketingCarrier": {
+                                "id": -32695,
+                                "name": "Air Canada",
+                                "alternateId": "AC",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -31525,
+                                "name": "Republic Airways DBA United Express",
+                                "alternateId": "!ˆ",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        },
+                        {
+                            "id": "18279-18390-2504120830-2504120932--32695",
+                            "origin": {
+                                "flightPlaceId": "YOW",
+                                "displayCode": "YOW",
+                                "parent": {
+                                    "flightPlaceId": "YOWA",
+                                    "displayCode": "YOW",
+                                    "name": "Ottawa",
+                                    "type": "City"
+                                },
+                                "name": "Ottawa International",
+                                "type": "Airport",
+                                "country": "Canada"
+                            },
+                            "destination": {
+                                "flightPlaceId": "YTZ",
+                                "displayCode": "YTZ",
+                                "parent": {
+                                    "flightPlaceId": "YTOA",
+                                    "displayCode": "YTO",
+                                    "name": "Toronto",
+                                    "type": "City"
+                                },
+                                "name": "Toronto Island",
+                                "type": "Airport",
+                                "country": "Canada"
+                            },
+                            "departure": "2025-04-12T08:30:00",
+                            "arrival": "2025-04-12T09:32:00",
+                            "durationInMinutes": 62,
+                            "flightNumber": "7701",
+                            "marketingCarrier": {
+                                "id": -32695,
+                                "name": "Air Canada",
+                                "alternateId": "AC",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -31542,
+                                "name": "Air Canada Express - Jazz",
+                                "alternateId": "!$",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        },
+                        {
+                            "id": "18467-11886-2504130930-2504131450--32695",
+                            "origin": {
+                                "flightPlaceId": "YYZ",
+                                "displayCode": "YYZ",
+                                "parent": {
+                                    "flightPlaceId": "YTOA",
+                                    "displayCode": "YTO",
+                                    "name": "Toronto",
+                                    "type": "City"
+                                },
+                                "name": "Toronto Pearson International",
+                                "type": "Airport",
+                                "country": "Canada"
+                            },
+                            "destination": {
+                                "flightPlaceId": "GND",
+                                "displayCode": "GND",
+                                "parent": {
+                                    "flightPlaceId": "GNDB",
+                                    "displayCode": "GND",
+                                    "name": "St. George's",
+                                    "type": "City"
+                                },
+                                "name": "Maurice Bishop International",
+                                "type": "Airport",
+                                "country": "Grenada"
+                            },
+                            "departure": "2025-04-13T09:30:00",
+                            "arrival": "2025-04-13T14:50:00",
+                            "durationInMinutes": 320,
+                            "flightNumber": "1336",
+                            "marketingCarrier": {
+                                "id": -32695,
+                                "name": "Air Canada",
+                                "alternateId": "AC",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -32695,
+                                "name": "Air Canada",
+                                "alternateId": "AC",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        }
+                    ]
+                }
+            ],
+            "isSelfTransfer": false,
+            "isProtectedSelfTransfer": false,
+            "farePolicy": {
+                "isChangeAllowed": false,
+                "isPartiallyChangeable": false,
+                "isCancellationAllowed": false,
+                "isPartiallyRefundable": false
+            },
+            "fareAttributes": [],
+            "isMashUp": false,
+            "hasFlexibleOptions": false,
+            "score": 0.179661
+        },
+        {
+            "id": "15062-2504111815--31679-2-11886-2504131456",
+            "price": {
+                "raw": 1713.54,
+                "formatted": "$1,714",
+                "pricingOptionId": "MH28t9Rcay44"
+            },
+            "legs": [
+                {
+                    "id": "15062-2504111815--31679-2-11886-2504131456",
+                    "origin": {
+                        "id": "ORD",
+                        "entityId": "95673392",
+                        "name": "Chicago O'Hare International",
+                        "displayCode": "ORD",
+                        "city": "Chicago",
+                        "country": "United States",
+                        "isHighlighted": false
+                    },
+                    "destination": {
+                        "id": "GND",
+                        "entityId": "128667998",
+                        "name": "Maurice Bishop International",
+                        "displayCode": "GND",
+                        "city": "St. George's",
+                        "country": "Grenada",
+                        "isHighlighted": false
+                    },
+                    "durationInMinutes": 2621,
+                    "stopCount": 2,
+                    "isSmallestStops": false,
+                    "departure": "2025-04-11T18:15:00",
+                    "arrival": "2025-04-13T14:56:00",
+                    "timeDeltaInDays": 2,
+                    "carriers": {
+                        "marketing": [
+                            {
+                                "id": -31679,
+                                "alternateId": "WS",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/WS.png",
+                                "name": "WestJet"
+                            }
+                        ],
+                        "operating": [
+                            {
+                                "id": -32385,
+                                "alternateId": "DL",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/DL.png",
+                                "name": "Delta"
+                            },
+                            {
+                                "id": -31548,
+                                "alternateId": "NB",
+                                "logoUrl": "https://logos.skyscnr.com/images/airlines/favicon/NB.png",
+                                "name": "Endeavor Air DBA Delta Connection"
+                            }
+                        ],
+                        "operationType": "partially_operated"
+                    },
+                    "segments": [
+                        {
+                            "id": "15062-11152-2504111815-2504112038--31679",
+                            "origin": {
+                                "flightPlaceId": "ORD",
+                                "displayCode": "ORD",
+                                "parent": {
+                                    "flightPlaceId": "CHIA",
+                                    "displayCode": "CHI",
+                                    "name": "Chicago",
+                                    "type": "City"
+                                },
+                                "name": "Chicago O'Hare International",
+                                "type": "Airport",
+                                "country": "United States"
+                            },
+                            "destination": {
+                                "flightPlaceId": "DTW",
+                                "displayCode": "DTW",
+                                "parent": {
+                                    "flightPlaceId": "DTTA",
+                                    "displayCode": "DTT",
+                                    "name": "Detroit",
+                                    "type": "City"
+                                },
+                                "name": "Detroit Wayne County",
+                                "type": "Airport",
+                                "country": "United States"
+                            },
+                            "departure": "2025-04-11T18:15:00",
+                            "arrival": "2025-04-11T20:38:00",
+                            "durationInMinutes": 83,
+                            "flightNumber": "7899",
+                            "marketingCarrier": {
+                                "id": -31679,
+                                "name": "WestJet",
+                                "alternateId": "WS",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -32385,
+                                "name": "Delta",
+                                "alternateId": "DL",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        },
+                        {
+                            "id": "11152-18467-2504121043-2504121155--31679",
+                            "origin": {
+                                "flightPlaceId": "DTW",
+                                "displayCode": "DTW",
+                                "parent": {
+                                    "flightPlaceId": "DTTA",
+                                    "displayCode": "DTT",
+                                    "name": "Detroit",
+                                    "type": "City"
+                                },
+                                "name": "Detroit Wayne County",
+                                "type": "Airport",
+                                "country": "United States"
+                            },
+                            "destination": {
+                                "flightPlaceId": "YYZ",
+                                "displayCode": "YYZ",
+                                "parent": {
+                                    "flightPlaceId": "YTOA",
+                                    "displayCode": "YTO",
+                                    "name": "Toronto",
+                                    "type": "City"
+                                },
+                                "name": "Toronto Pearson International",
+                                "type": "Airport",
+                                "country": "Canada"
+                            },
+                            "departure": "2025-04-12T10:43:00",
+                            "arrival": "2025-04-12T11:55:00",
+                            "durationInMinutes": 72,
+                            "flightNumber": "5410",
+                            "marketingCarrier": {
+                                "id": -31679,
+                                "name": "WestJet",
+                                "alternateId": "WS",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -31548,
+                                "name": "Endeavor Air DBA Delta Connection",
+                                "alternateId": "NB",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        },
+                        {
+                            "id": "18467-11886-2504130930-2504131456--31679",
+                            "origin": {
+                                "flightPlaceId": "YYZ",
+                                "displayCode": "YYZ",
+                                "parent": {
+                                    "flightPlaceId": "YTOA",
+                                    "displayCode": "YTO",
+                                    "name": "Toronto",
+                                    "type": "City"
+                                },
+                                "name": "Toronto Pearson International",
+                                "type": "Airport",
+                                "country": "Canada"
+                            },
+                            "destination": {
+                                "flightPlaceId": "GND",
+                                "displayCode": "GND",
+                                "parent": {
+                                    "flightPlaceId": "GNDB",
+                                    "displayCode": "GND",
+                                    "name": "St. George's",
+                                    "type": "City"
+                                },
+                                "name": "Maurice Bishop International",
+                                "type": "Airport",
+                                "country": "Grenada"
+                            },
+                            "departure": "2025-04-13T09:30:00",
+                            "arrival": "2025-04-13T14:56:00",
+                            "durationInMinutes": 326,
+                            "flightNumber": "2522",
+                            "marketingCarrier": {
+                                "id": -31679,
+                                "name": "WestJet",
+                                "alternateId": "WS",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            },
+                            "operatingCarrier": {
+                                "id": -31679,
+                                "name": "WestJet",
+                                "alternateId": "WS",
+                                "allianceId": 0,
+                                "displayCode": ""
+                            }
+                        }
+                    ]
+                }
+            ],
+            "isSelfTransfer": false,
+            "isProtectedSelfTransfer": false,
+            "farePolicy": {
+                "isChangeAllowed": false,
+                "isPartiallyChangeable": false,
+                "isCancellationAllowed": false,
+                "isPartiallyRefundable": false
+            },
+            "fareAttributes": [],
+            "isMashUp": false,
+            "hasFlexibleOptions": false,
+            "score": 0.131234
+        }
+    ],
+    "messages": [],
+    "filterStats": {
+        "duration": {
+            "min": 1050,
+            "max": 2874,
+            "multiCityMin": 1050,
+            "multiCityMax": 2874
+        },
+        "airports": [
+            {
+                "city": "Chicago",
+                "airports": [
+                    {
+                        "id": "MDW",
+                        "entityId": "95673391",
+                        "name": "Chicago Midway"
+                    },
+                    {
+                        "id": "ORD",
+                        "entityId": "95673392",
+                        "name": "Chicago O'Hare International"
+                    }
+                ]
+            },
+            {
+                "city": "St. George's",
+                "airports": [
+                    {
+                        "id": "GND",
+                        "entityId": "128667998",
+                        "name": "Maurice Bishop International"
+                    }
+                ]
+            }
+        ],
+        "stopPrices": {
+            "direct": {
+                "isPresent": false
+            },
+            "one": {
+                "isPresent": true,
+                "formattedPrice": "$562"
+            },
+            "twoOrMore": {
+                "isPresent": true,
+                "formattedPrice": "$702"
+            }
+        }
+    },
+    "flightsSessionId": "629d01b1-bb59-4b6a-ade0-e55bb3fe14fc",
+    "destinationImageUrl": "https://content.skyscnr.com/m/3719e8f4a5daf43d/original/Flights-Placeholder.jpg",
+    "sessionId": "629d01b1-bb59-4b6a-ade0-e55bb3fe14fc"
+}

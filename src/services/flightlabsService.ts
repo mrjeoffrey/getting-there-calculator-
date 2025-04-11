@@ -1,24 +1,67 @@
 import axios from 'axios';
 import { Flight, ConnectionFlight, WeeklyFlightData, FlightSegment } from '../types/flightTypes';
 import { findAirportByCode } from '../utils/flightUtils';
+import { supabase } from '../utils/supabaseClient';
+
 
 const FLIGHTLABS_API_BASE_URL = 'https://app.goflightlabs.com';
 const FLIGHTLABS_ACCESS_KEY = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiI0IiwianRpIjoiMDhjNmY0NjZlYWQzNTk3ZjgzNzA2Mjc3MDAwZTg3MzVjZTc2NmMzOTI5NGI0NDA2NTM3NjZhOTA5NTI2Zjk4NGRkN2NlMzA3YmNjZWM1NmIiLCJpYXQiOjE3NDM4MDA0MzEsIm5iZiI6MTc0MzgwMDQzMSwiZXhwIjoxNzc1MzM2NDMxLCJzdWIiOiIyNDYzNiIsInNjb3BlcyI6W119.dhMcsswd2Wq_icW0mwcOpCUkXJzjGVyfbgc4FKQA_nra6dLquDwDsXTq_P8zy-AOong81nBUXOfG2MJK83cWtQ';
 
 const flightLabsRequest = async (endpoint, params) => {
+  const { originSkyId,originairport,originEntityId, destinationSkyId = 'GND', date } = params;
+
+  console.log(`[Cache Check] 🔍 origin: ${originSkyId}, destination: ${destinationSkyId}, date: ${date}`);
+
+  // Step 1: Check if data is already cached
+  const { data: cached, error: cacheError } = await supabase
+    .from('flight_cache')
+    .select('raw_data')
+    .eq('origin_sky_id', originSkyId)
+    .eq('origin_entity_id', originEntityId)
+    .eq('origin_airport', originairport)
+    .eq('destination_sky_id', destinationSkyId)
+    .eq('date', date)
+    .maybeSingle();
+
+  if (cached?.raw_data && !cacheError) {
+    console.log(`✅ [Cache Hit] Returning cached raw response`, cached.raw_data);
+    return cached.raw_data;
+  }
+
+  // Step 2: Fetch from FlightLabs API
   console.log(`[API Request] ➜ ${endpoint}`, params);
+
   try {
     const response = await axios.get(`${FLIGHTLABS_API_BASE_URL}/${endpoint}`, {
       params: { access_key: FLIGHTLABS_ACCESS_KEY, ...params },
     });
 
     console.log(`[API Response] ✔ ${endpoint}: Status ${response.status}`);
+    console.log(`[API Response Data] 📦`, response.data);
+
+    // Step 3: Store raw response in DB
+    const { error: insertError } = await supabase.from('flight_cache').insert({
+      origin_sky_id: originSkyId,
+      origin_entity_id: originEntityId,
+      destination_sky_id: destinationSkyId,
+      origin_airport: originairport,
+      date,
+      raw_data: response.data
+    });
+
+    if (insertError) {
+      console.error(`[Supabase Insert] ❌ Failed to store raw response`, insertError);
+    } else {
+      console.log(`[Supabase Insert] ✅ Raw response cached`);
+    }
+
     return response.data;
   } catch (error) {
-    console.error(`[API Error] ❌ ${endpoint}:`, error);
+    console.error(`[API Error] ❌ ${endpoint}:`, error?.response?.data || error.message);
     throw error;
   }
 };
+
 
 export const getAirportInfo = async (query: string) => {
   const endpoint = 'retrieveAirport';
@@ -112,6 +155,7 @@ export const searchWeeklyFlights = async (originSkyId, destinationSkyId) => {
     return days[date.getDay()];
   };
   let originQuery = originSkyId;
+  let originairport = originSkyId;
   let originEntityId = '128667998'; // fallback
 
   const originInfo = await getAirportInfo(originQuery);
@@ -137,23 +181,37 @@ export const searchWeeklyFlights = async (originSkyId, destinationSkyId) => {
    
     
     try {
-      const params = {
-        originSkyId,
-        originEntityId,
-        destinationSkyId: 'GND',
-        destinationEntityId: '128667998',
-        date: dateString
-      };
+const params = {
+originSkyId,
+originEntityId,
+destinationSkyId: 'GND',
+destinationEntityId: '128667998',
+date: dateString,
+originairport:originairport
+};
 
-      const flightData = await flightLabsRequest('retrieveFlights', params);
+const flightData = await flightLabsRequest('retrieveFlights', params);
       console.log(`[Itinerary Count] 📦 ${flightData.itineraries?.length || 0}`);
 
       if (!flightData.itineraries || flightData.itineraries.length === 0) {
         weeklyData[dateString].flights = [];
         continue;
       }
+      const desiredAirportCode = originairport; 
+const matchingItineraries = (flightData.itineraries || []).filter(itinerary => {
+  const firstLeg = itinerary.legs?.[0];
+  return firstLeg?.origin?.displayCode === desiredAirportCode;
+});
 
-      const flights = flightData.itineraries.flatMap(convertFlightLabsDataToFlights);
+if (matchingItineraries.length === 0) {
+  weeklyData[dateString].flights = [];
+  continue;
+}
+
+      const flights = matchingItineraries.flatMap(convertFlightLabsDataToFlights);
+
+      // const flights = flightData.itineraries.flatMap(convertFlightLabsDataToFlights);
+      console.log(`flights📦 ${flights}`);
       weeklyData[dateString].flights = flights;
 
       flights.forEach((flight) => {

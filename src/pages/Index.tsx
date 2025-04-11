@@ -42,7 +42,7 @@ const Index = () => {
     
     try {
       const destination = params.to || 'GND';
-      console.log(`Searching flights from ${params.from} to ${destination} (Tokyo Haneda)`);
+      console.log(`Searching flights from ${params.from} to ${destination} (Grenada)`);
       
       const { directFlights, connectingFlights, weeklyData } = await searchWeeklyFlights(
         params.from,

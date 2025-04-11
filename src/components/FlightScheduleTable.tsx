@@ -49,13 +49,12 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
     const diffMin = Math.floor(diffMs / (1000 * 60));
     const hours = Math.floor(diffMin / 60);
     const minutes = diffMin % 60;
-    return `${hours}h${minutes}m`; // Removed space to make more compact
+    return `${hours}h${minutes}m`;
   };
   
   const destinationAirportCode = 'GND';
   const destinationCity = 'St. George\'s';
   const destinationCountry = 'Grenada';
-  // ✅ Only direct flights going to the correct destination
   const groupedDirectFlights =
     flights && flights.length > 0
       ? groupFlightsByDay(

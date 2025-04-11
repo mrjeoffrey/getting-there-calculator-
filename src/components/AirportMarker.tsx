@@ -121,7 +121,8 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
       ref={markerRef}
       position={[airport.lat, airport.lng]} 
       icon={createAirportMarkerIcon(type)}
-      zIndexOffset={2000}
+      zIndexOffset={type === 'origin' ? 3000 : type === 'destination' ? 2000 : 1900}
+
       eventHandlers={{
         popupopen: () => {
           if (!isHandlingEvent.current) {
