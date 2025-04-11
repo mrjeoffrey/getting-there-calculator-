@@ -8,8 +8,8 @@ const FLIGHTLABS_API_BASE_URL = 'https://app.goflightlabs.com';
 const FLIGHTLABS_ACCESS_KEY = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiI0IiwianRpIjoiMDhjNmY0NjZlYWQzNTk3ZjgzNzA2Mjc3MDAwZTg3MzVjZTc2NmMzOTI5NGI0NDA2NTM3NjZhOTA5NTI2Zjk4NGRkN2NlMzA3YmNjZWM1NmIiLCJpYXQiOjE3NDM4MDA0MzEsIm5iZiI6MTc0MzgwMDQzMSwiZXhwIjoxNzc1MzM2NDMxLCJzdWIiOiIyNDYzNiIsInNjb3BlcyI6W119.dhMcsswd2Wq_icW0mwcOpCUkXJzjGVyfbgc4FKQA_nra6dLquDwDsXTq_P8zy-AOong81nBUXOfG2MJK83cWtQ';
 
 const flightLabsRequest = async (endpoint, params) => {
-  const { originSkyId,originairport,originEntityId, destinationSkyId = 'GND', date } = params;
-
+  const { originSkyId,originairport,dayOfWeek, originEntityId, destinationSkyId = 'GND', date } = params;
+  console.log(`[FlightLabs date] 🔍 ${dayOfWeek}`);
   console.log(`[Cache Check] 🔍 origin: ${originSkyId}, destination: ${destinationSkyId}, date: ${date}`);
 
   // Step 1: Check if data is already cached
@@ -20,7 +20,7 @@ const flightLabsRequest = async (endpoint, params) => {
     .eq('origin_entity_id', originEntityId)
     .eq('origin_airport', originairport)
     .eq('destination_sky_id', destinationSkyId)
-    .eq('date', date)
+    .eq ('day_of_week', dayOfWeek)
     .maybeSingle();
 
   if (cached?.raw_data && !cacheError) {
@@ -46,6 +46,7 @@ const flightLabsRequest = async (endpoint, params) => {
       destination_sky_id: destinationSkyId,
       origin_airport: originairport,
       date,
+      day_of_week: dayOfWeek,
       raw_data: response.data
     });
 
@@ -187,7 +188,8 @@ originEntityId,
 destinationSkyId: 'GND',
 destinationEntityId: '128667998',
 date: dateString,
-originairport:originairport
+originairport:originairport,
+dayOfWeek: dayOfWeek
 };
 
 const flightData = await flightLabsRequest('retrieveFlights', params);
