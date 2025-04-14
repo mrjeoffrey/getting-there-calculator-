@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { Flight, ConnectionFlight } from '../types/flightTypes';
 import { groupFlightsByDay } from '../utils/dateFormatUtils';
@@ -51,6 +52,7 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
     return `${hours}h${minutes}m`;
   };
   
+  // Helper function to convert duration string to minutes for sorting
   const getDurationInMinutes = (durationString: string): number => {
     if (!durationString || durationString === 'N/A') return Infinity;
     
@@ -75,9 +77,11 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
       })
     : [];
   
+  // Fixed: Sort direct flights by duration
   const sortedDirectFlights = [...filteredDirectFlights].sort((a, b) => {
-    const durationA = getDurationInMinutes(a.duration);
-    const durationB = getDurationInMinutes(b.duration);
+    // Calculate duration for each flight
+    const durationA = a.duration ? getDurationInMinutes(a.duration) : getDurationInMinutes(calculateDuration(a.departureTime, a.arrivalTime));
+    const durationB = b.duration ? getDurationInMinutes(b.duration) : getDurationInMinutes(calculateDuration(b.departureTime, b.arrivalTime));
     return durationA - durationB;
   });
   
@@ -91,6 +95,7 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
       })
     : [];
     
+  // Fixed: Sort connecting flights by total duration
   const sortedConnectingFlights = [...filteredConnectingFlights].sort((a, b) => {
     const durationA = getDurationInMinutes(a.totalDuration);
     const durationB = getDurationInMinutes(b.totalDuration);
@@ -189,7 +194,7 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
                     onClick={() => originalConnection && handleFlightSelect(originalConnection)}
                   >
                     <TableCell className="py-1 px-1 text-center">{flight.airline}</TableCell> 
-                    <TableCell className="py-1 px-1 text-center">{calculateDuration(flight.departureTime, flight.arrivalTime)}</TableCell>
+                    <TableCell className="py-1 px-1 text-center">{flight.duration}</TableCell>
                     <TableCell className="py-1 px-1 text-center">{flight.days}</TableCell>
                     <TableCell className="py-1 px-1 text-center">{formatToTimeOnly(flight.departureTime)}</TableCell>
                     <TableCell className="py-1 px-1 text-center">{formatToTimeOnly(flight.arrivalTime)}</TableCell>
