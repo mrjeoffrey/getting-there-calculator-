@@ -62,8 +62,7 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
     }
   
     return [xOffset, yOffset] as [number, number];
-  };
-  
+  }
   
   
   const getTooltipContent = () => {
@@ -154,14 +153,14 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
       </Tooltip>
       
       <Popup 
-        className="flight-popup between-airports"
-        minWidth={450}
-        maxWidth={500}
-        autoPan={true}
+  className="flight-popup between-airports"
+  minWidth={450}
+  maxWidth={500}
+  autoPan={true}
         autoPanPaddingTopLeft={[5, 5]}
         autoPanPaddingBottomRight={[5, 5]}
         keepInView={true}
-        closeButton={true}
+  closeButton={true}
         offset={getPopupOffset()}
       >
         <div className="p-1 max-h-[200px] overflow-auto">
