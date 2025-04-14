@@ -42,8 +42,12 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
   const airportName = airport.name || `Airport ${airportCode}`;
   
   const getPopupOffset = () => {
+    if (type === 'origin') {
+      return [-200, 200] as [number, number];
+    }
+    
     if (!destinationAirport) {
-      return [-200, type === 'origin' ? 200 : 0] as [number, number]; 
+      return [-200, 0] as [number, number];
     }
   
     const dx = destinationAirport.lng - airport.lng;
@@ -51,14 +55,10 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
     const angle = Math.atan2(dy, dx) * (180 / Math.PI);
   
     let xOffset = 180;
-    let yOffset = type === 'origin' ? 200 : 0;
+    let yOffset = 0;
   
-    if (type === 'origin') {
-      xOffset = Math.cos(angle * Math.PI / 180) * -160;
-      yOffset = 200;
-    } else if (type === 'destination') {
+    if (type === 'destination') {
       xOffset = Math.cos((angle + 180) * Math.PI / 180) * -160;
-      yOffset = 0;
     }
   
     return [xOffset, yOffset] as [number, number];
