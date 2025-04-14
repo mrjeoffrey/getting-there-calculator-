@@ -42,7 +42,7 @@ const SearchPanel: React.FC<SearchPanelProps> = ({
 
   return (
     <div className="animate-scale-in w-full">
-      <div className="flex items-stretch gap-2">
+      <div className="flex items-stretch gap-2 h-14">
   <div className="flex-1 [&_*]:text-blue-100">
     <AirportSelector 
       value={from} 
@@ -54,7 +54,7 @@ const SearchPanel: React.FC<SearchPanelProps> = ({
   </div>
 
   <Button 
-    className="bg-primary hover:bg-primary/90 text-primary-foreground h-full px-8 py-4"
+    className="bg-primary hover:bg-primary/90 text-primary-foreground h-full px-10 py-4"
     onClick={handleSearch}
     disabled={!from || loading}
   >
