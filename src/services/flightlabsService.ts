@@ -73,6 +73,22 @@ export const getAirportInfo = async (query: string) => {
 
   console.log(`[Airport Lookup] 🔍 Searching for "${query}"`);
 
+  // Step 1: Check Supabase first
+  const { data: cached, error: cacheError } = await supabase
+    .from('airport_info_cache')
+    .select('sky_id, entity_id')
+    .eq('query', query)
+    .maybeSingle();
+
+  if (cached && !cacheError) {
+    console.log(`[Airport Lookup] ✅ Cache Hit`, cached);
+    return {
+      skyId: cached.sky_id,
+      entityId: cached.entity_id
+    };
+  }
+
+  // Step 2: If not in cache, hit the API
   try {
     const response = await axios.get(`${FLIGHTLABS_API_BASE_URL}/${endpoint}`, { params });
     const airports = response.data;
@@ -86,6 +102,14 @@ export const getAirportInfo = async (query: string) => {
     const { skyId, entityId } = topMatch;
 
     console.log(`[Airport Lookup] ✅ Found`, { skyId, entityId });
+
+    // Step 3: Save to Supabase
+    await supabase.from('airport_info_cache').insert({
+      query,
+      sky_id: skyId,
+      entity_id: entityId
+    });
+
     return { skyId, entityId };
   } catch (error) {
     console.error(`[Airport Lookup] ❌ Error searching airport "${query}":`, error);
