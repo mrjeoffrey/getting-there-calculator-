@@ -52,77 +52,51 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
     return `${hours}h${minutes}m`;
   };
   
-  // Helper function to convert duration string to minutes for sorting
-  const getDurationInMinutes = (durationString: string): number => {
-    if (!durationString || durationString === 'N/A') return Infinity;
-    
-    const hourMatch = durationString.match(/(\d+)h/);
-    const minuteMatch = durationString.match(/(\d+)m/);
-    
-    const hours = hourMatch ? parseInt(hourMatch[1], 10) : 0;
-    const minutes = minuteMatch ? parseInt(minuteMatch[1], 10) : 0;
-    
-    return hours * 60 + minutes;
-  };
-  
   const destinationAirportCode = 'GND';
   const destinationCity = 'St. George\'s';
   const destinationCountry = 'Grenada';
-  
-  const filteredDirectFlights = flights && flights.length > 0
-    ? flights.filter(f => {
-        const isDirect = f.direct;
-        const isToGrenada = f.arrivalAirport?.code === destinationAirportCode;
-        return isDirect && (type !== 'origin' || isToGrenada);
-      })
-    : [];
-  
-  // Fixed: Sort direct flights by duration
-  const sortedDirectFlights = [...filteredDirectFlights].sort((a, b) => {
-    // Calculate duration for each flight
-    const durationA = a.duration ? getDurationInMinutes(a.duration) : getDurationInMinutes(calculateDuration(a.departureTime, a.arrivalTime));
-    const durationB = b.duration ? getDurationInMinutes(b.duration) : getDurationInMinutes(calculateDuration(b.departureTime, b.arrivalTime));
-    return durationA - durationB;
-  });
-  
-  const groupedDirectFlights = groupFlightsByDay(sortedDirectFlights);
+  const groupedDirectFlights =
+    flights && flights.length > 0
+      ? groupFlightsByDay(
+          flights.filter(f => {
+            const isDirect = f.direct;
+            const isToGrenada = f.arrivalAirport?.code === destinationAirportCode;
+            return isDirect && (type !== 'origin' || isToGrenada);
+          })
+        )
+      : [];
 
-  const filteredConnectingFlights = connectionFlights && connectionFlights.length > 0
-    ? connectionFlights.filter(cf => {
-        const lastLeg = cf.flights.at(-1);
-        const isToGrenada = lastLeg?.arrivalAirport?.code === destinationAirportCode;
-        return type !== 'origin' || isToGrenada;
-      })
-    : [];
-    
-  // Fixed: Sort connecting flights by total duration
-  const sortedConnectingFlights = [...filteredConnectingFlights].sort((a, b) => {
-    const durationA = getDurationInMinutes(a.totalDuration);
-    const durationB = getDurationInMinutes(b.totalDuration);
-    return durationA - durationB;
-  });
-  
-  const mappedConnectingFlights = sortedConnectingFlights.map(cf => {
-    const firstFlight = cf.flights[0];
-    const lastFlight = cf.flights.at(-1)!;
-    console.log('First flight:---', firstFlight);
-    console.log('Last flight:---', lastFlight);
-    console.log('All flights:---', cf.flights.length);
-    console.log('All flights name', cf.flights);
-    return {
-      id: cf.id,
-      departureTime: firstFlight.departureTime,
-      arrivalTime: lastFlight.arrivalTime,
-      airline: [...new Set(cf.flights.map(f => f.airline))].join(', '),
-      duration: cf.totalDuration,
-      days: new Date(firstFlight.departureTime).toLocaleDateString(undefined, { weekday: 'short' }),
-      direct: false,
-      stops: cf.flights.length-1,
-      originalConnection: cf
-    };
-  });
-  
-  const groupedConnectingFlights = groupFlightsByDay(mappedConnectingFlights);
+  const groupedConnectingFlights =
+    connectionFlights && connectionFlights.length > 0
+      ? groupFlightsByDay(
+          connectionFlights
+            .filter(cf => {
+              const lastLeg = cf.flights.at(-1);
+              const isToGrenada = lastLeg?.arrivalAirport?.code === destinationAirportCode;
+              return type !== 'origin' || isToGrenada;
+            })
+            .map(cf => {
+              const firstFlight = cf.flights[0];
+              const lastFlight = cf.flights.at(-1)!;
+              console.log('First flight:---', firstFlight);
+              console.log('Last flight:---', lastFlight);
+              console.log('All flights:---', cf.flights.length);
+              console.log('All flights name', cf.flights);
+              return {
+                id: cf.id,
+                departureTime: firstFlight.departureTime,
+                arrivalTime: lastFlight.arrivalTime,
+                airline: [...new Set(cf.flights.map(f => f.airline))].join(', '),
+                duration: cf.totalDuration,
+                days: new Date(firstFlight.departureTime).toLocaleDateString(undefined, { weekday: 'short' }),
+                direct: false,
+                stops: cf.flights.length-1,
+                originalConnection: cf
+              };
+            })
+        )
+      : [];
+
 
   const handleFlightSelect = (flight: Flight | ConnectionFlight) => {
     log('Flight selected', flight);
@@ -143,16 +117,16 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
   }
 
   return (
-    <div className="flight-schedule-between-markers space-y-0 mt-1"> 
+    <div className="flight-schedule-between-markers space-y-0 mt-1"> {/* Reduced margin from mt-2 to mt-1 */}
       {routeHeader && (
         <h3 className="font-medium text-xs text-primary mb-1">{routeHeader}</h3> 
       )}
 
       {(groupedDirectFlights.length > 0 || groupedConnectingFlights.length > 0) && (
-        <div className="mb-1 overflow-x-auto"> 
-          <Table className="border-collapse border-spacing-y-0 table-fixed w-full text-xs"> 
+        <div className="mb-1 overflow-x-auto"> {/* Reduced margin */}
+          <Table className="border-collapse border-spacing-y-0 table-fixed w-full text-xs"> {/* Added text-xs class and reduced border-spacing */}
             <TableHeader>
-              <TableRow className="h-4"> 
+              <TableRow className="h-4"> {/* Reduced row height */}
                 <TableHead className="py-0 px-1 text-center w-1/6">Airline</TableHead> 
                 <TableHead className="py-0 px-1 text-center w-1/6">Duration</TableHead>
                 <TableHead className="py-0 px-1 text-center w-1/6">Days</TableHead>
@@ -174,7 +148,7 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
                     f.arrivalTime.includes(flight.arrivalTime)
                   )!)}
                 >
-                  <TableCell className="py-1 px-1 text-center">{flight.airline}</TableCell> 
+                  <TableCell className="py-1 px-1 text-center">{flight.airline}</TableCell> {/* Reduced padding */}
                   <TableCell className="py-1 px-1 text-center">{calculateDuration(flight.departureTime, flight.arrivalTime)}</TableCell>
                   <TableCell className="py-1 px-1 text-center">{flight.days}</TableCell>
                   <TableCell className="py-1 px-1 text-center">{formatToTimeOnly(flight.departureTime)}</TableCell>
@@ -194,7 +168,7 @@ const FlightScheduleTable: React.FC<FlightScheduleTableProps> = ({
                     onClick={() => originalConnection && handleFlightSelect(originalConnection)}
                   >
                     <TableCell className="py-1 px-1 text-center">{flight.airline}</TableCell> 
-                    <TableCell className="py-1 px-1 text-center">{flight.duration}</TableCell>
+                    <TableCell className="py-1 px-1 text-center">{calculateDuration(flight.departureTime, flight.arrivalTime)}</TableCell>
                     <TableCell className="py-1 px-1 text-center">{flight.days}</TableCell>
                     <TableCell className="py-1 px-1 text-center">{formatToTimeOnly(flight.departureTime)}</TableCell>
                     <TableCell className="py-1 px-1 text-center">{formatToTimeOnly(flight.arrivalTime)}</TableCell>
