@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Marker, Popup, Tooltip, useMap } from 'react-leaflet';
 import { Airport, Flight, ConnectionFlight } from '../types/flightTypes';
@@ -42,10 +41,9 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
   const airportCode = airport.code || 'N/A';
   const airportName = airport.name || `Airport ${airportCode}`;
   
-  // Updated to move popup higher up from marker
   const getPopupOffset = () => {
     if (!destinationAirport) {
-      return [-200, type === 'origin' ? 60 : 0] as [number, number]; // default: left & maybe down
+      return [-200, type === 'origin' ? 200 : 0] as [number, number]; 
     }
   
     const dx = destinationAirport.lng - airport.lng;
@@ -53,11 +51,11 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
     const angle = Math.atan2(dy, dx) * (180 / Math.PI);
   
     let xOffset = 180;
-    let yOffset = 100;
+    let yOffset = type === 'origin' ? 200 : 0;
   
     if (type === 'origin') {
       xOffset = Math.cos(angle * Math.PI / 180) * -160;
-      yOffset = 100; // 👈 only move down if it's the origin airport
+      yOffset = 200;
     } else if (type === 'destination') {
       xOffset = Math.cos((angle + 180) * Math.PI / 180) * -160;
       yOffset = 0;
