@@ -483,14 +483,6 @@ const FlightMap: React.FC<FlightMapProps> = ({
               })
             ))}
 
-            {/* {connectionAirports.map(airport => (
-              <Marker 
-                key={`connection-point-${airport.code}`}
-                // position={[airport.lat, airport.lng]} 
-                // icon={createCityIcon(airport.city || airport.name, 'connection')}
-                zIndexOffset={800}
-              />
-            ))} */}
 
             {originAirport && (
               <Marker 
@@ -508,8 +500,8 @@ const FlightMap: React.FC<FlightMapProps> = ({
               />
             )}
 
-            {Array.from(airports.values()).map(airport => {
-              const airportCode = airport.code;
+{Array.from(airports.values()).map(airport => {
+  const airportCode = airport.code;
 
               const type = airportCode === originAirport?.code
                 ? 'origin'
@@ -517,28 +509,28 @@ const FlightMap: React.FC<FlightMapProps> = ({
                   ? 'destination'
                   : 'connection';
 
-              return (
-                <AirportMarker
-                  key={`airport-${airport.code}`}
-                  airport={airport}
-                  departureFlights={airportDepartureFlights.get(airport.code) || []}
-                  arrivalFlights={airportArrivalFlights.get(airport.code) || []}
-                  connectingFlights={
-                    type === 'origin' || type === 'destination'
-                      ? connectingFlights 
-                      : airportConnectionFlights.get(airport.code) || []
-                  }
-                  type={type}
-                  onPopupOpen={handlePopupOpen}
-                  activePopup={activePopup}
-                  destinationAirport={
-                    airport.code === originAirport?.code ? destinationAirport
-                    : airport.code === destinationAirport?.code ? originAirport
-                    : null
-                  }
-                />
-              );
-            })}
+  return (
+    <AirportMarker
+      key={`airport-${airport.code}`}
+      airport={airport}
+      departureFlights={airportDepartureFlights.get(airport.code) || []}
+      arrivalFlights={airportArrivalFlights.get(airport.code) || []}
+      connectingFlights={
+        type === 'origin' || type === 'destination'
+          ? connectingFlights
+          : airportConnectionFlights.get(airport.code) || []
+      }
+      type={type}
+      onPopupOpen={handlePopupOpen}
+      activePopup={activePopup}
+      destinationAirport={
+        airport.code === originAirport?.code ? destinationAirport
+        : airport.code === destinationAirport?.code ? originAirport
+        : null
+      }
+    />
+  );
+})}
 
           </>
         )}

@@ -40,29 +40,34 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
   
   const airportCode = airport.code || 'N/A';
   const airportName = airport.name || `Airport ${airportCode}`;
-  
-  const getPopupOffset = () => {
-    if (type === 'origin') {
-      return [200, 100] as [number, number];
+
+  const cachedType = useRef<'origin' | 'destination' | 'connection'>(type);
+
+  useEffect(() => {
+    const current = cachedType.current;
+    if (current === 'connection' && type !== 'connection') {
+      cachedType.current = type;
+      console.log(`[AirportMarker Type Upgrade] ${airport.code} upgraded to ${type}`);
+    } else {
+      console.log(`[AirportMarker Type Retain] ${airport.code} remains as ${current}`);
     }
-    
-    if (!destinationAirport) {
-      return [0, 0] as [number, number];
-    }
+  }, [type]);
   
-    const dx = destinationAirport.lng - airport.lng;
-    const dy = destinationAirport.lat - airport.lat;
-    const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-  
-    let xOffset = 180;
-    let yOffset = 0;
-  
-    if (type === 'destination') {
-      xOffset = Math.cos((angle + 180) * Math.PI / 180) * -160;
-    }
-  
-    return [xOffset, yOffset] as [number, number];
+const getPopupOffset = (): [number, number] => {
+  console.log(`Cached type: ${cachedType.current}`);
+  // console.log(`Type: ${type}`);
+  const actualType = cachedType.current;
+
+  if (actualType === 'origin') {
+    return [0, 200];
   }
+  if (actualType === 'destination') {
+    return [200, 100];
+  }
+
+  return [300, 240]; // fallback for connection or unknown
+};
+
   
   
   const getTooltipContent = () => {
