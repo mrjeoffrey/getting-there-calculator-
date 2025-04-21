@@ -43,11 +43,11 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
   
   const getPopupOffset = () => {
     if (type === 'origin') {
-      return [-200, 200] as [number, number];
+      return [200, 100] as [number, number];
     }
     
     if (!destinationAirport) {
-      return [-200, 0] as [number, number];
+      return [0, 0] as [number, number];
     }
   
     const dx = destinationAirport.lng - airport.lng;
