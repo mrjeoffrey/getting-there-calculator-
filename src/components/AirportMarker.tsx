@@ -55,16 +55,6 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
   
 const getPopupOffset = (): [number, number] => {
   console.log(`Cached type: ${cachedType.current}`);
-  // console.log(`Type: ${type}`);
-  // const actualType = cachedType.current;
-
-  // if (actualType === 'origin') {
-  //   return [0, 200];
-  // }
-  // if (actualType === 'destination') {
-  //   return [200, 100];
-  // }
-
   return [300, 240]; // fallback for connection or unknown
 };
 
