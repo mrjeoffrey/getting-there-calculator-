@@ -6,7 +6,7 @@ import { supabase } from '../utils/supabaseClient';
 
 const FLIGHTLABS_API_BASE_URL = 'https://app.goflightlabs.com';
 
-// Manual deployment 2
+// Manual deployment 3
 const FLIGHTLABS_ACCESS_KEY = process.env.FLIGHTLABS_ACCESS_KEY;
 
 
