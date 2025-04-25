@@ -5,7 +5,7 @@ import { supabase } from '../utils/supabaseClient';
 
 
 const FLIGHTLABS_API_BASE_URL = 'https://app.goflightlabs.com';
-const FLIGHTLABS_ACCESS_KEY = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiI0IiwianRpIjoiMDhjNmY0NjZlYWQzNTk3ZjgzNzA2Mjc3MDAwZTg3MzVjZTc2NmMzOTI5NGI0NDA2NTM3NjZhOTA5NTI2Zjk4NGRkN2NlMzA3YmNjZWM1NmIiLCJpYXQiOjE3NDM4MDA0MzEsIm5iZiI6MTc0MzgwMDQzMSwiZXhwIjoxNzc1MzM2NDMxLCJzdWIiOiIyNDYzNiIsInNjb3BlcyI6W119.dhMcsswd2Wq_icW0mwcOpCUkXJzjGVyfbgc4FKQA_nra6dLquDwDsXTq_P8zy-AOong81nBUXOfG2MJK83cWtQ';
+const FLIGHTLABS_ACCESS_KEY = process.env.NEXT_PUBLIC_FLIGHTLABS_API_KEY;
 
 const flightLabsRequest = async (endpoint, params) => {
   const { originSkyId,originairport,dayOfWeek, originEntityId, destinationSkyId = 'GND', date } = params;

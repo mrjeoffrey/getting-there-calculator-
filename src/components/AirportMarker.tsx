@@ -30,7 +30,8 @@ const AirportMarker: React.FC<AirportMarkerProps> = ({
   onPopupOpen,
   activePopup,
   destinationAirport = null
-}) => {
+}) =>
+   {
   const hasFlights = departureFlights.length > 0 || arrivalFlights.length > 0 || (type !== 'origin' && connectingFlights.length > 0);
   const map = useMap();
   const [popupOpen, setPopupOpen] = useState(false);
