@@ -100,7 +100,7 @@ export const getAirportInfo = async (query: string) => {
 
     const topMatch = airports[0];
     const { skyId, entityId } = topMatch;
-
+    console.log(`[Airport Lookup] acess`, FLIGHTLABS_ACCESS_KEY);
     console.log(`[Airport Lookup] ✅ Found`, { skyId, entityId });
 
     // Step 3: Save to Supabase
