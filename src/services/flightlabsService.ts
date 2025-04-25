@@ -70,7 +70,7 @@ export const getAirportInfo = async (query: string) => {
     access_key: FLIGHTLABS_ACCESS_KEY,
     query
   };
-
+  console.log(`[acess_key]  "${FLIGHTLABS_ACCESS_KEY}"`);
   console.log(`[Airport Lookup] 🔍 Searching for "${query}"`);
 
   // Step 1: Check Supabase first
